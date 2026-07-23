@@ -27,7 +27,7 @@ não sobre o plano de trabalho.
 | `A_φ` | componente φ do potencial vetor | G cm | `A_phi` |
 | `u` | função de fluxo, `u = ϖ A_φ` | G cm³ | `u` |
 | `B_r, B_θ, B_φ` | componentes do campo magnético | G (gauss) | `Br`, `Bth`/`Btheta`, `Bphi` |
-| `f(u)` | função de corrente poloidal, `f(u) = k₀` | g⁻¹ᐟ² cm¹ᐟ² s⁻¹ | `k0` |
+| `f(u)` | função de corrente poloidal, `f(u) = k₀` | g^(-1/2) cm^(1/2) s^-1 | `k0` |
 | `M(u)` | potencial de Bernoulli do poloidal, `M(u) = k₀ u` | erg g⁻¹ | `M_u` (variável local em `scf.py`) |
 | `β(u)` | função de corrente toroidal, `β = ϖ B_φ` | G cm | não calculada à parte — `B_φ` já sai pronta de `impose_toroidal()` |
 | `ζ` | amplitude do toroidal imposto | (unidades de `u^{-m}` × G) | `zeta` |
@@ -35,7 +35,7 @@ não sobre o plano de trabalho.
 | `u_c` | valor de `u` na última linha fechada | G cm³ | `u_c` |
 | `C` | constante de Bernoulli | erg g⁻¹ | `C` |
 | `ρc` | densidade central (parâmetro de entrada) | g cm⁻³ | `rho_c` |
-| `k₀` | amplitude do campo poloidal (parâmetro de entrada) | g⁻¹ᐟ² cm¹ᐟ² s⁻¹ | `k0` |
+| `k₀` | amplitude do campo poloidal (parâmetro de entrada) | g^(-1/2) cm^(1/2) s^-1 | `k0` |
 | `μₑ` | peso molecular médio por elétron, `Y_e = 1/μₑ` | adimensional | `mu_e` |
 | `M` | massa total da estrela | g (exibido em M☉) | `M` (⚠ colide com `M(u)` na notação da espinha — ver nota) |
 | `R_eq`, `R_pol` | raios equatorial e polar (onde `H=0`) | cm (exibido em km) | `R_eq`, `R_pol` |
@@ -98,7 +98,7 @@ H = ∫ dP/ρ = (8A/B) [ √(1 + x²) − 1 ]
 Inversa, aplicada a cada iteração do SCF:
 
 ```
-x = √[ (1 + HB/8A)² − 1 ]        (H ≤ 0 ⟹ ρ = 0)
+x = √[ (1 + HB/8A)² − 1 ]        (H ≤ 0 => ρ = 0)
 ```
 
 → `scf/eos.py :: x_of_enthalpy()`, `density_of_enthalpy()`
@@ -262,12 +262,12 @@ erro:
 
 ```
 Fluxo:    u(ϖ,z) = ∫₀^ϖ B_z(ϖ′,z) ϖ′ dϖ′
-Ampère:   ∮_C B·dl = 4π k₀ ∫_S ρ ϖ dA
+Ampère:   oint_C B·dl = 4π k₀ ∫_S ρ ϖ dA
 ```
 
 - **Ampère**: implementado e no repositório → `scf/tests/test_gradshafranov.py
   :: test_ampere_law()`. Usa um caso sintético com fonte de modo `l=1` puro
-  (não a EOS/SCF completos), calcula `∮B·dl` num laço retangular em `(r,θ)` e
+  (não a EOS/SCF completos), calcula `oint B·dl` num laço retangular em `(r,θ)` e
   compara com `−∫∫ [source/sinθ] dr dθ` (forma equivalente derivada da lei de
   Ampère para esta geometria). Fecha a ~2%.
 - **Fluxo**: foi *proposto* durante a depuração (ver histórico da conversa
@@ -336,7 +336,7 @@ contribua.
 6.      u   ← ϖ A_φ ;  M ← ∫ f du
 7.      C   ← H(ρc) + Φc − M(u_c)
 8.      H   ← C − Φ + M(u)
-9.      ρ_novo ← EOS⁻¹(H)          [H ≤ 0 ⟹ ρ = 0]
+9.      ρ_novo ← EOS⁻¹(H)          [H ≤ 0 => ρ = 0]
 10.     ρ   ← (1−ω) ρ + ω ρ_novo        ω ≈ 0,3
 11. até max|Δρ|/ρc < tol
 ```
@@ -584,12 +584,12 @@ convergir, numa malha grosseira, e grava o resultado num cache em
 | `ρc confirmado` | `ρ[r=0]` pós-convergência | deve bater com o `ρc` de entrada |
 | `ρ média` | `M / volume do elipsoide (R_eq, R_eq, R_pol)` | aproximação geométrica, não integral exata |
 | `W`, `E_int=Π`, `E_mag`, `E_pol`, `E_tor` | §1.7 | `diagnostics.virial_error()`, `magnetic_energies()` |
-| `E_mag/\|W\|` | intensidade de campo adimensional | razão direta (ver âncora de sanidade em §1.7/1.10) |
+| `E_mag/|W|` | intensidade de campo adimensional | razão direta (ver âncora de sanidade em §1.7/1.10) |
 | `B_pol,max`, `B_central`, `B_tor,max` | valores de campo, gauss | máximos/pontuais de `Br`,`Bth`,`Bphi` |
 | `fração de volume do toro` | §1.9 | `toroidal.closed_torus_volume_fraction()` |
 | `VE` | §1.7 | `diagnostics.virial_error()` |
 
-**Convergência**: dois gráficos (`max\|Δρ\|/ρc` e `VE`, ambos por
+**Convergência**: dois gráficos (`max|Δρ|/ρc` e `VE`, ambos por
 iteração, escala log) → `plots.plot_convergence()`, `plots.plot_virial_history()`.
 O histórico de `VE` só existe se `hachisu_scf(..., track_virial=True)` —
 custa integrais extras a cada iteração, por isso é opcional (ver §1.6).
@@ -858,7 +858,7 @@ conta própria (regra G1):
    justificativa teórica documentada — funciona como ponto de partida, não
    como valor calibrado.
 8. **A questão original que motivou toda a investigação do bug de §1.4**
-   — se a razão `(E_mag/\|W\|)/(M_u/H_c) ≈ 0,5` (regime linear) tem uma
+   — se a razão `(E_mag/|W|)/(M_u/H_c) ≈ 0,5` (regime linear) tem uma
    derivação fechada, ou é só o que se observa numericamente nesta EOS e
    nesta faixa de parâmetros — não foi resolvida analiticamente, só
    confirmada como autoconsistente (constante sob `k₀ → 2k₀`).
