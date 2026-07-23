@@ -13,3 +13,7 @@ dashboard/runs/
 dashboard/exports/
 dashboard/k0_range_cache.json
 dashboard/.streamlit/
+docs/*.aux
+docs/*.log
+docs/*.out
+docs/*.toc

@@ -1,5 +1,13 @@
 # Teoria do dashboard `wd-magnetizada`
 
+> Esta é a versão em texto simples (fonte de verdade, boa para `git diff`
+> e leitura no terminal). Para PDF com tipografia de livro (equações reais,
+> não texto verbatim), ver `teoria.tex` — compilar com
+> `xelatex teoria.tex` (duas vezes, para o sumário) — ou abrir `teoria.pdf`
+> já compilado. O conteúdo é o mesmo nos três; `teoria.tex` foi escrito à
+> mão a partir deste arquivo, não gerado automaticamente, então mudanças de
+> conteúdo devem ser replicadas manualmente nos dois.
+
 Este documento explica o que o dashboard calcula: as equações por trás de
 cada número e cada figura, e o código que as implementa. Não é uma
 introdução a física estelar nem ao MHD — pressupõe que o leitor já conhece
