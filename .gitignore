@@ -1,0 +1,11 @@
+amrex/
+castro/
+microphysics/
+scf/.venv/
+scf/__pycache__/
+scf/tests/__pycache__/
+scf/.pytest_cache/
+**/__pycache__/
+runs/
+dashboard/runs/
+*.pyc
