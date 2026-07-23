@@ -44,3 +44,12 @@ def x_of_enthalpy(H, mu_e=2.0):
 def density_of_enthalpy(H, mu_e=2.0):
     """rho(H) = EOS^{-1}(H), com rho=0 para H<0."""
     return density(x_of_enthalpy(H, mu_e), mu_e)
+
+
+def sound_speed(x, mu_e=2.0):
+    """c_s = sqrt(dP/drho). dP/dx = 8A x^4/sqrt(1+x^2) (derivada analitica
+    de pressure(x)); drho/dx = 3B x^2. c_s^2 = (dP/dx)/(drho/dx)."""
+    x = np.asarray(x, dtype=float)
+    B = B_of_mu_e(mu_e)
+    cs2 = (8 * A_CONST / (3 * B)) * x**2 / np.sqrt(1 + x**2)
+    return np.sqrt(cs2)

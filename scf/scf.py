@@ -64,21 +64,27 @@ def total_mass(rho, r, theta):
 
 
 def hachisu_scf(rho, r, theta, rho_c, k0=0.0, mu_e=2.0, lmax=16, tol=1e-8,
-                 max_iter=200, verbose=False):
+                 max_iter=200, verbose=False, track_virial=False):
     """SCF parametrizado por (rho_c, k0) — ver nota de projeto no topo do modulo.
 
     rho: chute inicial (nr, ntheta) — ver initial_guess()
     rho_c: densidade central alvo (g/cm^3), fixa H(r=0) = H(EOS(rho_c))
     k0: amplitude do campo poloidal f(u)=k0 (D6). k0=0 desliga o campo.
     mu_e: peso molecular medio por eletron (Y_e = 1/mu_e)
+    track_virial: se True, calcula o erro virial (diagnostics.virial_error)
+        a cada iteracao e retorna em "ve_history" — custa integrais extras
+        por iteracao, desligado por padrao. Usado pelo dashboard (Aba 1,
+        grafico de convergencia do virial) — mora aqui, nao la, por R1.
 
-    Retorna dict com rho, Phi, u, H, C, iterations, converged, history.
+    Retorna dict com rho, Phi, u, H, C, iterations, converged, history,
+    ve_history (vazio se track_virial=False).
     """
     x_c = (rho_c / B_of_mu_e(mu_e)) ** (1.0 / 3.0)
     H_c = enthalpy(x_c, mu_e)
 
     u = np.zeros_like(rho)
     history = []
+    ve_history = []
     converged = False
     it = 0
     C = 0.0
@@ -101,6 +107,14 @@ def hachisu_scf(rho, r, theta, rho_c, k0=0.0, mu_e=2.0, lmax=16, tol=1e-8,
 
         rel_delta = np.max(np.abs(rho_new - rho)) / rho_c
         history.append(rel_delta)
+
+        if track_virial:
+            import diagnostics as _diag
+            Br, Bth = _diag.poloidal_field(u, r, theta)
+            Bphi_zero = np.zeros_like(Br)
+            VE, _, _, _ = _diag.virial_error(rho_new, Phi, H, Br, Bth, Bphi_zero, r, theta, mu_e)
+            ve_history.append(VE)
+
         rho = rho_new
 
         if verbose:
@@ -111,4 +125,5 @@ def hachisu_scf(rho, r, theta, rho_c, k0=0.0, mu_e=2.0, lmax=16, tol=1e-8,
             break
 
     return {"rho": rho, "Phi": Phi, "u": u, "H": H, "C": C,
-            "iterations": it + 1, "converged": converged, "history": history}
+            "iterations": it + 1, "converged": converged, "history": history,
+            "ve_history": ve_history}

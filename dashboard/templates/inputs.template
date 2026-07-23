@@ -1,0 +1,33 @@
+# Gerado pelo dashboard wd-magnetizada (Aba 3 — exportacao). NAO editar a
+# mao; regenerar a partir do dashboard se algo precisar mudar.
+# Ver plano_wd_magnetizada.md secao 5. Nomes de parametro devem ser
+# conferidos contra o problem setup real do Castro (Exec/science/magnetized_wd)
+# assim que a Fase 0 compilar — este template e' o ponto de partida, nao a
+# palavra final.
+
+max_step  = 1000000
+stop_time = {stop_time:.6e}
+
+geometry.is_periodic = 0 0 0
+geometry.coord_sys   = 0
+geometry.prob_lo     = -{box_half:.6e} -{box_half:.6e} -{box_half:.6e}
+geometry.prob_hi     =  {box_half:.6e}  {box_half:.6e}  {box_half:.6e}
+
+amr.n_cell    = {n_cell} {n_cell} {n_cell}
+amr.max_level = 0
+
+castro.small_dens = {small_dens:.6e}
+
+gravity.gravity_type = PoissonGrav
+
+castro.do_sponge           = 1
+castro.sponge_lower_radius = {sponge_radius:.6e}
+castro.sponge_timescale    = {sponge_timescale:.6e}
+
+# perturbacao de velocidade p/ quebrar a simetria axissimetrica (D3) —
+# semente obrigatoria e registrada (ver run_manifest.json)
+problem.seed               = {seed}
+problem.perturb_amplitude  = {perturb_amplitude:.6e}
+
+# dado inicial (Componente A -> Componente B, ver Aba 3)
+problem.initial_data_file  = {initial_data_file}

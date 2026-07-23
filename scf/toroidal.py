@@ -76,6 +76,19 @@ def bt_bp_ratios(Br, Bth, Bphi, r, theta):
     return ratio_energy, ratio_amplitude
 
 
+def torus_radial_extent(u, rho, r, theta, u_c, j_index=None):
+    """Espessura radial do toro (regiao u>u_c) ao longo de um theta fixo
+    (equador por padrao) — usado na Aba 3 para checar quantas celulas do
+    Castro atravessam o toro."""
+    j = j_index if j_index is not None else len(theta) // 2
+    in_torus = (u[:, j] > u_c) & (rho[:, j] > 0)
+    if not np.any(in_torus):
+        return 0.0, 0.0, 0.0
+    idx = np.nonzero(in_torus)[0]
+    r_inner, r_outer = r[idx[0]], r[idx[-1]]
+    return r_inner, r_outer, r_outer - r_inner
+
+
 def closed_torus_volume_fraction(u, rho, r, theta, u_c):
     """fracao do volume estelar com u > u_c (o toro de linhas fechadas)."""
     inside_star = rho > 0

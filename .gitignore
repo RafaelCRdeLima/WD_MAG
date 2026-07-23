@@ -9,3 +9,7 @@ scf/.pytest_cache/
 runs/
 dashboard/runs/
 *.pyc
+dashboard/runs/
+dashboard/exports/
+dashboard/k0_range_cache.json
+dashboard/.streamlit/

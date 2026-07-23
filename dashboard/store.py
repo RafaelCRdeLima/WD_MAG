@@ -1,0 +1,155 @@
+"""Persistencia e proveniencia do dashboard (regras R2, R3).
+
+Cada execucao vira um diretorio runs/<hash>/:
+    params.json    -- parametros de entrada completos
+    scalars.json   -- escalares derivados (M, R_eq, VE, E_mag/|W|, ...)
+    fields.npz     -- rho, Phi, u, H, Bphi na malha (r,theta), r, theta
+    manifest.json  -- hash de git, versoes de dependencias, timestamp
+
+Mais um indice runs/index.csv para a Aba 4 (registro de corridas) carregar
+rapido sem abrir cada diretorio.
+
+R3: este modulo so' PERSISTE o que o dashboard calculou via scf.*. Ele
+nunca lanca corridas do Castro nem decide fisica.
+"""
+
+import hashlib
+import json
+import subprocess
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+REPO_ROOT = Path(__file__).resolve().parent.parent  # wd-magnetizada/
+DEFAULT_RUNS_DIR = REPO_ROOT / "dashboard" / "runs"
+
+
+def params_hash(params: dict) -> str:
+    """Hash estavel dos parametros — chave de cache e nome do diretorio da corrida."""
+    payload = json.dumps(params, sort_keys=True)
+    return hashlib.sha256(payload.encode()).hexdigest()[:12]
+
+
+def git_commit_hash(path=REPO_ROOT) -> str:
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(path), "rev-parse", "HEAD"],
+            capture_output=True, text=True, timeout=5,
+        )
+        if out.returncode == 0:
+            return out.stdout.strip()
+    except Exception:
+        pass
+    return "sem-git"
+
+
+def git_dirty(path=REPO_ROOT) -> bool:
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(path), "status", "--porcelain"],
+            capture_output=True, text=True, timeout=5,
+        )
+        return bool(out.stdout.strip())
+    except Exception:
+        return True
+
+
+def dependency_versions() -> dict:
+    versions = {"python": sys.version.split()[0]}
+    for mod in ("numpy", "scipy", "streamlit", "plotly", "h5py"):
+        try:
+            versions[mod] = __import__(mod).__version__
+        except Exception:
+            versions[mod] = "nao instalado"
+    return versions
+
+
+def _runs_dir(runs_dir=None) -> Path:
+    d = Path(runs_dir) if runs_dir else DEFAULT_RUNS_DIR
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def run_exists(params: dict, runs_dir=None) -> str | None:
+    """Retorna o hash se ja existe uma corrida com estes parametros, senao None."""
+    h = params_hash(params)
+    return h if (_runs_dir(runs_dir) / h).exists() else None
+
+
+def save_run(params: dict, scalars: dict, fields: dict, runs_dir=None) -> str:
+    """Salva uma execucao completa. fields: dict[str, np.ndarray]. Retorna o hash."""
+    h = params_hash(params)
+    run_dir = _runs_dir(runs_dir) / h
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    with open(run_dir / "params.json", "w") as f:
+        json.dump(params, f, indent=2, sort_keys=True)
+    with open(run_dir / "scalars.json", "w") as f:
+        json.dump(scalars, f, indent=2, sort_keys=True, default=float)
+
+    np.savez_compressed(run_dir / "fields.npz", **fields)
+
+    manifest = {
+        "hash": h,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "git_commit": git_commit_hash(),
+        "git_dirty": git_dirty(),
+        "dependencies": dependency_versions(),
+    }
+    with open(run_dir / "manifest.json", "w") as f:
+        json.dump(manifest, f, indent=2, sort_keys=True)
+
+    _append_index(h, params, scalars, manifest, runs_dir)
+    return h
+
+
+def load_run(run_hash: str, runs_dir=None) -> dict:
+    run_dir = _runs_dir(runs_dir) / run_hash
+    with open(run_dir / "params.json") as f:
+        params = json.load(f)
+    with open(run_dir / "scalars.json") as f:
+        scalars = json.load(f)
+    with open(run_dir / "manifest.json") as f:
+        manifest = json.load(f)
+    fields = dict(np.load(run_dir / "fields.npz"))
+    return {"hash": run_hash, "params": params, "scalars": scalars,
+            "manifest": manifest, "fields": fields}
+
+
+def _index_path(runs_dir=None) -> Path:
+    return _runs_dir(runs_dir) / "index.csv"
+
+
+def _append_index(h, params, scalars, manifest, runs_dir=None):
+    row = {"hash": h, "timestamp": manifest["timestamp"],
+           "git_commit": manifest["git_commit"], "reference": False}
+    row.update({f"param_{k}": v for k, v in params.items()})
+    row.update(scalars)
+
+    index_path = _index_path(runs_dir)
+    if index_path.exists():
+        df = pd.read_csv(index_path)
+        df = df[df["hash"] != h]  # substitui se ja existir (reexecucao)
+        df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
+    else:
+        df = pd.DataFrame([row])
+    df.to_csv(index_path, index=False)
+
+
+def load_index(runs_dir=None) -> pd.DataFrame:
+    index_path = _index_path(runs_dir)
+    if not index_path.exists():
+        return pd.DataFrame()
+    return pd.read_csv(index_path)
+
+
+def mark_reference(run_hash: str, is_reference: bool = True, runs_dir=None):
+    index_path = _index_path(runs_dir)
+    if not index_path.exists():
+        return
+    df = pd.read_csv(index_path)
+    df.loc[df["hash"] == run_hash, "reference"] = is_reference
+    df.to_csv(index_path, index=False)
