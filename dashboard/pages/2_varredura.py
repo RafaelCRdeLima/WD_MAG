@@ -134,7 +134,9 @@ if fail_rows:
 st.subheader("Diagrama M-R")
 fig_mr = px.scatter(df, x="R_eq (km)", y="M/M☉", color="k0",
                      color_continuous_scale="Viridis",
-                     hover_data=["hash", "rho_c", "VE"])
+                     hover_data={"hash": True, "rho_c": ":.3e", "VE": ":.3e",
+                                 "B_pol,max (G)": ":.3e"})
+fig_mr.update_xaxes(title="R_eq (km)")
 fig_mr.add_hline(y=1.44, line_dash="dash", line_color="gray",
                   annotation_text="limite de Chandrasekhar (μₑ=2, sem campo)")
 ref_file = REF_DIR / "bera_bhattacharya_2014.csv"
@@ -150,8 +152,16 @@ event_mr = st.plotly_chart(fig_mr, on_select="rerun", key="mr_chart")
 st.subheader("M vs ρc, colorido por E_mag/|W|")
 fig_m_rhoc = px.scatter(df, x="rho_c", y="M/M☉", color="E_mag/|W|",
                          color_continuous_scale="Inferno", log_x=True,
-                         hover_data=["hash", "k0", "VE"])
+                         hover_data={"hash": True, "k0": ":.3e", "VE": ":.3e",
+                                     "B_pol,max (G)": ":.3e"})
 st.plotly_chart(fig_m_rhoc, key="m_rhoc_chart")
+
+st.subheader("M vs ρc, colorido por B_pol,max (G)")
+fig_m_b = px.scatter(df, x="rho_c", y="M/M☉", color="B_pol,max (G)",
+                      color_continuous_scale="Plasma", log_x=True,
+                      hover_data={"hash": True, "k0": ":.3e", "VE": ":.3e"})
+fig_m_b.update_layout(coloraxis_colorbar=dict(tickformat=".2e", title="B (G)"))
+st.plotly_chart(fig_m_b, key="m_b_chart")
 
 st.subheader("Mapa de calor de VE sobre a grade")
 if len(df["k0"].unique()) > 1 and len(df["rho_c"].unique()) > 1:

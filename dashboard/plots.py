@@ -1,16 +1,30 @@
-"""Funcoes de figura (Aba 1). So' figuras — toda fisica vem de scf.* (regra R1)."""
+"""Funcoes de figura (Aba 1). So' figuras — toda fisica vem de scf.* (regra R1).
+
+Unidades de exibicao (R4): eixos radiais em km, campo em gauss com colorbar
+em notacao cientifica — conversao sempre via units.py, nunca um fator solto
+aqui."""
 
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.ticker import ScalarFormatter
+
+import units
 
 
 def _meridional_grid(r, theta):
+    """varpi, z em KM (nao cm) — malha para os eixos das figuras."""
     R, TH = np.meshgrid(r, theta, indexing="ij")
-    varpi = R * np.sin(TH)
-    z = R * np.cos(TH)
+    varpi = units.cm_to_km(R * np.sin(TH))
+    z = units.cm_to_km(R * np.cos(TH))
     return varpi, z
+
+
+def _gauss_colorbar(fig, pc, ax, label):
+    fmt = ScalarFormatter(useMathText=True)
+    fmt.set_powerlimits((-2, 2))  # forca notacao cientifica
+    return fig.colorbar(pc, ax=ax, label=label, format=fmt)
 
 
 def plot_density(rho, r, theta, H=None):
@@ -24,8 +38,8 @@ def plot_density(rho, r, theta, H=None):
     if H is not None:
         for sign in (1, -1):
             ax.contour(sign * varpi, z, H, levels=[0.0], colors="cyan", linewidths=1.2)
-    ax.set_xlabel(r"$\varpi$ (cm)")
-    ax.set_ylabel(r"$z$ (cm)")
+    ax.set_xlabel(r"$\varpi$ (km)")
+    ax.set_ylabel(r"$z$ (km)")
     ax.set_aspect("equal")
     ax.set_title("Densidade (ciano: H=0)")
     fig.tight_layout()
@@ -43,8 +57,8 @@ def plot_flux_contours(u, r, theta, u_c=None, n_levels=14):
         ax.contour(sign * varpi, z, u, levels=levels, colors="k", linewidths=0.6)
         if u_c is not None and umin < u_c < umax:
             ax.contour(sign * varpi, z, u, levels=[u_c], colors="red", linewidths=1.8)
-    ax.set_xlabel(r"$\varpi$ (cm)")
-    ax.set_ylabel(r"$z$ (cm)")
+    ax.set_xlabel(r"$\varpi$ (km)")
+    ax.set_ylabel(r"$z$ (km)")
     ax.set_aspect("equal")
     title = "Linhas de campo poloidal"
     if u_c is not None:
@@ -64,9 +78,9 @@ def plot_toroidal(Bphi, r, theta):
     for sign in (1, -1):
         pc = ax.pcolormesh(sign * varpi, z, Bphi, shading="auto", cmap="RdBu_r",
                             vmin=-vmax, vmax=vmax)
-    fig.colorbar(pc, ax=ax, label=r"$B_\phi$ (G)")
-    ax.set_xlabel(r"$\varpi$ (cm)")
-    ax.set_ylabel(r"$z$ (cm)")
+    _gauss_colorbar(fig, pc, ax, r"$B_\phi$ (G)")
+    ax.set_xlabel(r"$\varpi$ (km)")
+    ax.set_ylabel(r"$z$ (km)")
     ax.set_aspect("equal")
     ax.set_title("Campo toroidal")
     fig.tight_layout()

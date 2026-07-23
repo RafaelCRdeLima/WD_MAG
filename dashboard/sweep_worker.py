@@ -7,9 +7,11 @@ So' chama scf.* — toda fisica mora la (R1)."""
 import sys
 from pathlib import Path
 
-_SCF_DIR = Path(__file__).resolve().parent.parent / "scf"
-if str(_SCF_DIR) not in sys.path:
-    sys.path.insert(0, str(_SCF_DIR))
+_DASHBOARD_DIR = Path(__file__).resolve().parent
+_SCF_DIR = _DASHBOARD_DIR.parent / "scf"
+for _p in (str(_SCF_DIR), str(_DASHBOARD_DIR)):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 
 def run_one(params: dict) -> dict:
@@ -18,6 +20,7 @@ def run_one(params: dict) -> dict:
     import numpy as np
     import scf as scf_mod
     import diagnostics as diag
+    import units
 
     rho_c = params["rho_c"]
     k0 = params["k0"]
@@ -45,14 +48,16 @@ def run_one(params: dict) -> dict:
     M = scf_mod.total_mass(rho, r, theta)
     R_eq, R_pol = diag.equatorial_polar_radii(rho, r, theta)
 
+    B_pol_max = np.max(np.sqrt(Br**2 + Bth**2))
     scalars = {
-        "M/M☉": M / 1.989e33,
-        "R_eq (km)": R_eq / 1.0e5,
-        "R_pol (km)": R_pol / 1.0e5,
+        "M/M☉": units.g_to_msun(M),
+        "R_eq (km)": units.cm_to_km(R_eq),
+        "R_pol (km)": units.cm_to_km(R_pol),
         "R_pol/R_eq": R_pol / R_eq if R_eq > 0 else float("nan"),
         "W (erg)": W,
         "E_mag (erg)": E_mag,
         "E_mag/|W|": E_mag / abs(W) if W != 0 else float("nan"),
+        "B_pol,max (G)": B_pol_max,
         "VE": VE,
     }
     fields = {"rho": rho, "Phi": Phi, "u": u, "H": H, "Bphi": Bphi, "r": r, "theta": theta}

@@ -228,8 +228,24 @@ scalars_display = {
     "fração de volume do toro": frac_torus,
     "VE": VE,
 }
+
+
+def _format_scalar(key, value):
+    """Regra de formatacao (R4): campo em gauss -> notacao cientifica; raios
+    em km -> casas decimais fixas; resto -> notacao cientifica generica.
+    Valores em scalars_display ja estao nas unidades de exibicao (km, G) —
+    aqui so' decide a STRING, via units.py (ponto unico de verdade)."""
+    if not isinstance(value, (int, float, np.floating)):
+        return value
+    if key.endswith("(G)"):
+        return units.format_gauss(value)
+    if key.endswith("(km)"):
+        return units.format_km_value(value)
+    return f"{value:.4e}"
+
+
 st.table({"quantidade": list(scalars_display.keys()),
-          "valor": [f"{v:.4e}" if isinstance(v, float) else v for v in scalars_display.values()]})
+          "valor": [_format_scalar(k, v) for k, v in scalars_display.items()]})
 
 st.subheader("Bt/Bp — duas definições")
 ratio_energy, ratio_amp = tor.bt_bp_ratios(Br, Bth, Bphi, r, theta)

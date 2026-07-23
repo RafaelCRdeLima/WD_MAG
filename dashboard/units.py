@@ -52,3 +52,27 @@ def alfven_speed(B_gauss_mean, rho_mean):
 def alfven_time(R_cm, v_alfven_cms):
     """t_Alfven = R / v_A."""
     return R_cm / v_alfven_cms
+
+
+# ---------------------------------------------------------------------------
+# Formatacao de exibicao — regra de projeto: campo em gauss sempre em notacao
+# cientifica, raios em km sempre com 1-2 casas decimais. Ponto unico de
+# verdade tanto para o NUMERO quanto para a STRING exibida, para nenhuma
+# pagina inventar sua propria formatacao.
+# ---------------------------------------------------------------------------
+
+def format_gauss(B_gauss, sig=3):
+    """Campo em gauss, notacao cientifica (ex: 7.98e+13 G)."""
+    return f"{B_gauss:.{sig}e} G"
+
+
+def format_km(x_cm, decimals=2):
+    """Raio (ja em cm) exibido em km, com casas decimais fixas — converte E formata."""
+    return f"{cm_to_km(x_cm):.{decimals}f} km"
+
+
+def format_km_value(x_km, decimals=2):
+    """Formata um valor JA convertido para km (nao converte de novo) — para
+    paginas que guardam o escalar em km desde o calculo (Abas 1/2/4, para
+    ficarem consistentes com o que vai pro indice/registro)."""
+    return f"{x_km:.{decimals}f} km"
