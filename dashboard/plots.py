@@ -1,8 +1,8 @@
-"""Funcoes de figura (Aba 1). So' figuras — toda fisica vem de scf.* (regra R1).
+"""Figure functions (Tab 1). Figures only — all physics comes from scf.* (rule R1).
 
-Unidades de exibicao (R4): eixos radiais em km, campo em gauss com colorbar
-em notacao cientifica — conversao sempre via units.py, nunca um fator solto
-aqui."""
+Display units (R4): radial axes in km, field in gauss with colorbar in
+scientific notation — conversion always via units.py, never a loose factor
+here."""
 
 import numpy as np
 import matplotlib
@@ -14,7 +14,7 @@ import units
 
 
 def _meridional_grid(r, theta):
-    """varpi, z em KM (nao cm) — malha para os eixos das figuras."""
+    """varpi, z in KM (not cm) — grid for the figure axes."""
     R, TH = np.meshgrid(r, theta, indexing="ij")
     varpi = units.cm_to_km(R * np.sin(TH))
     z = units.cm_to_km(R * np.cos(TH))
@@ -23,12 +23,12 @@ def _meridional_grid(r, theta):
 
 def _gauss_colorbar(fig, pc, ax, label):
     fmt = ScalarFormatter(useMathText=True)
-    fmt.set_powerlimits((-2, 2))  # forca notacao cientifica
+    fmt.set_powerlimits((-2, 2))  # force scientific notation
     return fig.colorbar(pc, ax=ax, label=label, format=fmt)
 
 
 def plot_density(rho, r, theta, H=None):
-    """Mapa de cor de rho no plano meridional, com a fronteira H=0 destacada."""
+    """Color map of rho in the meridional plane, with the H=0 boundary highlighted."""
     varpi, z = _meridional_grid(r, theta)
     fig, ax = plt.subplots(figsize=(4.5, 5.5))
     pc = None
@@ -41,14 +41,14 @@ def plot_density(rho, r, theta, H=None):
     ax.set_xlabel(r"$\varpi$ (km)")
     ax.set_ylabel(r"$z$ (km)")
     ax.set_aspect("equal")
-    ax.set_title("Densidade (ciano: H=0)")
+    ax.set_title("Density (cyan: H=0)")
     fig.tight_layout()
     return fig
 
 
 def plot_flux_contours(u, r, theta, u_c=None, n_levels=14):
-    """Contornos de u=omega*A_phi — linhas de campo poloidal — com a ultima
-    linha fechada (u_c) destacada, se fornecida."""
+    """Contours of u=omega*A_phi — poloidal field lines — with the last
+    closed line (u_c) highlighted, if provided."""
     varpi, z = _meridional_grid(r, theta)
     fig, ax = plt.subplots(figsize=(4.5, 5.5))
     umin, umax = np.min(u), np.max(u)
@@ -60,16 +60,16 @@ def plot_flux_contours(u, r, theta, u_c=None, n_levels=14):
     ax.set_xlabel(r"$\varpi$ (km)")
     ax.set_ylabel(r"$z$ (km)")
     ax.set_aspect("equal")
-    title = "Linhas de campo poloidal"
+    title = "Poloidal field lines"
     if u_c is not None:
-        title += " (vermelho: última linha fechada, $u_c$)"
+        title += " (red: last closed line, $u_c$)"
     ax.set_title(title)
     fig.tight_layout()
     return fig
 
 
 def plot_toroidal(Bphi, r, theta):
-    """Mapa de cor de B_phi — mostra o toro."""
+    """Color map of B_phi — shows the torus."""
     varpi, z = _meridional_grid(r, theta)
     fig, ax = plt.subplots(figsize=(4.5, 5.5))
     vmax = np.max(np.abs(Bphi))
@@ -82,7 +82,7 @@ def plot_toroidal(Bphi, r, theta):
     ax.set_xlabel(r"$\varpi$ (km)")
     ax.set_ylabel(r"$z$ (km)")
     ax.set_aspect("equal")
-    ax.set_title("Campo toroidal")
+    ax.set_title("Toroidal field")
     fig.tight_layout()
     return fig
 
@@ -90,10 +90,10 @@ def plot_toroidal(Bphi, r, theta):
 def plot_convergence(history):
     fig, ax = plt.subplots(figsize=(5, 3))
     ax.semilogy(history, marker=".")
-    ax.axhline(1e-6, color="gray", linestyle="--", linewidth=0.8, label="tol padrão")
-    ax.set_xlabel("iteração")
+    ax.axhline(1e-6, color="gray", linestyle="--", linewidth=0.8, label="default tol")
+    ax.set_xlabel("iteration")
     ax.set_ylabel(r"max|$\Delta\rho$|/$\rho_c$")
-    ax.set_title("Convergência do SCF")
+    ax.set_title("SCF convergence")
     ax.legend()
     fig.tight_layout()
     return fig
@@ -102,10 +102,10 @@ def plot_convergence(history):
 def plot_virial_history(ve_history):
     fig, ax = plt.subplots(figsize=(5, 3))
     ax.semilogy(ve_history, marker=".", color="darkred")
-    ax.axhline(1e-3, color="gray", linestyle="--", linewidth=0.8, label="limite V3 (1e-3)")
-    ax.set_xlabel("iteração")
-    ax.set_ylabel("erro virial (VE)")
-    ax.set_title("Erro virial por iteração")
+    ax.axhline(1e-3, color="gray", linestyle="--", linewidth=0.8, label="V3 limit (1e-3)")
+    ax.set_xlabel("iteration")
+    ax.set_ylabel("virial error (VE)")
+    ax.set_title("Virial error per iteration")
     ax.legend()
     fig.tight_layout()
     return fig

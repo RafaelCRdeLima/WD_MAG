@@ -1,4 +1,4 @@
-"""Smoke test de store.py: salvar, achar no cache, recarregar, indexar."""
+"""Smoke test for store.py: save, find in cache, reload, index."""
 
 import numpy as np
 import sys

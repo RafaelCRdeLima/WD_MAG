@@ -1,16 +1,16 @@
-"""Persistencia e proveniencia do dashboard (regras R2, R3).
+"""Persistence and provenance for the dashboard (rules R2, R3).
 
-Cada execucao vira um diretorio runs/<hash>/:
-    params.json    -- parametros de entrada completos
-    scalars.json   -- escalares derivados (M, R_eq, VE, E_mag/|W|, ...)
-    fields.npz     -- rho, Phi, u, H, Bphi na malha (r,theta), r, theta
-    manifest.json  -- hash de git, versoes de dependencias, timestamp
+Each run becomes a directory runs/<hash>/:
+    params.json    -- complete input parameters
+    scalars.json   -- derived scalars (M, R_eq, VE, E_mag/|W|, ...)
+    fields.npz     -- rho, Phi, u, H, Bphi on the (r,theta) grid, r, theta
+    manifest.json  -- git hash, dependency versions, timestamp
 
-Mais um indice runs/index.csv para a Aba 4 (registro de corridas) carregar
-rapido sem abrir cada diretorio.
+Plus an index runs/index.csv so Tab 4 (run registry) can load quickly
+without opening every directory.
 
-R3: este modulo so' PERSISTE o que o dashboard calculou via scf.*. Ele
-nunca lanca corridas do Castro nem decide fisica.
+R3: this module only PERSISTS what the dashboard computed via scf.*. It
+never launches Castro runs nor decides physics.
 """
 
 import hashlib
@@ -28,7 +28,7 @@ DEFAULT_RUNS_DIR = REPO_ROOT / "dashboard" / "runs"
 
 
 def params_hash(params: dict) -> str:
-    """Hash estavel dos parametros — chave de cache e nome do diretorio da corrida."""
+    """Stable hash of the parameters — cache key and run directory name."""
     payload = json.dumps(params, sort_keys=True)
     return hashlib.sha256(payload.encode()).hexdigest()[:12]
 
@@ -43,7 +43,7 @@ def git_commit_hash(path=REPO_ROOT) -> str:
             return out.stdout.strip()
     except Exception:
         pass
-    return "sem-git"
+    return "no-git"
 
 
 def git_dirty(path=REPO_ROOT) -> bool:
@@ -63,7 +63,7 @@ def dependency_versions() -> dict:
         try:
             versions[mod] = __import__(mod).__version__
         except Exception:
-            versions[mod] = "nao instalado"
+            versions[mod] = "not installed"
     return versions
 
 
@@ -74,13 +74,13 @@ def _runs_dir(runs_dir=None) -> Path:
 
 
 def run_exists(params: dict, runs_dir=None) -> str | None:
-    """Retorna o hash se ja existe uma corrida com estes parametros, senao None."""
+    """Returns the hash if a run with these parameters already exists, else None."""
     h = params_hash(params)
     return h if (_runs_dir(runs_dir) / h).exists() else None
 
 
 def save_run(params: dict, scalars: dict, fields: dict, runs_dir=None) -> str:
-    """Salva uma execucao completa. fields: dict[str, np.ndarray]. Retorna o hash."""
+    """Saves a complete run. fields: dict[str, np.ndarray]. Returns the hash."""
     h = params_hash(params)
     run_dir = _runs_dir(runs_dir) / h
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -132,7 +132,7 @@ def _append_index(h, params, scalars, manifest, runs_dir=None):
     index_path = _index_path(runs_dir)
     if index_path.exists():
         df = pd.read_csv(index_path)
-        df = df[df["hash"] != h]  # substitui se ja existir (reexecucao)
+        df = df[df["hash"] != h]  # replace if it already exists (re-run)
         df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
     else:
         df = pd.DataFrame([row])

@@ -1,29 +1,30 @@
-"""Dashboard de controle do SCF magnetizado. Uso: streamlit run dashboard/app.py"""
+"""Control dashboard for the magnetized SCF. Usage: streamlit run dashboard/app.py"""
 
 import streamlit as st
 
 st.set_page_config(page_title="wd-magnetizada — SCF", layout="wide")
 
-st.title("Anã branca magnetizada — painel de controle do SCF")
+st.title("Magnetized white dwarf — SCF control panel")
 st.markdown(
     """
-Use o menu lateral para navegar entre as abas:
+Use the sidebar menu to navigate between tabs:
 
-- **Equilíbrio** — execução única do SCF, inspeção de um ponto (ρc, k0)
-- **Varredura** — grade de parâmetros, diagrama M-R
-- **Exportação** — gera dado inicial (HDF5) e `inputs` do Castro
-- **Registro** — histórico de corridas, comparação, referências
+- **Equilibrium** — single SCF run, inspect one point (rho_c, k0)
+- **Sweep** — parameter grid, M-R diagram
+- **Export** — generates initial data (HDF5) and Castro `inputs`
+- **Runs** — run history, comparison, references
 
-Toda a física vem de `scf.*` (`eos`, `poisson`, `gradshafranov`, `scf`,
-`diagnostics`, `toroidal`) — este dashboard só explora, persiste e exporta.
-Ver `plano_wd_magnetizada.md` para o plano completo e as decisões de projeto.
+All physics comes from `scf.*` (`eos`, `poisson`, `gradshafranov`, `scf`,
+`diagnostics`, `toroidal`) — this dashboard only explores, persists, and
+exports. See `plano_wd_magnetizada.md` for the full plan and project
+decisions.
 """
 )
 
 st.info(
-    "Nota de projeto: a receita original do plano (fixar a constante de "
-    "Bernoulli via H=0 na superfície) mostrou-se instável para esta EOS "
-    "perto do limite de Chandrasekhar. O SCF aqui usa a parametrização "
-    "(ρc, k0) — densidade central e amplitude do campo, como duas entradas "
-    "independentes — que é estável e validada. Ver scf/scf.py."
+    "Project note: the plan's original recipe (fixing the Bernoulli "
+    "constant via H=0 at the surface) turned out to be unstable for this "
+    "EOS near the Chandrasekhar limit. The SCF here uses the (rho_c, k0) "
+    "parametrization — central density and field amplitude, as two "
+    "independent inputs — which is stable and validated. See scf/scf.py."
 )

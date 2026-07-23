@@ -1,4 +1,4 @@
-"""Aba 4 — Registro de corridas: tabela, comparacao, recarregar, marcar referencia."""
+"""Tab 4 — Run registry: table, comparison, reload, mark as reference."""
 
 import sys
 from pathlib import Path
@@ -11,19 +11,20 @@ sys.path.insert(0, str(_DASHBOARD_DIR))
 import store
 import units
 
-st.set_page_config(page_title="Registro — wd-magnetizada", layout="wide")
-st.title("Aba 4 — Registro de corridas")
+st.set_page_config(page_title="Runs — wd-magnetizada", layout="wide")
+st.title("Tab 4 — Run registry")
 
 idx = store.load_index()
 if idx.empty:
-    st.info("Nenhuma corrida salva ainda. Vá para a Aba 1, rode um equilíbrio e clique "
-            "em \"salvar esta corrida\".")
+    st.info("No runs saved yet. Go to Tab 1, run an equilibrium, and click "
+            "\"save this run\".")
     st.stop()
 
-st.subheader(f"{len(idx)} corrida(s)")
-# R4: campo em gauss (notacao cientifica), raios em km (2 casas) — as colunas
-# ja guardam os valores nessas unidades (Aba 1/2); aqui so' formata a exibicao.
-_column_config = {"reference": st.column_config.CheckboxColumn("referência")}
+st.subheader(f"{len(idx)} run(s)")
+# R4: field in gauss (scientific notation), radii in km (2 decimals) — the
+# columns already store the values in those units (Tab 1/2); this only
+# formats the display.
+_column_config = {"reference": st.column_config.CheckboxColumn("reference")}
 for col in idx.columns:
     if col.endswith("(G)"):
         _column_config[col] = st.column_config.NumberColumn(col, format="%.3e")
@@ -44,18 +45,18 @@ if not edited["reference"].equals(idx["reference"]):
     st.rerun()
 
 st.divider()
-st.subheader("Comparação lado a lado")
+st.subheader("Side-by-side comparison")
 hashes = idx["hash"].tolist()
 c1, c2 = st.columns(2)
-h1 = c1.selectbox("corrida A", hashes, index=0)
-h2 = c2.selectbox("corrida B", hashes, index=min(1, len(hashes) - 1))
+h1 = c1.selectbox("run A", hashes, index=0)
+h2 = c2.selectbox("run B", hashes, index=min(1, len(hashes) - 1))
 
 run1 = store.load_run(h1)
 run2 = store.load_run(h2)
 
 
 def _format_scalars(scalars: dict) -> dict:
-    """Mesma regra R4 da Aba 1: gauss em notacao cientifica, km com 2 casas."""
+    """Same R4 rule as Tab 1: gauss in scientific notation, km with 2 decimals."""
     out = {}
     for k, v in scalars.items():
         if not isinstance(v, (int, float)):
@@ -74,13 +75,13 @@ with comp_col1:
     st.markdown(f"**{h1}**")
     st.json(run1["params"])
     st.json(_format_scalars(run1["scalars"]))
-    if st.button("recarregar A na Aba 1", key="reload_a"):
+    if st.button("reload A in Tab 1", key="reload_a"):
         st.session_state["reload_run_params"] = run1["params"]
-        st.switch_page("pages/1_equilibrio.py")
+        st.switch_page("pages/1_equilibrium.py")
 with comp_col2:
     st.markdown(f"**{h2}**")
     st.json(run2["params"])
     st.json(_format_scalars(run2["scalars"]))
-    if st.button("recarregar B na Aba 1", key="reload_b"):
+    if st.button("reload B in Tab 1", key="reload_b"):
         st.session_state["reload_run_params"] = run2["params"]
-        st.switch_page("pages/1_equilibrio.py")
+        st.switch_page("pages/1_equilibrium.py")

@@ -1,8 +1,8 @@
-"""Funcao de trabalho para a varredura (Aba 2), roda em processos separados
-via ProcessPoolExecutor. Precisa estar num modulo importavel (nao dentro do
-script da pagina Streamlit) para ser picklable pelo multiprocessing.
+"""Worker function for the sweep (Tab 2), runs in separate processes via
+ProcessPoolExecutor. Needs to live in an importable module (not inside the
+Streamlit page script) to be picklable by multiprocessing.
 
-So' chama scf.* — toda fisica mora la (R1)."""
+Only calls scf.* — all physics lives there (R1)."""
 
 import sys
 from pathlib import Path
@@ -15,8 +15,8 @@ for _p in (str(_SCF_DIR), str(_DASHBOARD_DIR)):
 
 
 def run_one(params: dict) -> dict:
-    """Roda um SCF para (rho_c, k0) e retorna escalares + campos (para salvar
-    com store.save_run). Nao converge -> retorna converged=False, sem campos."""
+    """Runs one SCF for (rho_c, k0) and returns scalars + fields (to save
+    with store.save_run). Does not converge -> returns converged=False, no fields."""
     import numpy as np
     import scf as scf_mod
     import diagnostics as diag
@@ -50,7 +50,7 @@ def run_one(params: dict) -> dict:
 
     B_pol_max = np.max(np.sqrt(Br**2 + Bth**2))
     scalars = {
-        "M/M☉": units.g_to_msun(M),
+        "M/M_sun": units.g_to_msun(M),
         "R_eq (km)": units.cm_to_km(R_eq),
         "R_pol (km)": units.cm_to_km(R_pol),
         "R_pol/R_eq": R_pol / R_eq if R_eq > 0 else float("nan"),

@@ -1,6 +1,6 @@
 \documentclass[11pt,a4paper]{scrartcl}
 
-% ---------- fontes ----------
+% ---------- fonts ----------
 \usepackage{fontspec}
 \usepackage{unicode-math}
 \setmainfont{Latin Modern Roman}
@@ -9,7 +9,7 @@
 \setmathfont{Latin Modern Math}
 
 \usepackage{polyglossia}
-\setmainlanguage{portuguese}
+\setmainlanguage{english}
 
 \usepackage{microtype}
 \usepackage[a4paper,margin=2.6cm]{geometry}
@@ -39,7 +39,7 @@
 
 \usepackage{hyperref}
 \hypersetup{colorlinks=true, linkcolor=linkblue, urlcolor=linkblue,
-  citecolor=linkblue, linktoc=all, pdftitle={Teoria do dashboard wd-magnetizada},
+  citecolor=linkblue, linktoc=all, pdftitle={Theory of the wd-magnetizada dashboard},
   pdfauthor={wd-magnetizada}}
 
 \usepackage{titlesec}
@@ -61,14 +61,14 @@
   \par\vspace{2pt}\noindent{\color{linkblue}$\rightarrow$}~\texttt{\small #1}\par\vspace{2pt}}
 \newcommand{\musun}{\ensuremath{M_\odot}}
 
-% código real (nomes de módulo/função), sempre monoespaçado
+% real code (module/function names), always monospaced
 \newcommand{\code}[1]{\texttt{\small #1}}
 
 \setlength{\parskip}{0.4em}
 \setlength{\parindent}{0pt}
 
-\title{\Huge Teoria do dashboard \texttt{wd-magnetizada}}
-\subtitle{O que cada aba calcula: equações, código e as decisões que custaram caro}
+\title{\Huge Theory of the \texttt{wd-magnetizada} dashboard}
+\subtitle{What each tab computes: equations, code, and the decisions that cost real time}
 \author{}
 \date{\today}
 
@@ -77,157 +77,159 @@
 \begin{titlepage}
 \centering
 \vspace*{4cm}
-{\Huge\bfseries Teoria do dashboard\par}
+{\Huge\bfseries Theory of the dashboard\par}
 \vspace{0.3cm}
 {\Huge\bfseries \texttt{wd-magnetizada}\par}
 \vspace{1.2cm}
-{\Large O que cada aba calcula: equações, código\par e as decisões que custaram caro\par}
+{\Large What each tab computes: equations, code\par and the decisions that cost real time\par}
 \vspace{2.5cm}
 {\large \today\par}
 \vfill
-{\small Anã branca com campo magnético interior misto (poloidal + toroidal)\par
-Documento de referência técnica --- não é introdução a física estelar nem a MHD\par}
+{\small Magnetized white dwarf with a mixed interior field (poloidal + toroidal)\par
+Technical reference document --- not an introduction to stellar physics or MHD\par}
 \vspace{1cm}
 \end{titlepage}
 
 \tableofcontents
 \newpage
 
-Este documento explica o que o dashboard calcula: as equações por trás de
-cada número e cada figura, e o código que as implementa. Não é uma
-introdução a física estelar nem ao MHD --- pressupõe que o leitor já
-conhece isso. O que este documento faz é a ponte entre a teoria
-(seção~\ref{sec:nucleo}) e o código real (\code{scf/}, \code{dashboard/}).
+This document explains what the dashboard computes: the equations behind
+each number and each figure, and the code that implements them. It is not
+an introduction to stellar physics or MHD --- it assumes the reader
+already knows that. What this document does is bridge the theory
+(section~\ref{sec:nucleo}) and the real code (\code{scf/}, \code{dashboard/}).
 
-Ver \code{plano\_wd\_magnetizada.md} para o plano de projeto completo
-(decisões D1--D6, arquitetura, fases). Este documento é sobre a \emph{física
-implementada}, não sobre o plano de trabalho.
+See \code{plano\_wd\_magnetizada.md} for the full project plan
+(decisions D1--D6, architecture, phases). This document is about the
+\emph{implemented physics}, not the work plan.
 
-\section*{Tabela de símbolos e unidades}
-\addcontentsline{toc}{section}{Tabela de símbolos e unidades}
+\section*{Table of symbols and units}
+\addcontentsline{toc}{section}{Table of symbols and units}
 
 \begingroup
 \small
 \begin{longtable}{@{}p{2.1cm}p{4.6cm}p{2.6cm}p{4.4cm}@{}}
 \toprule
-\textbf{Símbolo} & \textbf{Significado} & \textbf{Unidade (CGS)} & \textbf{Nome no código}\\
+\textbf{Symbol} & \textbf{Meaning} & \textbf{Unit (CGS)} & \textbf{Name in code}\\
 \midrule
 \endhead
-$r,\ \theta$ & coordenadas esféricas & cm, rad & \code{r}, \code{theta}\\
-$\varpi$ & raio cilíndrico, $\varpi = r\sin\theta$ & cm & \code{omega} (ver nota)\\
-$z$ & altura, $z = r\cos\theta$ & cm & \code{z} (só em \code{plots.py})\\
-$\rho$ & densidade de massa & g\,cm$^{-3}$ & \code{rho}\\
-$x$ & momento de Fermi normalizado, $x=p_F/(m_ec)$ & adimensional & \code{x}\\
-$P$ & pressão & dyn\,cm$^{-2}$ & \code{pressure(x)}\\
-$H$ & entalpia específica & erg\,g$^{-1}$ & \code{H}\\
-$\Phi$ & potencial gravitacional & erg\,g$^{-1}$ & \code{Phi}\\
-$A_\varphi$ & componente $\varphi$ do potencial vetor & G\,cm & \code{A\_phi}\\
-$u$ & função de fluxo, $u=\varpi A_\varphi$ & G\,cm$^3$ & \code{u}\\
-$B_r$, $B_\theta$, $B_\varphi$ & componentes do campo magnético & G (gauss) & \code{Br}, \code{Bth}/\code{Btheta}, \code{Bphi}\\
-$f(u)$ & função de corrente poloidal, $f(u)=k_0$ & g$^{-1/2}$cm$^{1/2}$s$^{-1}$ & \code{k0}\\
-$M(u)$ & potencial de Bernoulli do poloidal & erg\,g$^{-1}$ & \code{M\_u} (local em \code{scf.py})\\
-$\beta(u)$ & função de corrente toroidal, $\beta=\varpi B_\varphi$ & G\,cm & não calculada à parte\\
-$\zeta$ & amplitude do toroidal imposto & --- & \code{zeta}\\
-$m$ & expoente do toroidal imposto & inteiro $\ge1$ & \code{m\_tor}\\
-$u_c$ & valor de $u$ na última linha fechada & G\,cm$^3$ & \code{u\_c}\\
-$C$ & constante de Bernoulli & erg\,g$^{-1}$ & \code{C}\\
-$\rho_c$ & densidade central (parâmetro de entrada) & g\,cm$^{-3}$ & \code{rho\_c}\\
-$\mu_e$ & peso molecular médio por elétron, $Y_e=1/\mu_e$ & adimensional & \code{mu\_e}\\
-$M$ & massa total da estrela & g (exibido em \musun) & \code{M} (colide com $M(u)$ --- ver nota)\\
-$R_{eq}$, $R_{pol}$ & raios equatorial e polar (onde $H=0$) & cm (exibido em km) & \code{R\_eq}, \code{R\_pol}\\
-$W$ & energia gravitacional & erg & \code{W}\\
-$\Pi$ & energia interna, $\int P\,dV$ & erg & \code{Pi}\\
-$E_{pol}$, $E_{tor}$, $\mathcal{M}$ & energias magnéticas & erg & \code{E\_pol}, \code{E\_tor}, \code{E\_mag}\\
-$\mathrm{VE}$ & erro virial & adimensional & \code{VE}\\
-$G$ & constante gravitacional & $6{,}674\times10^{-8}$ cgs & \code{G\_CONST}\\
-$A$, $B$ & constantes da EOS & ver \S\ref{sec:eos} & \code{A\_CONST}, \code{B\_of\_mu\_e()}\\
-$l$ & grau da expansão de Legendre & inteiro $\ge0$/$\ge1$ & \code{l}\\
-$t_{din}$, $v_A$, $t_{Alf}$ & escalas derivadas & s, cm/s, s & \code{t\_din}, \code{v\_A}, \code{t\_alf}\\
+$r,\ \theta$ & spherical coordinates & cm, rad & \code{r}, \code{theta}\\
+$\varpi$ & cylindrical radius, $\varpi = r\sin\theta$ & cm & \code{omega} (see note)\\
+$z$ & height, $z = r\cos\theta$ & cm & \code{z} (only in \code{plots.py})\\
+$\rho$ & mass density & g\,cm$^{-3}$ & \code{rho}\\
+$x$ & normalized Fermi momentum, $x=p_F/(m_ec)$ & dimensionless & \code{x}\\
+$P$ & pressure & dyn\,cm$^{-2}$ & \code{pressure(x)}\\
+$H$ & specific enthalpy & erg\,g$^{-1}$ & \code{H}\\
+$\Phi$ & gravitational potential & erg\,g$^{-1}$ & \code{Phi}\\
+$A_\varphi$ & $\varphi$ component of the vector potential & G\,cm & \code{A\_phi}\\
+$u$ & flux function, $u=\varpi A_\varphi$ & G\,cm$^3$ & \code{u}\\
+$B_r$, $B_\theta$, $B_\varphi$ & magnetic field components & G (gauss) & \code{Br}, \code{Bth}/\code{Btheta}, \code{Bphi}\\
+$f(u)$ & poloidal current function, $f(u)=k_0$ & g$^{-1/2}$cm$^{1/2}$s$^{-1}$ & \code{k0}\\
+$M(u)$ & poloidal Bernoulli potential & erg\,g$^{-1}$ & \code{M\_u} (local in \code{scf.py})\\
+$\beta(u)$ & toroidal current function, $\beta=\varpi B_\varphi$ & G\,cm & not computed separately\\
+$\zeta$ & amplitude of the imposed toroidal field & --- & \code{zeta}\\
+$m$ & exponent of the imposed toroidal field & integer $\ge1$ & \code{m\_tor}\\
+$u_c$ & value of $u$ on the last closed line & G\,cm$^3$ & \code{u\_c}\\
+$C$ & Bernoulli constant & erg\,g$^{-1}$ & \code{C}\\
+$\rho_c$ & central density (input parameter) & g\,cm$^{-3}$ & \code{rho\_c}\\
+$\mu_e$ & mean molecular weight per electron, $Y_e=1/\mu_e$ & dimensionless & \code{mu\_e}\\
+$M$ & total stellar mass & g (displayed in \musun) & \code{M} (collides with $M(u)$ --- see note)\\
+$R_{eq}$, $R_{pol}$ & equatorial and polar radii (where $H=0$) & cm (displayed in km) & \code{R\_eq}, \code{R\_pol}\\
+$W$ & gravitational energy & erg & \code{W}\\
+$\Pi$ & internal energy, $\int P\,dV$ & erg & \code{Pi}\\
+$E_{pol}$, $E_{tor}$, $\mathcal{M}$ & magnetic energies & erg & \code{E\_pol}, \code{E\_tor}, \code{E\_mag}\\
+$\mathrm{VE}$ & virial error & dimensionless & \code{VE}\\
+$G$ & gravitational constant & $6.674\times10^{-8}$ cgs & \code{G\_CONST}\\
+$A$, $B$ & EOS constants & see \S\ref{sec:eos} & \code{A\_CONST}, \code{B\_of\_mu\_e()}\\
+$l$ & degree of the Legendre expansion & integer $\ge0$/$\ge1$ & \code{l}\\
+$t_{dyn}$, $v_A$, $t_{Alf}$ & derived scales & s, cm/s, s & \code{t\_dyn}, \code{v\_A}, \code{t\_alf}\\
 \bottomrule
 \end{longtable}
 \endgroup
 
-\textbf{Notas de notação:}
+\textbf{Notation notes:}
 \begin{itemize}[leftmargin=1.4em,itemsep=0.3em]
-\item O código usa a variável \code{omega} para $\varpi$ (raio cilíndrico),
-  \textbf{não} para velocidade angular --- não há rotação neste projeto (D3,
-  estrela estática). É uma escolha de nome específica deste código; se ler
-  \code{omega} em \code{scf.py}/\code{gradshafranov.py}, é sempre
-  $\varpi=r\sin\theta$.
-\item $M$ é usado na espinha teórica para dois objetos diferentes: a massa
-  estelar total e o potencial $M(u)$ do Bernoulli (\S\ref{sec:bernoulli}). O
-  código resolve a colisão nomeando a massa \code{M} (retornada por
-  \code{scf.total\_mass()}) e o potencial \code{M\_u} (variável local dentro
-  de \code{hachisu\_scf()}, nunca exposta fora da função). Neste documento,
-  sempre que houver risco de ambiguidade, o texto diz ``massa'' ou
-  ``potencial de Bernoulli'' por extenso.
-\item \code{Bth} aparece como \code{Btheta} em \code{diagnostics.py}
-  (parâmetro da função) e \code{Bth} nas páginas do dashboard (variável
-  local) --- mesmo objeto, dois nomes.
+\item The code uses the variable \code{omega} for $\varpi$ (cylindrical
+  radius), \textbf{not} for angular velocity --- there is no rotation in
+  this project (D3, static star). It is a naming choice specific to this
+  code; whenever you read \code{omega} in \code{scf.py}/\code{gradshafranov.py},
+  it always means $\varpi=r\sin\theta$.
+\item $M$ is used in the source theory for two different objects: the
+  total stellar mass and the Bernoulli potential $M(u)$
+  (\S\ref{sec:bernoulli}). The code resolves the collision by naming the
+  mass \code{M} (returned by \code{scf.total\_mass()}) and the potential
+  \code{M\_u} (a local variable inside \code{hachisu\_scf()}, never
+  exposed outside the function). In this document, whenever there is risk
+  of ambiguity, the text spells out ``mass'' or ``Bernoulli potential''
+  in full.
+\item \code{Bth} appears as \code{Btheta} in \code{diagnostics.py}
+  (function parameter) and \code{Bth} on the dashboard pages (local
+  variable) --- same object, two names.
 \end{itemize}
 
-\section{Núcleo teórico comum}
+\section{Common theoretical core}
 \label{sec:nucleo}
 
-\subsection{Equação de estado}
+\subsection{Equation of state}
 \label{sec:eos}
 
-Gás de elétrons completamente degenerado a $T=0$:
+Fully degenerate electron gas at $T=0$:
 \begin{align}
 P &= A\left[x(2x^2-3)(x^2+1)^{1/2} + 3\sinh^{-1}x\right]\\
 \rho &= Bx^3\\
 x &\equiv \frac{p_F}{m_ec}
 \end{align}
 \begin{align}
-A &= 6{,}01\times10^{22}\ \mathrm{dyn\,cm^{-2}}\\
-B &= \frac{9{,}82\times10^{5}}{Y_e}\ \mathrm{g\,cm^{-3}} \qquad (Y_e=0{,}5 \Rightarrow B\approx1{,}96\times10^6)
+A &= 6.01\times10^{22}\ \mathrm{dyn\,cm^{-2}}\\
+B &= \frac{9.82\times10^{5}}{Y_e}\ \mathrm{g\,cm^{-3}} \qquad (Y_e=0.5 \Rightarrow B\approx1.96\times10^6)
 \end{align}
 
-$A$ é uma constante física fixa (combinação de $m_e$, $c$, $\hbar$); $B$
-depende da composição só através de $Y_e$ (número de elétrons por núcleon).
-O dashboard parametriza por $\mu_e=1/Y_e$ em vez de $Y_e$ diretamente.
+$A$ is a fixed physical constant (a combination of $m_e$, $c$, $\hbar$);
+$B$ depends on composition only through $Y_e$ (electrons per baryon). The
+dashboard parametrizes by $\mu_e=1/Y_e$ instead of $Y_e$ directly.
 
 \arrowto{scf/eos.py :: pressure()} (P(x)), \code{density()} ($\rho(x)$), \code{B\_of\_mu\_e()} ($B(\mu_e)$)
 
-Entalpia específica, analítica --- é isso que torna o SCF possível:
+Specific enthalpy, analytic --- this is what makes the SCF possible:
 \begin{equation}
 H = \int \frac{dP}{\rho} = \frac{8A}{B}\left[\sqrt{1+x^2}-1\right]
 \end{equation}
 
 \arrowto{scf/eos.py :: enthalpy()}
 
-Inversa, aplicada a cada iteração do SCF:
+Inverse, applied at every SCF iteration:
 \begin{equation}
 x = \sqrt{\left(1+\frac{HB}{8A}\right)^2 - 1} \qquad (H\le0 \Rightarrow \rho=0)
 \end{equation}
 
 \arrowto{scf/eos.py :: x\_of\_enthalpy(), density\_of\_enthalpy()}
 
-O termo $-1$ normaliza $H=0$ na superfície (fronteira $\rho=0$ da estrela).
+The $-1$ term normalizes $H=0$ at the surface (the $\rho=0$ boundary of the star).
 
-\textbf{Índice politrópico efetivo.} Perto da superfície $x\ll1$ dá
-$\rho\propto H^{3/2}$, isto é $n=3/2$. No núcleo relativístico $x\gg1$ dá
-$\rho\propto H^3$, isto é $n=3$. A EOS desliza entre os dois, e $n=3$ é o
-caso marginal onde a massa fica independente da densidade central --- a
-origem do limite de Chandrasekhar. Esse fato é a causa direta da decisão de
-parametrização em \S\ref{sec:gs}/\S\ref{sec:bernoulli}.
+\textbf{Effective polytropic index.} Near the surface $x\ll1$ gives
+$\rho\propto H^{3/2}$, i.e. $n=3/2$. In the relativistic core $x\gg1$
+gives $\rho\propto H^3$, i.e. $n=3$. The EOS slides between the two, and
+$n=3$ is the marginal case where the mass becomes independent of the
+central density --- the origin of the Chandrasekhar limit. This fact is
+the direct cause of the parametrization decision in
+\S\ref{sec:gs}/\S\ref{sec:bernoulli}.
 
-\textbf{Velocidade do som.} Adicionada depois da espinha original (não
-estava no plano), por ser necessária para a amplitude da perturbação
-exportada na Aba 3:
+\textbf{Sound speed.} Added after the original theoretical spine (it was
+not in the plan), because it is needed for the amplitude of the
+perturbation exported in Tab 3:
 \begin{equation}
-c_s = \sqrt{\frac{dP}{d\rho}}\ , \qquad \frac{dP}{dx} = \frac{8Ax^4}{\sqrt{1+x^2}} \quad \text{(derivada analítica de $P(x)$)}
+c_s = \sqrt{\frac{dP}{d\rho}}\ , \qquad \frac{dP}{dx} = \frac{8Ax^4}{\sqrt{1+x^2}} \quad \text{(analytic derivative of $P(x)$)}
 \end{equation}
 
-\arrowto{scf/eos.py :: sound\_speed()}, validada contra diferença finita em \code{scf/tests/test\_sound\_speed.py}
+\arrowto{scf/eos.py :: sound\_speed()}, validated against a finite difference in \code{scf/tests/test\_sound\_speed.py}
 
-\subsection{Gravidade própria}
+\subsection{Self-gravity}
 
 \begin{equation}
 \nabla^2\Phi = 4\pi G\rho
 \end{equation}
 
-Resolvida por expansão em polinômios de Legendre. Com
+Solved by expansion in Legendre polynomials. With
 $\rho(r,\theta) = \sum_l \rho_l(r)P_l(\cos\theta)$:
 \begin{equation}
 \Phi_l(r) = -\frac{4\pi G}{2l+1}\left[
@@ -236,41 +238,41 @@ $\rho(r,\theta) = \sum_l \rho_l(r)P_l(\cos\theta)$:
 \right]
 \end{equation}
 
-Os pesos $r'^{\,l+2}$ e $r'^{\,1-l}$ carregam o $r'^2$ do elemento de
-volume.
+The weights $r'^{\,l+2}$ and $r'^{\,1-l}$ carry the $r'^2$ of the volume
+element.
 
-\arrowto{scf/poisson.py :: solve\_poisson()} (implementação exata desta fórmula, $D_l/E_l$ calculados por soma cumulativa trapezoidal); \code{legendre\_matrix()} calcula $P_l(\cos\theta)$.
+\arrowto{scf/poisson.py :: solve\_poisson()} (exact implementation of this formula, $D_l/E_l$ computed by cumulative trapezoidal sums); \code{legendre\_matrix()} computes $P_l(\cos\theta)$.
 
-Validado contra a solução fechada da esfera uniforme e o teorema das cascas
-de Newton em \code{scf/tests/test\_poisson.py}.
+Validated against the closed-form solution of the uniform sphere and
+Newton's shell theorem in \code{scf/tests/test\_poisson.py}.
 
-$G=6{,}674\times10^{-8}\ \mathrm{cm^3\,g^{-1}\,s^{-2}}$ --- constante física
-(valor de referência CODATA arredondado), não um parâmetro de projeto.
-\arrowto{scf/poisson.py :: G\_CONST}, repetida em \code{dashboard/units.py :: G\_CONST} (mesmo valor, dois módulos, porque \code{poisson.py} não pode depender do dashboard --- R1).
+$G=6.674\times10^{-8}\ \mathrm{cm^3\,g^{-1}\,s^{-2}}$ --- a fixed physical
+constant (rounded CODATA reference value), not a project parameter.
+\arrowto{scf/poisson.py :: G\_CONST}, repeated in \code{dashboard/units.py :: G\_CONST} (same value, two modules, because \code{poisson.py} cannot depend on the dashboard --- R1).
 
-\subsection{Campo magnético e a função de fluxo}
+\subsection{Magnetic field and the flux function}
 
-Com $\varpi=r\sin\theta$, define-se a função de fluxo
+With $\varpi=r\sin\theta$, the flux function is defined as
 \begin{equation}
 u = \varpi A_\varphi
 \end{equation}
-e o campo axissimétrico separa em poloidal mais toroidal:
+and the axisymmetric field splits into poloidal plus toroidal:
 \begin{equation}
 \mathbf{B} = \frac{1}{\varpi}\left[\nabla u \times \hat{e}_\varphi \ +\ \beta(u)\,\hat{e}_\varphi\right]
 \end{equation}
-Em componentes esféricas:
+In spherical components:
 \begin{align}
 B_r &= \frac{1}{r^2\sin\theta}\frac{\partial u}{\partial\theta}\\
 B_\theta &= -\frac{1}{r\sin\theta}\frac{\partial u}{\partial r}\\
 B_\varphi &= \frac{\beta(u)}{\varpi}
 \end{align}
 
-\arrowto{scf/diagnostics.py :: poloidal\_field()} implementa $B_r$, $B_\theta$ (por diferenças finitas de $u$, com proteção contra a singularidade de coordenada em $\varpi\to0$). $B_\varphi$ não é calculado a partir de um $\beta(u)$ intermediário; sai diretamente de \code{scf/toroidal.py :: impose\_toroidal()}, que já implementa a forma funcional escolhida para $\beta$ (\S\ref{sec:toroidal}) substituída na fórmula acima.
+\arrowto{scf/diagnostics.py :: poloidal\_field()} implements $B_r$, $B_\theta$ (via finite differences of $u$, protected against the coordinate singularity at $\varpi\to0$). $B_\varphi$ is not computed from an intermediate $\beta(u)$; it comes directly out of \code{scf/toroidal.py :: impose\_toroidal()}, which already implements the chosen functional form for $\beta$ (\S\ref{sec:toroidal}) substituted into the formula above.
 
-A forma geral $\mathbf{B}=\frac{1}{\varpi}[\nabla u\times\hat e_\varphi+\beta\hat e_\varphi]$ como identidade vetorial não aparece escrita em nenhum lugar do código --- o código vai direto às três componentes escalares.
+The general form $\mathbf{B}=\frac{1}{\varpi}[\nabla u\times\hat e_\varphi+\beta\hat e_\varphi]$ does not appear anywhere in the code as a vector identity --- the code goes straight to the three scalar components.
 
-\textbf{Interpretação geométrica: os contornos de $u$ são as linhas de campo
-poloidal.} É por isso que a Aba 1 os plota (\S\ref{sec:aba1}).
+\textbf{Geometric interpretation: the contours of $u$ are the poloidal
+field lines.} That's why Tab 1 plots them (\S\ref{sec:aba1}).
 
 \subsection{Grad-Shafranov}
 \label{sec:gs}
@@ -280,737 +282,755 @@ poloidal.} É por isso que a Aba 1 os plota (\S\ref{sec:aba1}).
 \Delta^* &= \frac{\partial^2}{\partial\varpi^2} - \frac{1}{\varpi}\frac{\partial}{\partial\varpi} + \frac{\partial^2}{\partial z^2}
 \end{align}
 
-$f(u)=dM/du$ é a função de corrente que gera o poloidal; $\beta(u)$ gera o
-toroidal. A escolha mais simples, e a usada aqui, é $f(u)=k_0$ constante
-(Lander \& Jones 2009). Como o toroidal é imposto depois de o poloidal
-convergir (\S\ref{sec:toroidal}, D6) e não entra na própria equação GS
-resolvida pelo SCF, o termo $-\beta\beta'(u)$ \textbf{não aparece na fonte
-que o código de fato monta} --- a fonte implementada é só
-$-4\pi\varpi^2\rho k_0$.
+$f(u)=dM/du$ is the current function generating the poloidal field;
+$\beta(u)$ generates the toroidal field. The simplest choice, and the one
+used here, is $f(u)=k_0$ constant (Lander \& Jones 2009). Since the
+toroidal field is imposed after the poloidal field has converged
+(\S\ref{sec:toroidal}, D6) and does not enter the GS equation actually
+solved by the SCF, the term $-\beta\beta'(u)$ \textbf{does not appear in
+the source the code actually assembles} --- the implemented source is
+only $-4\pi\varpi^2\rho k_0$.
 
-\arrowto{scf/gradshafranov.py :: solve\_gradshafranov()} --- fonte passada por \code{scf/scf.py :: hachisu\_scf()} como \code{source = -4*np.pi*omega2*rho*k0}.
+\arrowto{scf/gradshafranov.py :: solve\_gradshafranov()} --- source passed by \code{scf/scf.py :: hachisu\_scf()} as \code{source = -4*np.pi*omega2*rho*k0}.
 
-A densidade de corrente que corresponde a essa fonte é
+The current density corresponding to this source is
 \begin{equation}
 J_\varphi = c\rho\varpi f(u)
 \end{equation}
 
-Esta fórmula \textbf{não corresponde a nenhuma função no código} --- $J_\varphi$
-nunca é calculada como quantidade nomeada. Ela foi usada apenas
-analiticamente, durante a depuração que achou o bug descrito no quadro
-abaixo, para montar o lado direito da lei de Ampère integral (testes sem
-derivada, mais adiante).
+This formula \textbf{does not correspond to any function in the code} ---
+$J_\varphi$ is never computed as a named quantity. It was used only
+analytically, during the debugging that found the bug described in the
+box below, to assemble the right-hand side of the integral Ampère's-law
+test (derivative-free tests, further below).
 
-\textbf{Resolução por expansão de Legendre associada.} O operador
-$\Delta^*$ separa em funções $P_l^1(\cos\theta)$, \textbf{não} em
-$P_l(\cos\theta)$. A estrutura radial da função de Green é análoga à de
-Poisson, mas os pesos das integrais \textbf{não são os mesmos}:
+\textbf{Solution by associated-Legendre expansion.} The operator
+$\Delta^*$ separates into $P_l^1(\cos\theta)$ functions, \textbf{not}
+$P_l(\cos\theta)$. The radial structure of the Green's function is
+analogous to that of Poisson, but the integral weights \textbf{are not
+the same}:
 
 \begin{center}
 \begin{tabular}{@{}lll@{}}
 \toprule
-& peso interno & peso externo\\
+& inner weight & outer weight\\
 \midrule
-Poisson (para $\Phi$) & $r'^{\,l+2}$ & $r'^{\,1-l}$\\
-Grad-Shafranov (para $u$) & $r'^{\,l+1}$ & $r'^{\,-l}$\\
+Poisson (for $\Phi$) & $r'^{\,l+2}$ & $r'^{\,1-l}$\\
+Grad-Shafranov (for $u$) & $r'^{\,l+1}$ & $r'^{\,-l}$\\
 \bottomrule
 \end{tabular}
 \end{center}
 
 \arrowto{scf/gradshafranov.py :: solve\_gradshafranov()}
 
-Nas linhas onde \code{D\_l}/\code{E\_l} são montados com \code{r ** (l + 1)} e \code{r ** (-l)}.
+In the lines where \code{D\_l}/\code{E\_l} are assembled with \code{r ** (l + 1)} and \code{r ** (-l)}.
 
-\begin{whybox}{Por que assim --- os expoentes da função de Green}
-A diferença de uma potência vem do peso em $\varpi$ da fonte da GS
-comparado ao $r'^2$ do elemento de volume em Poisson, e depende de a
-equação ser resolvida para $u$ ou para $A_\varphi$. \textbf{Este foi um bug
-real neste projeto:} uma versão anterior de \code{gradshafranov.py} usava
-$r'^{\,l+2}$ e $r'^{\,1-l}$ (copiados por engano da estrutura de
-\code{poisson.py}, que tem uma potência de $r$ a mais por causa da
-substituição $\chi=r\Phi_l$ usada na redução do Laplaciano escalar ---
-$\Delta^*$ não precisa dessa substituição). O bug inflava o campo poloidal
-por um fator $\sim7000\times$ e a energia magnética por $\sim5\times10^7$.
+\begin{whybox}{Why it's like this --- the Green's-function exponents}
+The difference of one power comes from the $\varpi$ weight of the GS
+source compared to the $r'^2$ of the volume element in Poisson, and
+depends on whether the equation is solved for $u$ or for $A_\varphi$.
+\textbf{This was a real bug in this project:} an earlier version of
+\code{gradshafranov.py} used $r'^{\,l+2}$ and $r'^{\,1-l}$ (mistakenly
+copied from the structure of \code{poisson.py}, which has one extra
+power of $r$ because of the substitution $\chi=r\Phi_l$ used in reducing
+the scalar Laplacian --- $\Delta^*$ does not need that substitution). The
+bug inflated the poloidal field by a factor of $\sim7000\times$ and the
+magnetic energy by $\sim5\times10^7$.
 
-O bug sobreviveu a toda a validação peça-a-peça --- inclusive uma forma
-fechada derivada ``à mão'' --- porque essa forma fechada foi construída
-reusando a mesma equação indicial ($r^{l+1}$, $r^{-l}$ para as soluções
-homogêneas, que \textbf{estavam certas}) e por isso herdava a mesma
-normalização das integrais internas, que estava errada. Só dois testes que
-não usam a função de Green nem uma segunda derivada --- consistência via lei
-de Ampère --- revelaram o fator fixo. Ver a nota completa (com a cadeia de
-raciocínio) no topo de \code{scf/gradshafranov.py}.
+The bug survived piece-by-piece validation --- including a ``by-hand''
+closed form --- because that closed form was built by reusing the same
+indicial equation ($r^{l+1}$, $r^{-l}$ for the homogeneous solutions,
+which \textbf{were correct}) and therefore inherited the same
+normalization of the internal integrals, which was wrong. Only two tests
+that use neither the Green's function nor a second derivative ---
+consistency via Ampère's law --- revealed the fixed factor. See the full
+note (with the reasoning chain) at the top of \code{scf/gradshafranov.py}.
 
 \smallskip
-\textbf{Lição operacional:} ``resolve com a fórmula, confere com a mesma
-fórmula'' não é validação independente, mesmo em arquivos/funções
-diferentes, se ambos herdam a mesma normalização de uma derivação
-compartilhada.
+\textbf{Operational lesson:} ``solve with the formula, check against the
+same formula'' is not independent validation, even across different
+files/functions, if both inherit the same normalization from a shared
+derivation.
 \end{whybox}
 
-\textbf{Testes de normalização sem derivada} --- a defesa contra essa classe
-de erro:
+\textbf{Derivative-free normalization tests} --- the defense against this
+class of error:
 \begin{align}
-\text{Fluxo:}\quad & u(\varpi,z) = \int_0^\varpi B_z(\varpi',z)\,\varpi'\,d\varpi'\\
+\text{Flux:}\quad & u(\varpi,z) = \int_0^\varpi B_z(\varpi',z)\,\varpi'\,d\varpi'\\
 \text{Ampère:}\quad & \oint_C \mathbf{B}\cdot d\mathbf{l} = 4\pi k_0\int_S \rho\varpi\,dA
 \end{align}
 
 \begin{itemize}[leftmargin=1.4em]
-\item \textbf{Ampère}: implementado e no repositório
+\item \textbf{Ampère}: implemented and in the repository
   \arrowto{scf/tests/test\_gradshafranov.py :: test\_ampere\_law()}
-  Usa um caso sintético com fonte de modo $l=1$ puro (não a EOS/SCF
-  completos), calcula $\oint\mathbf{B}\cdot d\mathbf{l}$ num laço retangular
-  em $(r,\theta)$ e compara com $-\iint[\mathrm{source}/\sin\theta]\,dr\,d\theta$
-  (forma equivalente derivada da lei de Ampère para esta geometria). Fecha a
-  $\sim2\%$.
-\item \textbf{Fluxo}: foi \emph{proposto} durante a depuração (ver histórico
-  da conversa que corrigiu o bug) mas \textbf{não foi implementado como
-  teste separado} --- o teste de Ampère sozinho já revelou e confirmou a
-  correção do bug, então o teste de consistência de fluxo nunca chegou a
-  ser escrito. Fica registrado como lacuna em \S\ref{sec:aberto}.
+  Uses a synthetic case with a pure $l=1$-mode source (not the full
+  EOS/SCF), computes $\oint\mathbf{B}\cdot d\mathbf{l}$ on a rectangular
+  loop in $(r,\theta)$ and compares it against
+  $-\iint[\mathrm{source}/\sin\theta]\,dr\,d\theta$ (an equivalent form
+  derived from Ampère's law for this geometry). Closes to $\sim2\%$.
+\item \textbf{Flux}: \emph{proposed} during debugging (see the
+  conversation history that fixed the bug) but \textbf{not implemented as
+  a separate test} --- the Ampère test alone already revealed and
+  confirmed the bug fix, so the flux consistency test was never actually
+  written. Recorded as a gap in \S\ref{sec:aberto}.
 \end{itemize}
 
-\subsection{Bernoulli e a parametrização}
+\subsection{Bernoulli and the parametrization}
 \label{sec:bernoulli}
 
 \begin{equation}
 H + \Phi - M(u) = C\ , \qquad M(u) = \int f(u)\,du
 \end{equation}
 
-Com $f=k_0$ constante, $M(u)=k_0u$.
+With $f=k_0$ constant, $M(u)=k_0u$.
 
-A constante de integração é fixada \textbf{no centro}:
+The integration constant is fixed \textbf{at the center}:
 \begin{equation}
 C = H(\rho_c) + \Phi_c - M(u_c)
 \end{equation}
 
-onde $\Phi_c$, $u_c$ aqui denotam os valores no centro ($r=0$) ---
-\textbf{atenção}: este uso de $u_c$ (valor de $u$ no centro) é diferente do
-$u_c$ usado em \S\ref{sec:toroidal} (valor de $u$ na última linha fechada,
-na superfície). São o mesmo símbolo para dois pontos de avaliação
-diferentes; o código nunca precisa dos dois ao mesmo tempo, mas o leitor
-deve notar a colisão. Como $\varpi=r\sin\theta$ se anula no centro para
-qualquer $\theta$, $u_c(\text{centro})=0$ sempre e o termo $M(u_c)$
-desaparece --- ele fica na fórmula por generalidade, não porque contribua.
+where $\Phi_c$, $u_c$ here denote the values at the center ($r=0$) ---
+\textbf{note}: this use of $u_c$ (value of $u$ at the center) is
+different from the $u_c$ used in \S\ref{sec:toroidal} (value of $u$ on
+the last closed line, at the surface). They are the same symbol for two
+different evaluation points; the code never needs both at once, but the
+reader should note the collision. Since $\varpi=r\sin\theta$ vanishes at
+the center for any $\theta$, $u_c(\text{center})=0$ always and the term
+$M(u_c)$ disappears --- it stays in the formula for generality, not
+because it contributes.
 
-\arrowto{scf/scf.py :: hachisu\_scf()} --- linha \code{C = H\_c + Phi[0, 0] - M\_u[0, 0]}.
+\arrowto{scf/scf.py :: hachisu\_scf()} --- line \code{C = H\_c + Phi[0, 0] - M\_u[0, 0]}.
 
-\begin{whybox}{Por que assim --- a parametrização por $(\rho_c, k_0)$}
-A receita clássica de Hachisu fixa $C$ impondo $H=0$ em dois pontos da
-superfície (polo e equador). Isso é mal-posto para esta EOS: como $n\to3$ no
-núcleo (\S\ref{sec:eos}), a massa fica quase independente da densidade
-central e o raio despenca, de modo que resolver para $C$ a partir do raio
-inverte um mapa quase singular. Testado e confirmado neste projeto: a
-iteração de Picard sob essa receita é linearmente instável em toda a faixa
-$\rho_c=10^6$--$10^{10}$ g/cm$^3$, com ou sem sub-relaxação.
+\begin{whybox}{Why it's like this --- the $(\rho_c, k_0)$ parametrization}
+The classical Hachisu recipe fixes $C$ by imposing $H=0$ at two surface
+points (pole and equator). This is ill-posed for this EOS: since $n\to3$
+in the core (\S\ref{sec:eos}), the mass becomes nearly independent of the
+central density and the radius plunges, so solving for $C$ from the
+radius inverts a nearly-singular map. Tested and confirmed in this
+project: the Picard iteration under that recipe is linearly unstable
+across the whole range $\rho_c=10^6$--$10^{10}$ g/cm$^3$, with or without
+sub-relaxation.
 
-A parametrização adotada é por \textbf{$(\rho_c, k_0)$}, duas entradas
-independentes, sem nenhuma condição de superfície --- $C$ é fixada por uma
-condição local ($H$ no centro), não global (integral sobre toda a massa).
-Essa mudança por si só resolveu a instabilidade: convergência geométrica
-até precisão de máquina em $\sim$12 iterações, contra divergência
-exponencial da receita antiga.
+The adopted parametrization is by \textbf{$(\rho_c, k_0)$}, two
+independent inputs, with no surface condition --- $C$ is fixed by a local
+condition ($H$ at the center), not a global one (an integral over the
+whole mass). This change alone solved the instability: geometric
+convergence to machine precision in $\sim$12 iterations, versus
+exponential divergence of the old recipe.
 
 \smallskip
-\textbf{Ressalva:} no regime de campo forte, quando o pico de densidade
-migra para fora do centro, esta âncora também perde o sentido físico que a
-torna estável --- ver \S\ref{sec:limitacoes}.
+\textbf{Caveat:} in the strong-field regime, when the density peak
+migrates away from the center, this anchor also loses the physical
+meaning that makes it stable --- see \S\ref{sec:limitacoes}.
 \end{whybox}
 
-\subsection{O loop SCF}
+\subsection{The SCF loop}
 \label{sec:loop}
 
 \begin{enumerate}[leftmargin=2.6em,itemsep=0.15em,label=\arabic*.]
-\item $\rho \leftarrow$ palpite inicial (politropo esférico $n=3$)
+\item $\rho \leftarrow$ initial guess (spherical $n=3$ polytrope)
 \item $A_\varphi \leftarrow 0$
-\item \textbf{repetir:}
+\item \textbf{repeat:}
 \begin{enumerate}[leftmargin=2.6em,itemsep=0.15em,label=\arabic*.,start=4]
 \item $\Phi \leftarrow \mathrm{Poisson}(\rho)$
 \item $A_\varphi \leftarrow \mathrm{GradShafranov}(\rho, f)$
 \item $u \leftarrow \varpi A_\varphi$\ ;\ $M \leftarrow \int f\,du$
 \item $C \leftarrow H(\rho_c) + \Phi_c - M(u_c)$
 \item $H \leftarrow C - \Phi + M(u)$
-\item $\rho_{novo} \leftarrow \mathrm{EOS}^{-1}(H)$ \qquad $[H\le0 \Rightarrow \rho=0]$
-\item $\rho \leftarrow (1-\omega)\rho + \omega\rho_{novo}$ \qquad $\omega\approx0{,}3$
+\item $\rho_{new} \leftarrow \mathrm{EOS}^{-1}(H)$ \qquad $[H\le0 \Rightarrow \rho=0]$
+\item $\rho \leftarrow (1-\omega)\rho + \omega\rho_{new}$ \qquad $\omega\approx0.3$
 \end{enumerate}
-\item[11.] \textbf{até} $\max|\Delta\rho|/\rho_c < \mathrm{tol}$
+\item[11.] \textbf{until} $\max|\Delta\rho|/\rho_c < \mathrm{tol}$
 \end{enumerate}
 
-\arrowto{scf/scf.py :: hachisu\_scf()} implementa os passos 1, 3--9 e 11 literalmente (passo 2 é implícito: $u$ começa em zero antes da primeira iteração).
+\arrowto{scf/scf.py :: hachisu\_scf()} implements steps 1, 3--9 and 11 literally (step 2 is implicit: $u$ starts at zero before the first iteration).
 
-\textbf{Discrepância com o código real, passo 10:} a implementação
-\textbf{não faz sub-relaxação}. A linha correspondente em
-\code{hachisu\_scf()} é \code{rho = rho\_new} --- substituição direta,
-equivalente a $\omega=1$, não $\omega\approx0{,}3$. Não há parâmetro
-$\omega$ na assinatura da função. Isso não é um descuido: é consequência
-direta da mudança descrita no quadro de \S\ref{sec:bernoulli}. A receita
-antiga (duas condições de superfície) exigia sub-relaxação para tentar
-estabilizar uma iteração que era instável de qualquer forma; a
-parametrização $(\rho_c,k_0)$ converge por substituição direta porque a
-instabilidade que a sub-relaxação tentava mascarar foi removida na raiz.
-Ver a nota de projeto no topo de \code{scf/scf.py} para o histórico
-completo (inclusive testes que mostraram que sub-relaxar a receita antiga
-não resolvia o problema).
+\textbf{Discrepancy with the real code, step 10:} the implementation
+\textbf{does not do sub-relaxation}. The corresponding line in
+\code{hachisu\_scf()} is \code{rho = rho\_new} --- a direct replacement,
+equivalent to $\omega=1$, not $\omega\approx0.3$. There is no $\omega$
+parameter in the function signature. This is not an oversight: it is a
+direct consequence of the change described in the \S\ref{sec:bernoulli}
+box. The old recipe (two surface conditions) required sub-relaxation to
+try to stabilize an iteration that was unstable regardless; the
+$(\rho_c,k_0)$ parametrization converges by direct replacement because
+the instability that sub-relaxation was trying to mask was removed at
+the root. See the project note at the top of \code{scf/scf.py} for the
+full history (including tests showing that sub-relaxing the old recipe
+did not fix the problem).
 
-O critério de convergência (\code{tol}) é um parâmetro numérico, não
-físico --- o dashboard expõe valores de $10^{-4}$ a $10^{-8}$ (Aba 1), com
-$10^{-6}$ como padrão.
+The convergence criterion (\code{tol}) is a numerical, not physical,
+parameter --- the dashboard exposes values from $10^{-4}$ to $10^{-8}$
+(Tab 1), with $10^{-6}$ as the default.
 
-\subsection{Virial e diagnósticos de energia}
+\subsection{Virial and energy diagnostics}
 \label{sec:virial}
 
 \begin{align}
-W &= \tfrac{1}{2}\int \rho\Phi\,dV & &\text{(gravitacional, negativa)}\\
-\Pi &= \int P\,dV & &\text{(interna)}\\
+W &= \tfrac{1}{2}\int \rho\Phi\,dV & &\text{(gravitational, negative)}\\
+\Pi &= \int P\,dV & &\text{(internal)}\\
 E_{pol} &= \int \frac{B_r^2+B_\theta^2}{8\pi}\,dV\\
 E_{tor} &= \int \frac{B_\varphi^2}{8\pi}\,dV\\
 \mathcal{M} &= E_{pol} + E_{tor}
 \end{align}
 
-\arrowto{scf/diagnostics.py :: gravitational\_energy()} (W), \code{pressure\_integral()} ($\Pi$), \code{magnetic\_energies()} ($E_{pol}$, $E_{tor}$, $\mathcal{M}$ --- chamada de \code{E\_mag} no código). Todas usam \code{volume\_integral()} como base ($dV=r^2\sin\theta\,dr\,d\theta\,d\varphi$, $\varphi$ integrado analiticamente para $2\pi$).
+\arrowto{scf/diagnostics.py :: gravitational\_energy()} (W), \code{pressure\_integral()} ($\Pi$), \code{magnetic\_energies()} ($E_{pol}$, $E_{tor}$, $\mathcal{M}$ --- called \code{E\_mag} in the code). All use \code{volume\_integral()} as their base ($dV=r^2\sin\theta\,dr\,d\theta\,d\varphi$, $\varphi$ integrated analytically to $2\pi$).
 
-Teorema do virial escalar para configuração estática:
+Scalar virial theorem for a static configuration:
 \begin{equation}
 W + 3\Pi + \mathcal{M} = 0
 \end{equation}
 
-Erro virial, usado como portão de qualidade:
+Virial error, used as a quality gate:
 \begin{equation}
-\mathrm{VE} = \frac{|W+3\Pi+\mathcal{M}|}{|W|} \qquad \text{critério de aceite: } \mathrm{VE}<10^{-3}
+\mathrm{VE} = \frac{|W+3\Pi+\mathcal{M}|}{|W|} \qquad \text{acceptance criterion: } \mathrm{VE}<10^{-3}
 \end{equation}
 
-\arrowto{scf/diagnostics.py :: virial\_error()} O limite $10^{-3}$ é convenção de projeto (V3 do plano), não uma constante física --- aparece hard-coded como comparação em \code{dashboard/pages/1\_equilibrio.py} e \code{3\_exportacao.py}, não em \code{units.py} nem em \code{diagnostics.py} (nenhum módulo de física define esse limite como constante nomeada --- é uma decisão de UI/gate repetida em duas páginas).
+\arrowto{scf/diagnostics.py :: virial\_error()} The $10^{-3}$ threshold is a project convention (V3 of the plan), not a physical constant --- it appears hard-coded as a comparison in \code{dashboard/pages/1\_equilibrium.py} and \code{3\_export.py}, not in \code{units.py} nor in \code{diagnostics.py} (no physics module defines this threshold as a named constant --- it is a UI/gate decision repeated in two pages).
 
-\textbf{Identidade do virial magnético.} Exata, e é o teste que liga o
-setor magnético ao gravitacional:
+\textbf{Magnetic virial identity.} Exact, and it is the test that links
+the magnetic sector to the gravitational one:
 \begin{equation}
 \int \rho\,\nabla M(u)\cdot\mathbf{r}\,dV \ =\ \int \frac{B^2}{8\pi}\,dV
 \end{equation}
 
-Esta identidade \textbf{não corresponde a nenhuma função no código}. Foi
-verificada numericamente de forma ad hoc durante a depuração do bug de
-\S\ref{sec:gs} (comparando $k_0\int\rho\,r\,\partial u/\partial r\,dV$ com
-$\int B^2/8\pi\,dV$ para uma solução convergida), mas não existe uma função
-em \code{scf/diagnostics.py} que a calcule nem um teste comitado que a
-exercite. Fica em \S\ref{sec:aberto} como lacuna.
+This identity \textbf{does not correspond to any function in the code}.
+It was verified numerically in an ad hoc way during the debugging of the
+\S\ref{sec:gs} bug (comparing $k_0\int\rho\,r\,\partial u/\partial r\,dV$
+with $\int B^2/8\pi\,dV$ for a converged solution), but there is no
+function in \code{scf/diagnostics.py} that computes it nor a committed
+test that exercises it. Recorded in \S\ref{sec:aberto} as a gap.
 
-\begin{notebox}{Nota conceitual obrigatória}
-$M(u)$ \textbf{não é} a energia magnética. É o potencial específico da
-força de Lorentz --- apenas a parcela que entra no Bernoulli. Não existe
-identidade \emph{local} entre $M(u)$ e $B^2/8\pi$. A identidade
-\emph{global} acima é o que força as duas quantidades a concordarem em
-ordem de grandeza. Medida neste projeto, no regime linear (campo
-perturbativo), a razão $(E_{mag}/|W|)/(M_u/H_c)$ vale $\approx0{,}5$ e é
-constante em $k_0$ (confirmado dobrando $k_0$: ambas as razões
-quadruplicam, a razão entre elas não muda); ela desliza para $\sim0{,}38$
-conforme o campo deixa de ser perturbação pequena ($k_0\gtrsim10^{-12}$ na
-configuração $\rho_c=10^9$, $R\approx3\times10^8$ cm). Essa foi a
-observação que, junto com o teste de Ampère, confirmou que o bug do quadro
-de \S\ref{sec:gs} era real e não um artefato de unidades.
+\begin{notebox}{Mandatory conceptual note}
+$M(u)$ \textbf{is not} the magnetic energy. It is the specific potential
+of the Lorentz force --- only the part that enters the Bernoulli
+equation. There is no \emph{local} identity between $M(u)$ and
+$B^2/8\pi$. The \emph{global} identity above is what forces the two
+quantities to agree in order of magnitude. Measured in this project, in
+the linear regime (perturbative field), the ratio
+$(E_{mag}/|W|)/(M_u/H_c)$ is $\approx0.5$ and is constant in $k_0$
+(confirmed by doubling $k_0$: both ratios quadruple, the ratio between
+them does not change); it drifts to $\sim0.38$ as the field stops being
+a small perturbation ($k_0\gtrsim10^{-12}$ in the $\rho_c=10^9$,
+$R\approx3\times10^8$ cm configuration). This was the observation that,
+together with the Ampère test, confirmed that the bug in the
+\S\ref{sec:gs} box was real and not a units artifact.
 \end{notebox}
 
-\textbf{Limite físico.} $\mathcal{M}<|W|$ é vínculo rígido:
-$E_{mag}/|W|\ge1$ é configuração impossível (violaria o virial com
-$\Pi\ge0$). Use como âncora de sanidade ao ler qualquer resultado --- se o
-dashboard mostrar $E_{mag}/|W|$ maior que alguns décimos, desconfie antes
-de acreditar.
+\textbf{Physical limit.} $\mathcal{M}<|W|$ is a rigid constraint:
+$E_{mag}/|W|\ge1$ is an impossible configuration (it would violate the
+virial with $\Pi\ge0$). Use it as a sanity anchor when reading any
+result --- if the dashboard shows $E_{mag}/|W|$ above a few tenths, be
+suspicious before believing it.
 
-\subsection{As duas razões Bt/Bp}
+\subsection{The two Bt/Bp ratios}
 
 \begin{align}
-\left(\frac{B_t}{B_p}\right)_{\text{energia}} &= \frac{E_{tor}}{E_{pol}}\\
+\left(\frac{B_t}{B_p}\right)_{\text{energy}} &= \frac{E_{tor}}{E_{pol}}\\
 \left(\frac{B_t}{B_p}\right)_{\text{amplitude}} &= \frac{\max|B_\varphi|}{\max|B_{pol}|}
 \end{align}
 
 \arrowto{scf/toroidal.py :: bt\_bp\_ratios()}
 
-Diferem por ordens de grandeza porque o toroidal está confinado a um
-volume pequeno (\S\ref{sec:toroidal}). A literatura frequentemente não diz
-qual usa. \textbf{O dashboard sempre mostra as duas, rotuladas} (Aba 1 e
-Aba 3).
+They differ by orders of magnitude because the toroidal field is confined
+to a small volume (\S\ref{sec:toroidal}). The literature frequently does
+not say which one it uses. \textbf{The dashboard always shows both,
+labeled} (Tab 1 and Tab 3).
 
-\subsection{O campo toroidal e o twisted torus}
+\subsection{The toroidal field and the twisted torus}
 \label{sec:toroidal}
 
-Na formulação barotrópica, $\beta=\beta(u)$: a função toroidal depende só
-da função de fluxo. É essa condição que anula a componente $\varphi$ da
-força de Lorentz e permite a existência da integral de Bernoulli
-(\S\ref{sec:bernoulli}).
+In the barotropic formulation, $\beta=\beta(u)$: the toroidal function
+depends only on the flux function. It is this condition that cancels the
+$\varphi$ component of the Lorentz force and allows the Bernoulli
+integral to exist (\S\ref{sec:bernoulli}).
 
-Consequência geométrica: fora da estrela não há corrente, logo $B_\varphi=0$
-lá; como $\beta=\beta(u)$, ela precisa se anular em toda linha de fluxo que
-escapa da superfície. \textbf{O toroidal fica automaticamente confinado à
-região de linhas poloidais fechadas} --- o toro torcido não é imposto por
-decreto geométrico, ele cai da consistência da equação.
+Geometric consequence: outside the star there is no current, so
+$B_\varphi=0$ there; since $\beta=\beta(u)$, it must vanish on every flux
+line that escapes the surface. \textbf{The toroidal field is
+automatically confined to the region of closed poloidal lines} --- the
+twisted torus is not imposed by geometric decree, it falls out of the
+consistency of the equation.
 
-Forma funcional adotada:
+Adopted functional form:
 \begin{equation}
 \beta(u) = \zeta\,(u-u_c)^{m+1}\,\Theta(u-u_c)\ , \qquad m\ge1
 \end{equation}
 
-com $u_c$ o valor de $u$ na última linha fechada (aqui, $u_c$ = valor de
-$u$ na superfície --- ver a distinção de notação em \S\ref{sec:bernoulli}).
-O expoente $\ge1$ mantém $\beta\beta'$ contínua na borda do toro.
+with $u_c$ the value of $u$ on the last closed line (here, $u_c$ = the
+value of $u$ at the surface --- see the notation distinction in
+\S\ref{sec:bernoulli}). The exponent $\ge1$ keeps $\beta\beta'$
+continuous at the edge of the torus.
 
-\arrowto{scf/toroidal.py :: impose\_toroidal()} implementa esta forma já substituída em $B_\varphi=\beta/\varpi$: $B_\varphi=\zeta(u-u_c)^{m+1}/\varpi$ para $u>u_c$, $0$ fora. \code{find\_uc()} implementa a busca de $u_c$ como o \textbf{máximo de $u$ ao longo de toda a superfície estelar} ($H=0$, varrendo $\theta$ do polo ao equador) --- é essa escolha específica de ``última linha fechada'' que o código usa; contornos com $u$ maior que esse máximo, por definição, não tocam a superfície em nenhum ponto e ficam inteiramente internos.
+\arrowto{scf/toroidal.py :: impose\_toroidal()} implements this form already substituted into $B_\varphi=\beta/\varpi$: $B_\varphi=\zeta(u-u_c)^{m+1}/\varpi$ for $u>u_c$, $0$ outside. \code{find\_uc()} implements the search for $u_c$ as the \textbf{maximum of $u$ along the entire stellar surface} ($H=0$, sweeping $\theta$ from pole to equator) --- it is this specific choice of ``last closed line'' that the code uses; contours with $u$ larger than that maximum, by definition, do not touch the surface anywhere and remain entirely interior.
 
-$\zeta$ não é um parâmetro de entrada direto do usuário --- o dashboard
-pede a razão $B_t/B_p$ (energia) alvo e resolve $\zeta$ para atingi-la,
-aproveitando que $B_\varphi$ é linear em $\zeta$ (logo $E_{tor}$ é
-quadrático):
+$\zeta$ is not a direct user input parameter --- the dashboard asks for
+the target $B_t/B_p$ (energy) ratio and solves for $\zeta$ to reach it,
+exploiting the fact that $B_\varphi$ is linear in $\zeta$ (so $E_{tor}$
+is quadratic):
 
 \arrowto{scf/toroidal.py :: solve\_zeta\_for\_energy\_ratio()}
 
-\begin{whybox}{Por que o toroidal é imposto e não resolvido}
-A condição $\beta=\beta(u)$ confina o toroidal a um toro de volume
-pequeno, e a razão de energias resultante --- se $\beta$ fosse extraída de
-uma condição de fechamento barotrópica geral em vez de escolhida livremente
---- sai em poucos por cento. \textbf{Não é possível atingir $B_t/B_p\sim1/2$
-por essa via.} Por isso o projeto resolve o SCF barotrópico apenas para o
-poloidal (\S\ref{sec:gs}--\S\ref{sec:loop}, com $f(u)=k_0$) e impõe o
-toroidal por cima, com a razão desejada ($\zeta$ resolvida para o alvo),
-carregando no Castro fora de equilíbrio exato e relaxando com amortecimento
-(sponge, Aba 3). Para estudo dinâmico não é preciso equilíbrio exato ---
-basta estar perto o suficiente para o transiente não destruir a topologia.
+\begin{whybox}{Why the toroidal field is imposed rather than solved for}
+The condition $\beta=\beta(u)$ confines the toroidal field to a
+small-volume torus, and the resulting energy ratio --- if $\beta$ were
+extracted from a general barotropic closure condition instead of chosen
+freely --- comes out to a few percent. \textbf{It is not possible to
+reach $B_t/B_p\sim1/2$ that way.} That's why the project solves the
+barotropic SCF only for the poloidal field (\S\ref{sec:gs}--\S\ref{sec:loop},
+with $f(u)=k_0$) and imposes the toroidal field on top, at the desired
+ratio ($\zeta$ solved for the target), loading it into Castro out of
+exact equilibrium and relaxing it with damping (sponge, Tab 3). For a
+dynamical study, exact equilibrium is not required --- it just needs to
+be close enough that the transient doesn't destroy the topology.
 \end{whybox}
 
-\textbf{Fração de volume do toro} (quanto da estrela tem $u>u_c$):
+\textbf{Torus volume fraction} (how much of the star has $u>u_c$):
 \arrowto{scf/toroidal.py :: closed\_torus\_volume\_fraction()}
 
-\textbf{Espessura radial do toro} (usada para checar resolução de malha,
-Aba 3):
-\arrowto{scf/toroidal.py :: torus\_radial\_extent()}, medida ao longo do equador por padrão.
+\textbf{Torus radial extent} (used to check mesh resolution, Tab 3):
+\arrowto{scf/toroidal.py :: torus\_radial\_extent()}, measured along the equator by default.
 
-\subsection{Escalas de tempo e unidades}
+\subsection{Time scales and units}
 
 \begin{align}
-t_{din} &= \sqrt{\frac{R_{eq}^3}{GM}}\\
+t_{dyn} &= \sqrt{\frac{R_{eq}^3}{GM}}\\
 v_A &= \frac{\langle B\rangle}{\sqrt{4\pi\bar\rho}}\\
-t_{\text{Alfvén}} &= \frac{R_{eq}}{v_A}
+t_{\text{Alfven}} &= \frac{R_{eq}}{v_A}
 \end{align}
 
-\arrowto{dashboard/units.py :: dynamical\_time(), alfven\_speed(), alfven\_time()} $\langle B\rangle$ e $\bar\rho$ (médias volumétricas) são calculadas em \code{dashboard/pages/3\_exportacao.py} diretamente com \code{diagnostics.volume\_integral()} --- não há uma função \code{mean\_field()} dedicada em \code{scf/}.
+\arrowto{dashboard/units.py :: dynamical\_time(), alfven\_speed(), alfven\_time()} $\langle B\rangle$ and $\bar\rho$ (volume averages) are computed in \code{dashboard/pages/3\_export.py} directly with \code{diagnostics.volume\_integral()} --- there is no dedicated \code{mean\_field()} function in \code{scf/}.
 
-A razão $t_{\text{Alfvén}}/t_{din}$ mede o custo da simulação: no regime de campo
-fraco ela chega a $10^3$--$10^4$, que é proibitivo; no regime de campo
-forte deste projeto, com $E_{mag}/|W|\sim0{,}1$, ela fica em 2--3 (D4 do
-plano).
+The ratio $t_{\text{Alfven}}/t_{dyn}$ measures the cost of the
+simulation: in the weak-field regime it reaches $10^3$--$10^4$, which is
+prohibitive; in the strong-field regime of this project, with
+$E_{mag}/|W|\sim0.1$, it stays at 2--3 (D4 of the plan).
 
-\textbf{Unidade natural de campo.} De $B^2/8\pi\sim G\rho^2R^2$:
+\textbf{Natural field unit.} From $B^2/8\pi\sim G\rho^2R^2$:
 \begin{equation}
 B_{unit} = R\rho\sqrt{8\pi G}
 \end{equation}
 
-Para $\rho_c\sim10^9$ e $R\sim10^8$ cm isso dá $\sim10^{14}$ G, que é
-também a ordem do campo virial de uma anã branca. \textbf{Esta fórmula não
-está implementada em nenhum lugar do código} --- foi usada apenas como
-estimativa de ordem de grandeza durante a depuração do bug de
-\S\ref{sec:gs}, para checar se o campo relatado fazia sentido físico antes
-de procurar o erro numérico. \textbf{Âncora de sanidade:} com
-$E_{mag}/|W|\sim0{,}1$, o campo exibido pelo dashboard deve estar na casa
-de $10^{13}$--$10^{14}$ G; se aparecer muito diferente disso, desconfie
-antes de acreditar (foi exatamente essa desconfiança que achou o bug).
+For $\rho_c\sim10^9$ and $R\sim10^8$ cm this gives $\sim10^{14}$ G, which
+is also the order of a white dwarf's virial field. \textbf{This formula
+is not implemented anywhere in the code} --- it was used only as an
+order-of-magnitude estimate during the debugging of the \S\ref{sec:gs}
+bug, to check whether the reported field made physical sense before
+looking for the numerical error. \textbf{Sanity anchor:} with
+$E_{mag}/|W|\sim0.1$, the field shown by the dashboard should be in the
+$10^{13}$--$10^{14}$ G range; if it comes out very different from that,
+be suspicious before believing it (it was exactly this suspicion that
+found the bug).
 
-\textbf{Convenção do Castro:} o campo é carregado como $B'=B/\sqrt{4\pi}$.
-O dashboard exibe \textbf{sempre em gauss} e converte apenas na exportação
-(Aba 3).
+\textbf{Castro convention:} the field is loaded as $B'=B/\sqrt{4\pi}$.
+The dashboard \textbf{always displays gauss} and converts only at export
+time (Tab 3).
 
-\arrowto{dashboard/units.py :: gauss\_to\_castro(), castro\_to\_gauss()} Conferido neste ciclo de trabalho: o fator bate com o plano ($\sqrt{4\pi}\approx3{,}5449$). \textbf{Nota de estado:} \code{gauss\_to\_castro()} existe e está correta, mas \textbf{não é chamada em nenhum lugar do pipeline de exportação atual} (\code{dashboard/pages/3\_exportacao.py} escreve \code{B\_phi} no HDF5 diretamente em gauss, com um atributo \code{units} explícito documentando isso). A conversão para a convenção $B'$ do Castro é responsabilidade do \code{problem\_initialize.H} do lado do Castro (ainda não escrito --- Fase 0 do plano pendente), que lerá o HDF5 em gauss e aplicará \code{gauss\_to\_castro()} (ou o equivalente em C++) ao montar o estado interno. Ver \S\ref{sec:aberto}.
+\arrowto{dashboard/units.py :: gauss\_to\_castro(), castro\_to\_gauss()} Checked in this work cycle: the factor matches the plan ($\sqrt{4\pi}\approx3.5449$). \textbf{Status note:} \code{gauss\_to\_castro()} exists and is correct, but \textbf{it is not called anywhere in the current export pipeline} (\code{dashboard/pages/3\_export.py} writes \code{B\_phi} to the HDF5 file directly in gauss, with an explicit \code{units} attribute documenting this). Converting to the Castro $B'$ convention is the responsibility of Castro's \code{problem\_initialize.H} (not yet written --- Phase 0 of the plan is pending), which will read the HDF5 file in gauss and apply \code{gauss\_to\_castro()} (or the C++ equivalent) when assembling the internal state. See \S\ref{sec:aberto}.
 
-Todas as conversões de unidade de exibição (gauss, km) --- tanto o número
-quanto a formatação da string --- vivem em \code{dashboard/units.py},
-ponto único de verdade (regra R4 do dashboard): \code{cm\_to\_km()},
+All display-unit conversions (gauss, km) --- both the number and the
+string formatting --- live in \code{dashboard/units.py}, the single
+source of truth (dashboard rule R4): \code{cm\_to\_km()},
 \code{g\_to\_msun()}, \code{format\_gauss()}, \code{format\_km()},
 \code{format\_km\_value()}.
 
 \clearpage
-\section{Aba 1 --- Equilíbrio}
+\section{Tab 1 --- Equilibrium}
 \label{sec:aba1}
 
-\arrowto{dashboard/pages/1\_equilibrio.py}
+\arrowto{dashboard/pages/1\_equilibrium.py}
 
-Executa uma corrida única do SCF (\S\ref{sec:loop}) e mostra o resultado.
-Usa todo o núcleo teórico (\S1.1--1.10).
+Runs a single SCF pass (\S\ref{sec:loop}) and shows the result. Uses the
+entire theoretical core (\S1.1--1.10).
 
-\textbf{Parâmetros de entrada} (barra lateral): $\rho_c$, $\mu_e$, $k_0$
-(opcional, liga/desliga campo poloidal), razão $B_t/B_p$ alvo e $m$
-(toroidal, opcional), mais os parâmetros numéricos da malha ($N_r$,
-$N_\theta$, $l_{max}$, tol, max\_iter). $\theta$ sempre cobre $[0,\pi]$
-inteiro --- sem simetria equatorial, decisão do plano (D3) para não
-mascarar modos assimétricos ($m=1$).
+\textbf{Input parameters} (sidebar): $\rho_c$, $\mu_e$, $k_0$ (optional,
+toggles the poloidal field on/off), target $B_t/B_p$ ratio and $m$
+(toroidal, optional), plus the numerical mesh parameters ($N_r$,
+$N_\theta$, $l_{max}$, tol, max\_iter). $\theta$ always covers the full
+$[0,\pi]$ --- no equatorial symmetry, a plan decision (D3) so as not to
+mask asymmetric modes ($m=1$).
 
-\textbf{Faixa de $k_0$.} Não é conhecida a priori (depende de $\rho_c$,
-$R$, $\mu_e$ de forma não trivial --- ver o bug de \S\ref{sec:gs}, que por
-muito tempo fez a faixa aparente parecer errada por 3--4 ordens de
-grandeza). O dashboard sonda empiricamente subindo $k_0$ geometricamente
-até $\mathrm{VE}>10^{-3}$ ou a SCF parar de convergir, numa malha
-grosseira, e grava o resultado num cache em
-\code{dashboard/k0\_range\_cache.json}, indexado por $(\rho_c,\mu_e)$.
-\arrowto{dashboard/pages/1\_equilibrio.py :: \_estimate\_k0\_max()}
+\textbf{$k_0$ range.} Not known a priori (it depends on $\rho_c$, $R$,
+$\mu_e$ in a non-trivial way --- see the \S\ref{sec:gs} bug, which for a
+long time made the apparent range look wrong by 3--4 orders of
+magnitude). The dashboard probes empirically by raising $k_0$
+geometrically until $\mathrm{VE}>10^{-3}$ or the SCF stops converging, on
+a coarse mesh, and stores the result in a cache in
+\code{dashboard/k0\_range\_cache.json}, indexed by $(\rho_c,\mu_e)$.
+\arrowto{dashboard/pages/1\_equilibrium.py :: \_estimate\_k0\_max()}
 
-\textbf{Escalares exibidos} (tabela ``Escalares''):
+\textbf{Displayed scalars} (``Scalars'' table):
 
 \begingroup\small
 \begin{longtable}{@{}p{3.4cm}p{5.2cm}p{5.4cm}@{}}
 \toprule
-\textbf{Escalar na tela} & \textbf{Definição} & \textbf{Função}\\
+\textbf{Scalar on screen} & \textbf{Definition} & \textbf{Function}\\
 \midrule
 \endhead
-$M/M_\odot$ & massa total / \code{M\_SUN} & \code{scf.total\_mass()}, \code{units.M\_SUN}\\
-$R_{eq}$, $R_{pol}$ (km) & raio onde $\rho\to0$, no equador e no polo & \code{diagnostics.equatorial\_polar\_radii()}\\
-$R_{pol}/R_{eq}$ & achatamento & razão direta\\
-$\rho_c$ confirmado & $\rho[r{=}0]$ pós-convergência & deve bater com o $\rho_c$ de entrada\\
-$\bar\rho$ média & $M$/volume do elipsoide $(R_{eq},R_{eq},R_{pol})$ & aproximação geométrica, não integral exata\\
+\code{M/M\_sun} & total mass / \code{M\_SUN} & \code{scf.total\_mass()}, \code{units.M\_SUN}\\
+$R_{eq}$, $R_{pol}$ (km) & radius where $\rho\to0$, at the equator and the pole & \code{diagnostics.equatorial\_polar\_radii()}\\
+$R_{pol}/R_{eq}$ & flattening & direct ratio\\
+$\rho_c$ confirmed & $\rho[r{=}0]$ post-convergence & should match the input $\rho_c$\\
+mean $\rho$ & $M$/volume of the ellipsoid $(R_{eq},R_{eq},R_{pol})$ & geometric approximation, not an exact integral\\
 $W$, $E_{int}{=}\Pi$, $E_{mag}$, $E_{pol}$, $E_{tor}$ & \S\ref{sec:virial} & \code{diagnostics.virial\_error()}, \code{magnetic\_energies()}\\
-$E_{mag}/|W|$ & intensidade de campo adimensional & razão direta (âncora de sanidade, \S1.7/1.10)\\
-$B_{pol,max}$, $B_{central}$, $B_{tor,max}$ & valores de campo, gauss & máximos/pontuais de \code{Br}, \code{Bth}, \code{Bphi}\\
-fração de volume do toro & \S\ref{sec:toroidal} & \code{toroidal.closed\_torus\_volume\_fraction()}\\
+$E_{mag}/|W|$ & dimensionless field strength & direct ratio (sanity anchor, \S1.7/1.10)\\
+$B_{pol,max}$, $B_{central}$, $B_{tor,max}$ & field values, gauss & maxima/pointwise values of \code{Br}, \code{Bth}, \code{Bphi}\\
+torus volume fraction & \S\ref{sec:toroidal} & \code{toroidal.closed\_torus\_volume\_fraction()}\\
 VE & \S\ref{sec:virial} & \code{diagnostics.virial\_error()}\\
 \bottomrule
 \end{longtable}
 \endgroup
 
-\textbf{Convergência}: dois gráficos ($\max|\Delta\rho|/\rho_c$ e VE,
-ambos por iteração, escala log) \arrowto{plots.plot\_convergence(), plots.plot\_virial\_history()}
-O histórico de VE só existe se \code{hachisu\_scf(..., track\_virial=True)}
---- custa integrais extras a cada iteração, por isso é opcional (ver
+\textbf{Convergence}: two plots ($\max|\Delta\rho|/\rho_c$ and VE, both
+vs. iteration, log scale) \arrowto{plots.plot\_convergence(), plots.plot\_virial\_history()}
+The VE history only exists if \code{hachisu\_scf(..., track\_virial=True)}
+--- it costs extra integrals every iteration, so it is optional (see
 \S\ref{sec:loop}).
 
-\textbf{Bt/Bp}: as duas razões de \S1.8, lado a lado, sempre rotuladas.
+\textbf{Bt/Bp}: the two ratios of \S1.8, side by side, always labeled.
 
-\textbf{Figuras do plano meridional} (\S1.3):
+\textbf{Meridional-plane figures} (\S1.3):
 \begin{itemize}[leftmargin=1.4em]
-\item \textbf{densidade}: mapa de cor de $\rho$, com a fronteira $H=0$ (a
-  superfície da estrela) sobreposta em ciano \arrowto{plots.plot\_density()}
-\item \textbf{linhas de campo poloidal}: contornos de $u$ --- fisicamente,
-  cada contorno \emph{é} uma linha de campo poloidal (\S1.3), porque
-  $\mathbf{B}$ é tangente às curvas de $u$ constante por construção
-  ($\mathbf{B}\cdot\nabla u=0$ decorre diretamente das fórmulas de
-  $B_r,B_\theta$ em termos de derivadas de $u$). A última linha fechada
-  ($u_c$, \S\ref{sec:toroidal}) é destacada em vermelho quando há toroidal
-  imposto \arrowto{plots.plot\_flux\_contours()}
-\item \textbf{campo toroidal}: mapa de cor de $B_\varphi$, mostra o toro
-  confinado \arrowto{plots.plot\_toroidal()}
+\item \textbf{density}: color map of $\rho$, with the $H=0$ boundary (the
+  stellar surface) overlaid in cyan \arrowto{plots.plot\_density()}
+\item \textbf{poloidal field lines}: contours of $u$ --- physically, each
+  contour \emph{is} a poloidal field line (\S1.3), because $\mathbf{B}$
+  is tangent to the curves of constant $u$ by construction
+  ($\mathbf{B}\cdot\nabla u=0$ follows directly from the formulas for
+  $B_r,B_\theta$ in terms of derivatives of $u$). The last closed line
+  ($u_c$, \S\ref{sec:toroidal}) is highlighted in red when a toroidal
+  field is imposed \arrowto{plots.plot\_flux\_contours()}
+\item \textbf{toroidal field}: color map of $B_\varphi$, shows the
+  confined torus \arrowto{plots.plot\_toroidal()}
 \end{itemize}
 
-Todos os eixos radiais em km, campo sempre em gauss com colorbar em
-notação científica (regra R4, \S1.10).
+All radial axes in km, field always in gauss with a colorbar in
+scientific notation (rule R4, \S1.10).
 
-\section{Aba 2 --- Varredura}
+\section{Tab 2 --- Sweep}
 
-\arrowto{dashboard/pages/2\_varredura.py, dashboard/sweep\_worker.py}
+\arrowto{dashboard/pages/2\_sweep.py, dashboard/sweep\_worker.py}
 
-Roda o SCF (\S\ref{sec:loop}) numa grade de $(\rho_c,k_0)$ em paralelo
-(\code{ProcessPoolExecutor}), com cache por hash dos parâmetros
+Runs the SCF (\S\ref{sec:loop}) on a $(\rho_c,k_0)$ grid in parallel
+(\code{ProcessPoolExecutor}), with caching by parameter hash
 (\code{store.run\_exists()}/\code{store.save\_run()}, \S\ref{sec:aba4}).
-Cada ponto da grade é uma chamada independente a \code{scf.hachisu\_scf()}
-seguida dos mesmos diagnósticos da Aba 1 --- nenhuma física nova, só
-orquestração.
+Each grid point is an independent call to \code{scf.hachisu\_scf()}
+followed by the same diagnostics as Tab 1 --- no new physics, just
+orchestration.
 
-\arrowto{dashboard/sweep\_worker.py :: run\_one()} --- a função picklable que cada processo da grade executa.
+\arrowto{dashboard/sweep\_worker.py :: run\_one()} --- the picklable function each grid worker process runs.
 
-\textbf{O que é uma sequência de equilíbrio.} Fixando $\rho_c$ e variando
-$k_0$ (ou vice-versa), obtém-se uma sequência de configurações de
-equilíbrio. \textbf{A sequência termina} quando o SCF para de convergir ou
-quando VE ultrapassa o limite de aceite (\S\ref{sec:virial}) e não melhora
-com resolução --- ver os números medidos em \S\ref{sec:limitacoes}. Uma
-terminação de sequência é, em si, um resultado físico (não um erro a ser
-corrigido): sinaliza o limite de validade daquela família de equilíbrios.
+\textbf{What an equilibrium sequence is.} Fixing $\rho_c$ and varying
+$k_0$ (or vice versa) produces a sequence of equilibrium configurations.
+\textbf{The sequence ends} when the SCF stops converging or when VE
+exceeds the acceptance threshold (\S\ref{sec:virial}) and does not
+improve with resolution --- see the measured numbers in
+\S\ref{sec:limitacoes}. A sequence ending is, in itself, a physical
+result (not an error to be fixed): it signals the limit of validity of
+that family of equilibria.
 
-\textbf{Diagrama M-R.} $R_{eq}$ (km) no eixo x, $M/M_\odot$ no eixo y,
-colorido por $k_0$. A reta horizontal em $1{,}44\,M_\odot$ marca o limite
-de Chandrasekhar \textbf{sem campo} ($\mu_e=2$) --- não é o limite físico
-da sequência magnetizada, é só uma referência de leitura. Overlay opcional
-de pontos da literatura de
-\code{dashboard/data/referencias/bera\_bhattacharya\_2014.csv}, se o
-arquivo existir (não existe atualmente neste repositório --- nenhum dado
-foi digitalizado; o dashboard funciona sem ele e avisa que falta).
+\textbf{M-R diagram.} $R_{eq}$ (km) on the x-axis, $M/M_\odot$ on the
+y-axis, colored by $k_0$. The horizontal line at $1.44\,M_\odot$ marks
+the Chandrasekhar limit \textbf{without a field} ($\mu_e=2$) --- it is
+not the physical limit of the magnetized sequence, it's just a reading
+reference. Optional overlay of literature data points from
+\code{dashboard/data/references/bera\_bhattacharya\_2014.csv}, if the
+file exists (it does not currently exist in this repository --- no data
+has been digitized; the dashboard works without it and warns that it's
+missing).
 
-\begin{whybox}{Por que o máximo de massa relevante é sobre o plano inteiro, não uma fatia}
-Este é o ponto que mais gera comparação errada com a literatura.
-$M_{max}(k_0{=}0)$ já depende de $\rho_c$: só se aproxima do limite de
-Chandrasekhar assintoticamente, para $\rho_c$ alto ($\sim10^{11}$--$10^{12}$
-g/cm$^3$ --- ver \code{scf/tests/test\_scf\_v1.py}, validado a $0{,}78\%$
-nessa faixa). Uma fatia de $\rho_c$ baixo (por exemplo $\rho_c=10^9$, usada
-durante a depuração deste projeto) dá $M(k_0{=}0)=1{,}39\,M_\odot$ ---
-\textbf{já abaixo} do limite de Chandrasekhar sem campo, e qualquer massa
-medida ao longo dessa fatia (com ou sem campo) não é comparável ao número
-de referência da literatura ($M_{max}\sim1{,}9\,M_\odot$ em Bera \&
-Bhattacharya 2014), que é o máximo tomado sobre \textbf{todo} o plano
-$(\rho_c,k_0)$, não sobre uma reta $k_0$ variável com $\rho_c$ fixo. A
-varredura desta aba é exatamente o que permite fazer essa comparação
-corretamente --- mapeando o plano, não uma fatia.
+\begin{whybox}{Why the relevant mass maximum is over the whole plane, not a slice}
+This is the point that most often causes an incorrect comparison with
+the literature. $M_{max}(k_0{=}0)$ already depends on $\rho_c$: it only
+approaches the Chandrasekhar limit asymptotically, for high $\rho_c$
+($\sim10^{11}$--$10^{12}$ g/cm$^3$ --- see \code{scf/tests/test\_scf\_v1.py},
+validated to $0.78\%$ in that range). A slice at low $\rho_c$ (for
+example $\rho_c=10^9$, used during this project's debugging) gives
+$M(k_0{=}0)=1.39\,M_\odot$ --- \textbf{already below} the field-free
+Chandrasekhar limit, and any mass measured along that slice (with or
+without a field) is not comparable to the literature reference number
+($M_{max}\sim1.9\,M_\odot$ in Bera \& Bhattacharya 2014), which is the
+maximum taken over the \textbf{entire} $(\rho_c,k_0)$ plane, not over a
+line with $k_0$ varying at fixed $\rho_c$. This tab's sweep is exactly
+what allows that comparison to be made correctly --- by mapping the
+plane, not a slice.
 \end{whybox}
 
-\textbf{Convergência da grade.} Pontos que não convergem são registrados
-(não descartados silenciosamente) e mostrados num expansor separado; a
-taxa de convergência da grade é, ela mesma, informação sobre onde a
-família de soluções termina.
+\textbf{Grid convergence.} Points that fail to converge are recorded (not
+silently dropped) and shown in a separate expander; the grid's
+convergence rate is, itself, information about where the family of
+solutions ends.
 
-\textbf{Mapa de calor de VE.} Sobre a grade $(\rho_c,k_0)$, em
-$\log_{10}(\mathrm{VE})$ --- revela onde o método está no limite da
-validade sem precisar ler número por número.
+\textbf{VE heat map.} Over the $(\rho_c,k_0)$ grid, in
+$\log_{10}(\mathrm{VE})$ --- reveals where the method is at the edge of
+validity without having to read numbers one by one.
 
-\section{Aba 3 --- Exportação}
+\section{Tab 3 --- Export}
 
-\arrowto{dashboard/pages/3\_exportacao.py}
+\arrowto{dashboard/pages/3\_export.py}
 
-Pega um equilíbrio já salvo (Aba 1 ou 2), impõe o toroidal
-(\S\ref{sec:toroidal}) e gera os três artefatos de saída: HDF5 de dado
-inicial, \code{inputs} do Castro, \code{run\_manifest.json}.
+Takes an already-saved equilibrium (Tab 1 or 2), imposes the toroidal
+field (\S\ref{sec:toroidal}) and generates the three output artifacts:
+an HDF5 initial data file, Castro's \code{inputs}, and
+\code{run\_manifest.json}.
 
-\textbf{Imposição do toroidal.} Mesma função de \S\ref{sec:toroidal}
-(\code{toroidal.solve\_zeta\_for\_energy\_ratio()}), com controles
-próprios desta aba (a razão alvo pode ser diferente da usada quando o
-equilíbrio foi salvo). A continuidade de $\beta\beta'$ na borda do toro é
-\textbf{garantida analiticamente} para $m\ge1$ (não é recalculada
-numericamente aqui --- é uma propriedade da forma funcional de
-\S\ref{sec:toroidal}, $(u-u_c)^{m+1}$ e sua derivada vão a zero em
-$u=u_c$ para qualquer $m\ge1$); a página só confirma que \code{m\_tor}$\ge1$
-foi respeitado.
+\textbf{Toroidal imposition.} Same function as \S\ref{sec:toroidal}
+(\code{toroidal.solve\_zeta\_for\_energy\_ratio()}), with this tab's own
+controls (the target ratio may differ from the one used when the
+equilibrium was saved). Continuity of $\beta\beta'$ at the torus edge is
+\textbf{guaranteed analytically} for $m\ge1$ (it is not recomputed
+numerically here --- it is a property of the functional form of
+\S\ref{sec:toroidal}, $(u-u_c)^{m+1}$ and its derivative go to zero at
+$u=u_c$ for any $m\ge1$); the page only confirms that
+\code{m\_tor}$\ge1$ was respected.
 
-\textbf{Por que o campo é inicializado pelo potencial vetor, não por B nos
-centros.} Isto é uma decisão do lado Castro (D3 do plano, seção 5), não
-algo que o SCF resolve --- mas o dashboard já prepara os dados nesse
-formato: o HDF5 exportado contém $A_\varphi$ (calculado como $u/\varpi$ a
-partir da função de fluxo convergida), \textbf{não} $B_r$, $B_\theta$
-diretamente. O algoritmo de transporte restrito do Castro mantém
-$\mathbf{B}$ nas faces da malha; inicializar via $\nabla\times\mathbf{A}$
-interpolado nas arestas garante $\nabla\cdot\mathbf{B}=0$ na precisão de
-máquina por construção. Inicializar com valores de $\mathbf{B}$ nos centros
-das células não dá essa garantia. \textbf{O que falta:} a interpolação de
-$A_\varphi$ para as arestas da malha cartesiana e o cálculo de
-$\nabla\times\mathbf{A}$ ali é responsabilidade do
-\code{problem\_initialize\_mhd\_data.H} do Castro, que ainda não foi
-escrito (Fase 0 do plano pendente) --- o dashboard entrega $A_\varphi$
-numa malha esférica $(r,\theta)$; a interpolação para a malha cartesiana
-do Castro acontece do outro lado.
+\textbf{Why the field is initialized from the vector potential, not from
+B at cell centers.} This is a Castro-side decision (D3 of the plan,
+section 5), not something the SCF resolves --- but the dashboard already
+prepares the data in that format: the exported HDF5 file contains
+$A_\varphi$ (computed as $u/\varpi$ from the converged flux function),
+\textbf{not} $B_r$, $B_\theta$ directly. Castro's constrained-transport
+algorithm keeps $\mathbf{B}$ on the mesh faces; initializing via
+$\nabla\times\mathbf{A}$ interpolated onto the edges guarantees
+$\nabla\cdot\mathbf{B}=0$ to machine precision by construction.
+Initializing with $\mathbf{B}$ values at cell centers does not give that
+guarantee. \textbf{What's missing:} interpolating $A_\varphi$ onto the
+Cartesian mesh edges and computing $\nabla\times\mathbf{A}$ there is the
+responsibility of Castro's \code{problem\_initialize\_mhd\_data.H}, which
+has not been written yet (Phase 0 of the plan is pending) --- the
+dashboard delivers $A_\varphi$ on a spherical $(r,\theta)$ mesh;
+interpolation onto Castro's Cartesian mesh happens on the other side.
 
-\textbf{Convenção $B'=B/\sqrt{4\pi}$.} Ver \S1.10. O HDF5 exportado por
-esta aba guarda $B_\varphi$ em gauss puro, com um atributo \code{units} no
-cabeçalho dizendo isso explicitamente --- a conversão para a convenção do
-Castro ainda não acontece neste pipeline (ver nota de estado em \S1.10 e a
-lacuna em \S\ref{sec:aberto}).
+\textbf{$B'=B/\sqrt{4\pi}$ convention.} See \S1.10. The HDF5 file
+exported by this tab stores $B_\varphi$ in pure gauss, with a
+\code{units} attribute in the header saying so explicitly --- the
+conversion to the Castro convention does not yet happen in this pipeline
+(see the status note in \S1.10 and the gap in \S\ref{sec:aberto}).
 
-\textbf{Escalas derivadas e o custo da simulação.} $t_{din}$, $v_A$,
-$t_{\text{Alfvén}}$ e a razão $t_{\text{Alfvén}}/t_{din}$ de \S1.10, calculados a partir
-do $\langle B\rangle$ e $\bar\rho$ do equilíbrio carregado. Um badge de
-sucesso aparece quando a razão está entre 0,3 e 3 --- o regime de campo
-forte que torna a simulação barata (D4 do plano).
+\textbf{Derived scales and simulation cost.} $t_{dyn}$, $v_A$,
+$t_{\text{Alfven}}$ and the $t_{\text{Alfven}}/t_{dyn}$ ratio from
+\S1.10, computed from the $\langle B\rangle$ and $\bar\rho$ of the loaded
+equilibrium. A success badge appears when the ratio is between 0.3 and 3
+--- the strong-field regime that makes the simulation cheap (D4 of the
+plan).
 
-\textbf{Checagem de resolução do toro.} Dado o número de células por lado
-da caixa do Castro (128/256/384) e o tamanho da caixa (múltiplo de
-$R_{eq}$), calcula quantas células atravessam a espessura radial do toro
-(\code{toroidal.torus\_radial\_extent()}, medida no equador). Menos de 10
-células gera aviso --- o toro é pequeno comparado à estrela e é ele que
-precisa ser resolvido (plano, seção 6).
+\textbf{Torus resolution check.} Given the number of cells per side of
+Castro's box (128/256/384) and the box size (a multiple of $R_{eq}$),
+computes how many cells cross the torus's radial extent
+(\code{toroidal.torus\_radial\_extent()}, measured at the equator).
+Fewer than 10 cells triggers a warning --- the torus is small compared
+to the star and it is the torus that needs to be resolved (plan, section
+6).
 
-\textbf{Parâmetros da caixa.} \code{castro.small\_dens} é escolhido como
-$\rho_c\times10^{-8}$ --- esta é uma \textbf{convenção de projeto deste
-dashboard}, não um valor derivado da física nem citado no plano; não há
-justificativa teórica documentada para o expoente $10^{-8}$ além de ser um
-piso de densidade suficientemente baixo para não perturbar a estrela e
-suficientemente alto para não gerar $v_A$ absurdo no vácuo numérico (o
-``problema do fluff'', plano seção 5). O raio de início do sponge
-($1{,}5\,R_{eq}$), a duração do amortecimento ($5\,t_{din}$) e a amplitude
-da perturbação ($10^{-4}c_s$, usando \code{eos.sound\_speed()} no centro)
-vêm diretamente dos valores citados no plano (seção 5), não são
-recalculados/otimizados por este dashboard.
+\textbf{Box parameters.} \code{castro.small\_dens} is chosen as
+$\rho_c\times10^{-8}$ --- this is a \textbf{convention of this
+dashboard's design}, not a value derived from physics nor cited in the
+plan; there is no documented theoretical justification for the $10^{-8}$
+exponent beyond it being a density floor low enough not to perturb the
+star and high enough not to generate an absurd $v_A$ in the numerical
+vacuum (the ``fluff problem'', plan section 5). The sponge start radius
+($1.5\,R_{eq}$), the damping duration ($5\,t_{dyn}$) and the perturbation
+amplitude ($10^{-4}c_s$, using \code{eos.sound\_speed()} at the center)
+come directly from the values cited in the plan (section 5), and are not
+recalculated/optimized by this dashboard.
 
-\textbf{R5 --- exportação bloqueada se $\mathrm{VE}\ge10^{-3}$}, sem opção
-de forçar. Implementado como um \code{if}/\code{else} simples em torno do
-botão de exportação --- não há mecanismo de override em nenhuma camada.
+\textbf{R5 --- export blocked if $\mathrm{VE}\ge10^{-3}$}, with no
+override option. Implemented as a simple \code{if}/\code{else} around
+the export button --- there is no override mechanism at any layer.
 
-\section{Aba 4 --- Registro}
+\section{Tab 4 --- Runs}
 \label{sec:aba4}
 
-\arrowto{dashboard/pages/4\_corridas.py, dashboard/store.py}
+\arrowto{dashboard/pages/4\_runs.py, dashboard/store.py}
 
-Sem física --- este módulo só persiste o que as outras abas já calcularam
-(regra R1/R3 do dashboard).
+No physics --- this module only persists what the other tabs have
+already computed (dashboard rule R1/R3).
 
-\textbf{O que é gravado}, por corrida, em \code{dashboard/runs/<hash>/}:
+\textbf{What gets saved}, per run, in \code{dashboard/runs/<hash>/}:
 
 \begingroup\small
 \begin{longtable}{@{}p{2.6cm}p{5.5cm}p{2.5cm}@{}}
 \toprule
-\textbf{Arquivo} & \textbf{Conteúdo} & \textbf{Função}\\
+\textbf{File} & \textbf{Content} & \textbf{Function}\\
 \midrule
 \endhead
-\code{params.json} & parâmetros de entrada completos & \code{store.save\_run()}\\
-\code{scalars.json} & escalares derivados (mesmos da tabela da Aba 1) & idem\\
-\code{fields.npz} & \code{rho, Phi, u, H, Bphi, r, theta} na malha & idem\\
-\code{manifest.json} & hash, timestamp, git, dependências & idem\\
+\code{params.json} & full input parameters & \code{store.save\_run()}\\
+\code{scalars.json} & derived scalars (same as the Tab 1 table) & same\\
+\code{fields.npz} & \code{rho, Phi, u, H, Bphi, r, theta} on the mesh & same\\
+\code{manifest.json} & hash, timestamp, git, dependencies & same\\
 \bottomrule
 \end{longtable}
 \endgroup
 
-\code{dashboard/runs/index.csv} agrega hash + parâmetros + escalares de
-todas as corridas, para a Aba 4 carregar rápido sem abrir cada diretório
+\code{dashboard/runs/index.csv} aggregates hash + parameters + scalars
+for all runs, so Tab 4 can load quickly without opening every directory
 (\code{store.load\_index()}).
 
-\textbf{Por que hash de git importa.} \code{manifest.json} grava
-\code{git\_commit\_hash(REPO\_ROOT)} --- o commit de \code{scf/} \textbf{e}
-\code{dashboard/} (o mesmo repositório git cobre os dois, inicializado
-especificamente para dar proveniência a este dashboard; \code{amrex/},
-\code{castro/}, \code{microphysics/} são excluídos via \code{.gitignore},
-são repositórios próprios). Um escalar sem o commit associado não pode ser
-reproduzido com confiança --- se o código mudar (por exemplo, o bug de
-\S\ref{sec:gs} sendo corrigido), resultados salvos antes e depois
-\textbf{não são comparáveis}, mesmo com os mesmos parâmetros de entrada.
-\code{git\_dirty()} também é gravado --- sinaliza se havia mudanças não
-commitadas no momento da corrida, o que torna a reprodução exata
-impossível mesmo sabendo o hash.
+\textbf{Why the git hash matters.} \code{manifest.json} records
+\code{git\_commit\_hash(REPO\_ROOT)} --- the commit of \code{scf/}
+\textbf{and} \code{dashboard/} (the same git repository covers both,
+initialized specifically to give this dashboard provenance;
+\code{amrex/}, \code{castro/}, \code{microphysics/} are excluded via
+\code{.gitignore}, being their own repositories). A scalar without its
+associated commit cannot be reproduced with confidence --- if the code
+changes (for example, the \S\ref{sec:gs} bug being fixed), results saved
+before and after \textbf{are not comparable}, even with the same input
+parameters. \code{git\_dirty()} is also recorded --- it flags whether
+there were uncommitted changes at the time of the run, which makes exact
+reproduction impossible even knowing the hash.
 
-\arrowto{dashboard/store.py :: git\_commit\_hash(), git\_dirty(), dependency\_versions()} (versões de \code{numpy}, \code{scipy}, \code{streamlit}, \code{plotly}, \code{h5py}, \code{python}).
+\arrowto{dashboard/store.py :: git\_commit\_hash(), git\_dirty(), dependency\_versions()} (versions of \code{numpy}, \code{scipy}, \code{streamlit}, \code{plotly}, \code{h5py}, \code{python}).
 
-\textbf{Cache.} O hash é \code{sha256(json(params, sort\_keys=True))[:12]}
-(\code{store.params\_hash()}) --- determinístico nos parâmetros, usado
-tanto para nomear o diretório da corrida quanto para a Aba 2 pular pontos
-já calculados.
+\textbf{Cache.} The hash is \code{sha256(json(params, sort\_keys=True))[:12]}
+(\code{store.params\_hash()}) --- deterministic in the parameters, used
+both to name the run's directory and for Tab 2 to skip already-computed
+points.
 
-\textbf{Versão de esquema:} \textbf{não existe} um campo
-\code{schema\_version} (ou equivalente) em \code{manifest.json} ou
-\code{scalars.json} atualmente. Quando o conjunto de escalares mudou
-durante este projeto (por exemplo, ao adicionar \code{B\_pol,max (G)} ao
-schema da Aba 2), corridas salvas antes da mudança ficaram com colunas
-ausentes em \code{index.csv}, quebrando gráficos que esperavam a coluna
-nova --- isso já aconteceu de verdade durante o desenvolvimento e foi
-contornado apagando o cache antigo manualmente, não por um mecanismo de
-versionamento. Fica registrado como lacuna em \S\ref{sec:aberto}.
+\textbf{Schema version:} \textbf{there is no} \code{schema\_version}
+field (or equivalent) in \code{manifest.json} or \code{scalars.json}
+currently. When the set of scalars changed during this project (for
+example, when \code{B\_pol,max (G)} was added to Tab 2's schema), runs
+saved before the change ended up with missing columns in
+\code{index.csv}, breaking charts that expected the new column --- this
+actually happened during development and was worked around by manually
+deleting the old cache, not by a versioning mechanism. Recorded in
+\S\ref{sec:aberto} as a gap.
 
-\textbf{Funcionalidades:} tabela filtrável/ordenável (\code{st.data\_editor},
-formatada por coluna conforme a regra R4 --- gauss em notação científica,
-km com 2 casas), comparação lado a lado de duas corridas, recarregar uma
-corrida na Aba 1 (via \code{st.session\_state["reload\_run\_params"]} +
-\code{st.switch\_page}), marcar como referência
-(\code{store.mark\_reference()} --- hoje só grava a flag; nenhuma outra
-aba lê \code{reference} ainda, ver \S\ref{sec:aberto}).
+\textbf{Features:} filterable/sortable table (\code{st.data\_editor},
+formatted per column per rule R4 --- gauss in scientific notation, km
+with 2 decimal places), side-by-side comparison of two runs, reload a
+run into Tab 1 (via \code{st.session\_state["reload\_run\_params"]} +
+\code{st.switch\_page}), mark as reference (\code{store.mark\_reference()}
+--- today it only records the flag; no other tab reads \code{reference}
+yet, see \S\ref{sec:aberto}).
 
-\section{Limitações conhecidas}
+\section{Known limitations}
 \label{sec:limitacoes}
 
-Números medidos, não descrições vagas --- todos na configuração
-$\rho_c=10^9$ g/cm$^3$, $R\approx3\times10^8$ cm, \code{nr=161},
-\code{ntheta=65}, $l_{max}=16$ salvo onde indicado:
+Measured numbers, not vague descriptions --- all in the $\rho_c=10^9$
+g/cm$^3$, $R\approx3\times10^8$ cm, \code{nr=161}, \code{ntheta=65},
+$l_{max}=16$ configuration unless otherwise noted:
 
 \begin{itemize}[leftmargin=1.4em,itemsep=0.4em]
-\item \textbf{O critério $\mathrm{VE}<10^{-3}$ falha acima de
-  $k_0\approx2\times10^{-12}$} nesta configuração. O último ponto válido é
-  $k_0\approx1{,}6\times10^{-12}$, $M\approx1{,}50\,M_\odot$,
-  $\mathrm{VE}\approx6{,}6\times10^{-4}$. Em $k_0\approx2{,}3\times10^{-12}$
-  ($M\approx2{,}02\,M_\odot$), $\mathrm{VE}\approx1{,}57\times10^{-3}$ ---
-  acima do limite.
-\item \textbf{Nesse mesmo ponto ($k_0\approx2{,}3\times10^{-12}$) o pico de
-  densidade migra para fora do centro} --- de \code{r\_idx=1}
-  (essencialmente a origem) para \code{r\_idx}$\approx25$ (raio real, não
-  artefato de grade) --- e $R_{pol}/R_{eq}$ cai a $\sim0{,}61$: evacuação
-  equatorial genuína. A âncora em $\rho_c(r{=}0)$ (\S\ref{sec:bernoulli})
-  perde sentido físico exatamente aí, porque o centro deixou de ser o
-  ponto de densidade máxima.
-\item \textbf{Está em aberto se a falha do VE acima é resolução
-  insuficiente ou terminação de sequência genuína --- mas há evidência
-  forte para a segunda hipótese}: um estudo de convergência feito neste
-  projeto ($l_{max}$ de 16 a 48, malha de $129^2$ a $385^2$, quase $9\times$
-  mais pontos) manteve VE em $1{,}2$--$1{,}6\times10^{-3}$, \textbf{sem
-  tendência de queda} --- um platô acima do limite, não uma curva
-  convergindo para zero. Isso é a assinatura esperada de uma terminação
-  física, não de sub-resolução.
-\item \textbf{Todos os resultados de sequência ($k_0$ variável) documentados
-  acima são de uma única fatia $\rho_c=10^9$}, onde
-  $M(k_0{=}0)=1{,}39\,M_\odot$ --- abaixo do próprio limite de
-  Chandrasekhar sem campo ($1{,}44\,M_\odot$). Comparações com máximos de
-  massa da literatura ($M_{max}\sim1{,}9\,M_\odot$, Bera \& Bhattacharya
-  2014) exigem varredura no plano $(\rho_c,k_0)$ inteiro (Aba 2), não uma
-  fatia --- ver \S3.
-\item \textbf{A conversão $B'=B/\sqrt{4\pi}$ do Castro não é aplicada em
-  nenhum lugar do pipeline de exportação atual} (\S1.10, \S4) --- o HDF5
-  exportado guarda $B$ em gauss puro, documentado via atributo. Fica
-  responsabilidade do \code{problem\_initialize.H} do Castro (não escrito
-  ainda).
-\item \textbf{A Fase 0 do plano (compilar o Castro com \code{USE\_MHD=TRUE})
-  está pendente} --- dependências de sistema (\code{gfortran},
-  \code{libhdf5-openmpi-dev}, \code{libopenmpi-dev}) ainda não instaladas
-  neste ambiente. Nada na Aba 3 foi testado contra um Castro real.
+\item \textbf{The $\mathrm{VE}<10^{-3}$ criterion fails above
+  $k_0\approx2\times10^{-12}$} in this configuration. The last valid
+  point is $k_0\approx1.6\times10^{-12}$, $M\approx1.50\,M_\odot$,
+  $\mathrm{VE}\approx6.6\times10^{-4}$. At $k_0\approx2.3\times10^{-12}$
+  ($M\approx2.02\,M_\odot$), $\mathrm{VE}\approx1.57\times10^{-3}$ ---
+  above the threshold.
+\item \textbf{At that same point ($k_0\approx2.3\times10^{-12}$) the
+  density peak migrates away from the center} --- from \code{r\_idx=1}
+  (essentially the origin) to \code{r\_idx}$\approx25$ (a real radius,
+  not a grid artifact) --- and $R_{pol}/R_{eq}$ drops to $\sim0.61$:
+  genuine equatorial evacuation. The anchor at $\rho_c(r{=}0)$
+  (\S\ref{sec:bernoulli}) loses physical meaning right there, because
+  the center is no longer the point of maximum density.
+\item \textbf{Whether the VE failure above is insufficient resolution or
+  a genuine sequence termination is an open question --- but there is
+  strong evidence for the second hypothesis}: a convergence study done
+  in this project ($l_{max}$ from 16 to 48, mesh from $129^2$ to
+  $385^2$, nearly $9\times$ more points) kept VE at
+  $1.2$--$1.6\times10^{-3}$, \textbf{with no downward trend} --- a
+  plateau above the threshold, not a curve converging to zero. This is
+  the expected signature of a physical termination, not of
+  under-resolution.
+\item \textbf{All the sequence results ($k_0$ varying) documented above
+  are from a single $\rho_c=10^9$ slice}, where
+  $M(k_0{=}0)=1.39\,M_\odot$ --- below the field-free Chandrasekhar
+  limit itself ($1.44\,M_\odot$). Comparisons with literature mass
+  maxima ($M_{max}\sim1.9\,M_\odot$, Bera \& Bhattacharya 2014) require
+  sweeping the entire $(\rho_c,k_0)$ plane (Tab 2), not a slice --- see
+  \S3.
+\item \textbf{Castro's $B'=B/\sqrt{4\pi}$ conversion is not applied
+  anywhere in the current export pipeline} (\S1.10, \S4) --- the
+  exported HDF5 file stores $B$ in pure gauss, documented via an
+  attribute. This is left as the responsibility of Castro's
+  \code{problem\_initialize.H} (not yet written).
+\item \textbf{Phase 0 of the plan (building Castro with
+  \code{USE\_MHD=TRUE}) is pending} --- system dependencies
+  (\code{gfortran}, \code{libhdf5-openmpi-dev}, \code{libopenmpi-dev})
+  have not yet been installed in this environment. Nothing in Tab 3 has
+  been tested against a real Castro build.
 \end{itemize}
 
-\section{Questões em aberto}
+\section{Open questions}
 \label{sec:aberto}
 
-Lacunas identificadas ao escrever este documento --- não preenchidas por
-conta própria (regra G1):
+Gaps identified while writing this document --- not filled in on our own
+initiative (rule G1):
 
 \begin{enumerate}[leftmargin=1.6em,itemsep=0.35em]
-\item \textbf{Teste de consistência de fluxo}
-  ($u(\varpi,z)=\int_0^\varpi B_z\varpi'\,d\varpi'$, \S\ref{sec:gs}) foi
-  proposto durante a depuração do bug da função de Green mas nunca
-  implementado como teste separado. O teste de Ampère sozinho bastou para
-  achar e confirmar o bug; o de fluxo ficaria como segunda linha de defesa
-  independente.
-\item \textbf{Identidade do virial magnético}
+\item \textbf{Flux consistency test}
+  ($u(\varpi,z)=\int_0^\varpi B_z\varpi'\,d\varpi'$, \S\ref{sec:gs}) was
+  proposed during debugging of the Green's-function bug but never
+  implemented as a separate test. The Ampère test alone was enough to
+  find and confirm the bug; the flux test would serve as a second,
+  independent line of defense.
+\item \textbf{Magnetic virial identity}
   ($\int\rho\nabla M(u)\cdot\mathbf{r}\,dV=\int B^2/8\pi\,dV$,
-  \S\ref{sec:virial}) não tem função dedicada em \code{diagnostics.py} nem
-  teste comitado --- só foi verificada numericamente de forma ad hoc numa
-  sessão de depuração.
-\item \textbf{A fórmula $J_\varphi=c\rho\varpi f(u)$} (\S\ref{sec:gs}) não
-  corresponde a nenhuma função --- nunca é calculada como quantidade
-  nomeada no código.
-\item \textbf{$B_{unit}=R\rho\sqrt{8\pi G}$} (\S1.10, unidade natural de
-  campo) não está implementada --- foi usada só como estimativa de ordem
-  de grandeza durante a depuração.
-\item \textbf{Sem \code{schema\_version}} em \code{manifest.json}/\code{scalars.json}
-  (\S\ref{sec:aba4}) --- mudanças no conjunto de escalares já quebraram
-  \code{index.csv} de corridas antigas uma vez durante este projeto.
-\item \textbf{\code{store.mark\_reference()}} grava a flag \code{reference}
-  no índice, mas nenhuma outra aba (em particular a Aba 2, que segundo o
-  prompt original deveria mostrar corridas de referência nos gráficos) lê
-  essa flag ainda.
-\item \textbf{\code{castro.small\_dens}$=\rho_c\times10^{-8}$} (\S4) é uma
-  convenção sem justificativa teórica documentada --- funciona como ponto
-  de partida, não como valor calibrado.
-\item \textbf{A questão original que motivou toda a investigação do bug de
-  \S\ref{sec:gs}} --- se a razão $(E_{mag}/|W|)/(M_u/H_c)\approx0{,}5$
-  (regime linear) tem uma derivação fechada, ou é só o que se observa
-  numericamente nesta EOS e nesta faixa de parâmetros --- não foi
-  resolvida analiticamente, só confirmada como autoconsistente (constante
-  sob $k_0\to2k_0$).
-\item \textbf{\code{gauss\_to\_castro()}/\code{castro\_to\_gauss()}} existem
-  e estão corretas (conferido neste ciclo), mas não são chamadas por
-  nenhum código de exportação ainda --- ver limitação em
+  \S\ref{sec:virial}) has no dedicated function in \code{diagnostics.py}
+  and no committed test --- it was only verified numerically in an ad
+  hoc way during one debugging session.
+\item \textbf{The formula $J_\varphi=c\rho\varpi f(u)$} (\S\ref{sec:gs})
+  does not correspond to any function --- it is never computed as a
+  named quantity in the code.
+\item \textbf{$B_{unit}=R\rho\sqrt{8\pi G}$} (\S1.10, natural field unit)
+  is not implemented --- it was used only as an order-of-magnitude
+  estimate during debugging.
+\item \textbf{No \code{schema\_version}} in
+  \code{manifest.json}/\code{scalars.json} (\S\ref{sec:aba4}) ---
+  changes to the set of scalars have already broken \code{index.csv} for
+  old runs once during this project.
+\item \textbf{\code{store.mark\_reference()}} records the
+  \code{reference} flag in the index, but no other tab (in particular
+  Tab 2, which per the original prompt should show reference runs on its
+  charts) reads that flag yet.
+\item \textbf{\code{castro.small\_dens}$=\rho_c\times10^{-8}$} (\S4) is a
+  convention with no documented theoretical justification --- it works
+  as a starting point, not as a calibrated value.
+\item \textbf{The original question that motivated the whole
+  \S\ref{sec:gs} bug investigation} --- whether the ratio
+  $(E_{mag}/|W|)/(M_u/H_c)\approx0.5$ (linear regime) has a closed-form
+  derivation, or is just what is observed numerically for this EOS and
+  this parameter range --- was not resolved analytically, only
+  confirmed as self-consistent (constant under $k_0\to2k_0$).
+\item \textbf{\code{gauss\_to\_castro()}/\code{castro\_to\_gauss()}}
+  exist and are correct (checked in this work cycle), but are not called
+  by any export code yet --- see the limitation in
   \S\ref{sec:limitacoes}.
 \end{enumerate}
 
-\section{Referências}
+\section{References}
 
-\textbf{Método SCF e equilíbrios magnetizados}
+\textbf{SCF method and magnetized equilibria}
 \begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
-\item Hachisu, I. 1986, ApJS 61, 479 --- o método SCF
-\item Tomimura, Y. \& Eriguchi, Y. 2005, MNRAS --- twisted torus, referência canônica
-\item Lander, S. K. \& Jones, D. I. 2009, MNRAS --- campos mistos, funções livres
-\item Lander, S. K. \& Jones, D. I. 2012 --- estabilidade de campos mistos
+\item Hachisu, I. 1986, ApJS 61, 479 --- the SCF method
+\item Tomimura, Y. \& Eriguchi, Y. 2005, MNRAS --- twisted torus, canonical reference
+\item Lander, S. K. \& Jones, D. I. 2009, MNRAS --- mixed fields, free functions
+\item Lander, S. K. \& Jones, D. I. 2012 --- stability of mixed fields
 \end{itemize}
 
-\textbf{Anãs brancas magnetizadas}
+\textbf{Magnetized white dwarfs}
 \begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
-\item Das, U. \& Mukhopadhyay, B. 2014, MNRAS 445, 3951 --- SCF para AB magnetizada
-\item Bera, P. \& Bhattacharya, D. 2014, MNRAS --- M-R autoconsistente com Lorentz
-\item Bera, P. \& Bhattacharya, D. 2016, MNRAS 456, 3375 --- geometria de campo
-\item Bera, P. \& Bhattacharya, D. 2017, MNRAS 465, 4026 --- estudo de perturbação
-\item Nityananda, R. \& Konar, S. 2014 --- crítica aos modelos super-Chandrasekhar
-\item Coelho, J. G. et al. 2014 --- limites do virial
+\item Das, U. \& Mukhopadhyay, B. 2014, MNRAS 445, 3951 --- SCF for magnetized WDs
+\item Bera, P. \& Bhattacharya, D. 2014, MNRAS --- self-consistent M-R with Lorentz force
+\item Bera, P. \& Bhattacharya, D. 2016, MNRAS 456, 3375 --- field geometry
+\item Bera, P. \& Bhattacharya, D. 2017, MNRAS 465, 4026 --- perturbation study
+\item Nityananda, R. \& Konar, S. 2014 --- critique of super-Chandrasekhar models
+\item Coelho, J. G. et al. 2014 --- virial limits
 \end{itemize}
 
-\textbf{Estabilidade}
+\textbf{Stability}
 \begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
-\item Markey, P. \& Tayler, R. J. 1973 --- a instabilidade $m=1$
-\item Braithwaite, J. \& Spruit, H. C. 2004 --- relaxação para configuração estável
+\item Markey, P. \& Tayler, R. J. 1973 --- the $m=1$ instability
+\item Braithwaite, J. \& Spruit, H. C. 2004 --- relaxation to a stable configuration
 \item Braithwaite, J. \& Nordlund, Å. 2006
 \end{itemize}
 
-\textbf{Códigos}
+\textbf{Codes}
 \begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
 \item Castro: \url{https://github.com/AMReX-Astro/Castro}
-\item Documentação MHD: \url{https://amrex-astro.github.io/Castro/docs/mhd.html}
+\item MHD documentation: \url{https://amrex-astro.github.io/Castro/docs/mhd.html}
 \item XNS: \url{https://www.arcetri.inaf.it/science/ahead/XNS/}
 \end{itemize}
 

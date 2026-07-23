@@ -1,4 +1,4 @@
-"""Aba 1 — Equilibrio: execucao unica do SCF, inspecao. R1: fisica so' via scf.*"""
+"""Tab 1 — Equilibrium: single SCF run, inspection. R1: physics only via scf.*"""
 
 import json
 import sys
@@ -20,8 +20,8 @@ import store
 import plots
 import seed
 
-st.set_page_config(page_title="Equilíbrio — wd-magnetizada", layout="wide")
-st.title("Aba 1 — Equilíbrio")
+st.set_page_config(page_title="Equilibrium — wd-magnetizada", layout="wide")
+st.title("Tab 1 — Equilibrium")
 
 K0_RANGE_CACHE = _DASHBOARD_DIR / "k0_range_cache.json"
 
@@ -37,8 +37,8 @@ def _save_k0_cache(cache):
 
 
 def _estimate_k0_max(rho_c, mu_e, R_guess):
-    """Sobe k0 geometricamente (malha grosseira, continuacao) ate' VE>1e-3
-    ou a SCF parar de convergir. So' chama scf.* (R1)."""
+    """Raises k0 geometrically (coarse grid, continuation) until VE>1e-3
+    or the SCF stops converging. Only calls scf.* (R1)."""
     nr, ntheta = 81, 33
     r = np.linspace(0, 1.3 * R_guess, nr)
     theta = np.linspace(0, np.pi, ntheta)
@@ -61,48 +61,48 @@ def _estimate_k0_max(rho_c, mu_e, R_guess):
     return max(k0_ok, 1e-20)
 
 
-# ---------------- reload de uma corrida (Aba 4 -> "recarregar na Aba 1") ----------------
+# ---------------- reload a run (Tab 4 -> "reload in Tab 1") ----------------
 _reload = st.session_state.pop("reload_run_params", None)
 if _reload:
-    st.info(f"Parâmetros carregados de uma corrida salva (ρc={_reload['rho_c']:.3e}, "
+    st.info(f"Parameters loaded from a saved run (rho_c={_reload['rho_c']:.3e}, "
             f"k0={_reload['k0']:.3e}).")
 
-# ---------------- barra lateral ----------------
-st.sidebar.header("Parâmetros físicos")
+# ---------------- sidebar ----------------
+st.sidebar.header("Physical parameters")
 _rho_c_options = [10 ** e for e in np.arange(6, 12.01, 0.1)]
-# default alto o suficiente p/ reproduzir Chandrasekhar a <1% com k0=0 (V1) —
-# ver tests/test_scf_v1.py e dashboard/tests/test_smoke.py
+# default high enough to reproduce Chandrasekhar within <1% at k0=0 (V1) —
+# see tests/test_scf_v1.py and dashboard/tests/test_smoke.py
 _rho_c_target = _reload["rho_c"] if _reload else 1e12
 _rho_c_default = min(_rho_c_options, key=lambda x: abs(x - _rho_c_target))
 rho_c = st.sidebar.select_slider(
-    "ρc (g/cm³)", options=_rho_c_options, value=_rho_c_default,
+    "rho_c (g/cm³)", options=_rho_c_options, value=_rho_c_default,
     format_func=lambda x: f"{x:.2e}",
 )
-mu_e = st.sidebar.number_input("μₑ", min_value=1.0, max_value=2.5,
+mu_e = st.sidebar.number_input("mu_e", min_value=1.0, max_value=2.5,
                                 value=_reload["mu_e"] if _reload else 2.0, step=0.1)
 
 R_guess = seed.r_guess(rho_c)
 cache_key = f"{rho_c:.3e}_{mu_e:.2f}"
 k0_cache = _load_k0_cache()
 
-st.sidebar.markdown("**Campo poloidal (k0)**")
+st.sidebar.markdown("**Poloidal field (k0)**")
 _k0_reload = _reload["k0"] if _reload else 0.0
-campo_ligado = st.sidebar.checkbox("campo poloidal ligado", value=(_k0_reload != 0.0))
+field_on = st.sidebar.checkbox("poloidal field on", value=(_k0_reload != 0.0))
 k0 = 0.0
-if campo_ligado:
-    if st.sidebar.button("descobrir faixa útil de k0 (empírico)"):
-        with st.spinner("sondando k0 (malha grosseira, ~poucos segundos)..."):
+if field_on:
+    if st.sidebar.button("find useful k0 range (empirical)"):
+        with st.spinner("probing k0 (coarse grid, ~a few seconds)..."):
             k0_max = _estimate_k0_max(rho_c, mu_e, R_guess)
         k0_cache[cache_key] = k0_max
         _save_k0_cache(k0_cache)
-        st.sidebar.success(f"k0_max ≈ {k0_max:.3e} (VE cruza 1e-3 aqui)")
+        st.sidebar.success(f"k0_max ≈ {k0_max:.3e} (VE crosses 1e-3 here)")
 
     k0_max_known = k0_cache.get(cache_key, 1e-12)
-    st.sidebar.caption(f"faixa conhecida (cache): até {k0_max_known:.2e}. "
-                        "Não conhecida a priori — ver plano, D6.")
-    use_slider = st.sidebar.checkbox("usar slider log", value=True)
+    st.sidebar.caption(f"known range (cache): up to {k0_max_known:.2e}. "
+                        "Not known a priori — see plan, D6.")
+    use_slider = st.sidebar.checkbox("use log slider", value=True)
     _sign_default = "-" if _k0_reload < 0 else "+"
-    sign = st.sidebar.radio("sinal de k0", ["+", "-"], horizontal=True,
+    sign = st.sidebar.radio("k0 sign", ["+", "-"], horizontal=True,
                              index=(0 if _sign_default == "+" else 1))
     _log_k0_default = float(np.log10(abs(_k0_reload))) if _k0_reload != 0.0 else -14.0
     if use_slider:
@@ -110,17 +110,17 @@ if campo_ligado:
                                     _log_k0_default, 0.1)
         k0 = (1 if sign == "+" else -1) * 10 ** log_k0
     else:
-        k0 = st.sidebar.number_input("k0 (entrada livre)",
+        k0 = st.sidebar.number_input("k0 (free entry)",
                                       value=abs(_k0_reload) if _k0_reload else 1e-14, format="%.3e")
         if sign == "-":
             k0 = -abs(k0)
 
 st.sidebar.markdown("**Toroidal (D6)**")
-zeta_target_ratio = st.sidebar.slider("Bt/Bp alvo (energia)", 0.0, 2.0,
+zeta_target_ratio = st.sidebar.slider("Bt/Bp target (energy)", 0.0, 2.0,
                                        _reload["zeta_target_ratio"] if _reload else 0.0, 0.05)
 m_tor = st.sidebar.slider("m_tor", 1, 4, _reload["m_tor"] if _reload else 1)
 
-st.sidebar.header("Parâmetros numéricos")
+st.sidebar.header("Numerical parameters")
 _Nr_opts = [65, 129, 161, 257]
 _Ntheta_opts = [33, 65, 129]
 Nr = st.sidebar.select_slider(
@@ -137,17 +137,18 @@ tol = st.sidebar.select_slider(
 max_iter = st.sidebar.number_input("max_iter", value=_reload["max_iter"] if _reload else 200, step=50)
 
 st.sidebar.caption(
-    "θ cobre [0, π] inteiro (sem simetria equatorial) — deliberado, protege "
-    "contra soluções assimétricas espúrias (m=1)."
+    "theta covers the full [0, pi] range (no equatorial symmetry) — "
+    "deliberate, protects against spurious asymmetric modes (m=1)."
 )
 st.sidebar.caption(
-    "Nota: a formulação (ρc, k0) usada aqui não precisa de sub-relaxação "
-    "(ω) — o método de duas condições de superfície do plano original "
-    "precisava, mas é instável para esta EOS (ver scf/scf.py). Não há "
-    "controle de ω porque não corresponde a nada no solver real."
+    "Note: the (rho_c, k0) formulation used here does not need "
+    "sub-relaxation (omega) — the original plan's two-surface-condition "
+    "method needed it, but is unstable for this EOS (see scf/scf.py). "
+    "There is no omega control because it doesn't correspond to anything "
+    "in the real solver."
 )
 
-# ---------------- executa o SCF ----------------
+# ---------------- run the SCF ----------------
 params = {
     "rho_c": rho_c, "mu_e": mu_e, "k0": k0, "zeta_target_ratio": zeta_target_ratio,
     "m_tor": m_tor, "Nr": Nr, "Ntheta": Ntheta, "lmax": lmax, "tol": tol,
@@ -158,18 +159,18 @@ r = np.linspace(0, 1.3 * R_guess, Nr)
 theta = np.linspace(0, np.pi, Ntheta)
 rho0 = scf_mod.initial_guess(r, theta, rho_c, R_guess)
 
-with st.spinner("rodando SCF..."):
+with st.spinner("running SCF..."):
     result = scf_mod.hachisu_scf(rho0, r, theta, rho_c, k0=k0, mu_e=mu_e, lmax=lmax,
                                   tol=tol, max_iter=int(max_iter), track_virial=True)
 
 if not result["converged"]:
-    st.error(f"SCF não convergiu em {result['iterations']} iterações "
-             f"(último Δρ/ρc = {result['history'][-1]:.3e}).")
+    st.error(f"SCF did not converge in {result['iterations']} iterations "
+             f"(last delta_rho/rho_c = {result['history'][-1]:.3e}).")
     st.stop()
 
 rho, Phi, u, H = result["rho"], result["Phi"], result["u"], result["H"]
 
-# toroidal (D6), se alvo > 0
+# toroidal (D6), if target > 0
 Bphi = np.zeros_like(rho)
 u_c = None
 zeta_used = 0.0
@@ -178,7 +179,7 @@ if zeta_target_ratio > 0 and k0 != 0.0:
         Bphi, zeta_used, u_c = tor.solve_zeta_for_energy_ratio(
             u, rho, r, theta, zeta_target_ratio, m_tor=m_tor)
     except ValueError as e:
-        st.warning(f"Toroidal não imposto: {e}")
+        st.warning(f"Toroidal not imposed: {e}")
 
 Br, Bth = diag.poloidal_field(u, r, theta)
 VE, W, Pi, E_mag = diag.virial_error(rho, Phi, H, Br, Bth, Bphi, r, theta, mu_e)
@@ -187,7 +188,7 @@ M = scf_mod.total_mass(rho, r, theta)
 R_eq, R_pol = diag.equatorial_polar_radii(rho, r, theta)
 rho_mean = M / (4.0 / 3.0 * np.pi * ((R_eq**2 * R_pol) ** (1.0 / 3.0)) ** 3) if R_eq > 0 else float("nan")
 
-# ---------------- painel principal ----------------
+# ---------------- main panel ----------------
 col1, col2 = st.columns(2)
 with col1:
     st.pyplot(plots.plot_convergence(result["history"]))
@@ -195,25 +196,25 @@ with col2:
     if result["ve_history"]:
         st.pyplot(plots.plot_virial_history(result["ve_history"]))
     else:
-        st.info("histórico de VE não disponível")
+        st.info("VE history not available")
 
 if VE < 1e-3:
-    st.success(f"VE = {VE:.3e}  (< 1e-3, critério V3 do plano ✓)")
+    st.success(f"VE = {VE:.3e}  (< 1e-3, plan's V3 criterion ✓)")
 else:
-    st.error(f"VE = {VE:.3e}  (≥ 1e-3, critério V3 do plano ✗ — equilíbrio não confiável)")
+    st.error(f"VE = {VE:.3e}  (>= 1e-3, plan's V3 criterion ✗ — equilibrium not reliable)")
 
-st.subheader("Escalares")
+st.subheader("Scalars")
 B_pol_max_gauss = np.max(np.sqrt(Br**2 + Bth**2))
 B_tor_max_gauss = np.max(np.abs(Bphi))
 frac_torus = tor.closed_torus_volume_fraction(u, rho, r, theta, u_c) if u_c is not None else 0.0
 
 scalars_display = {
-    "M/M☉": M / units.M_SUN,
+    "M/M_sun": M / units.M_SUN,
     "R_eq (km)": units.cm_to_km(R_eq),
     "R_pol (km)": units.cm_to_km(R_pol),
     "R_pol/R_eq": R_pol / R_eq if R_eq > 0 else float("nan"),
-    "ρc confirmado (g/cm³)": rho[0, 0],
-    "ρ média (g/cm³)": rho_mean,
+    "rho_c confirmed (g/cm³)": rho[0, 0],
+    "mean rho (g/cm³)": rho_mean,
     "W (erg)": W,
     "E_int = ∫P dV (erg)": Pi,
     "E_mag (erg)": E_mag,
@@ -221,20 +222,21 @@ scalars_display = {
     "E_tor (erg)": E_tor,
     "E_mag/|W|": E_mag / abs(W) if W != 0 else float("nan"),
     "B_pol,max (G)": B_pol_max_gauss,
-    # Br,Bth em r=0 sao zerados por construcao (poloidal_field, singularidade
-    # de coordenada); usa o primeiro ponto de grade com r>0 como proxy do centro
+    # Br,Bth at r=0 are zeroed by construction (poloidal_field, coordinate
+    # singularity); use the first grid point with r>0 as a proxy for the center
     "B_central (G)": np.sqrt(Br[1, 0] ** 2 + Bth[1, 0] ** 2),
     "B_tor,max (G)": B_tor_max_gauss,
-    "fração de volume do toro": frac_torus,
+    "torus volume fraction": frac_torus,
     "VE": VE,
 }
 
 
 def _format_scalar(key, value):
-    """Regra de formatacao (R4): campo em gauss -> notacao cientifica; raios
-    em km -> casas decimais fixas; resto -> notacao cientifica generica.
-    Valores em scalars_display ja estao nas unidades de exibicao (km, G) —
-    aqui so' decide a STRING, via units.py (ponto unico de verdade)."""
+    """Formatting rule (R4): field in gauss -> scientific notation; radii
+    in km -> fixed decimal places; everything else -> generic scientific
+    notation. Values in scalars_display are already in display units
+    (km, G) — this only decides the STRING, via units.py (single source
+    of truth)."""
     if not isinstance(value, (int, float, np.floating)):
         return value
     if key.endswith("(G)"):
@@ -244,20 +246,21 @@ def _format_scalar(key, value):
     return f"{value:.4e}"
 
 
-st.table({"quantidade": list(scalars_display.keys()),
-          "valor": [_format_scalar(k, v) for k, v in scalars_display.items()]})
+st.table({"quantity": list(scalars_display.keys()),
+          "value": [_format_scalar(k, v) for k, v in scalars_display.items()]})
 
-st.subheader("Bt/Bp — duas definições")
+st.subheader("Bt/Bp — two definitions")
 ratio_energy, ratio_amp = tor.bt_bp_ratios(Br, Bth, Bphi, r, theta)
 c1, c2 = st.columns(2)
-c1.metric("Bt/Bp (energia) = E_tor/E_pol", f"{ratio_energy:.4f}")
-c2.metric("Bt/Bp (amplitude) = max|Bφ|/max|Bpol|", f"{ratio_amp:.4f}")
+c1.metric("Bt/Bp (energy) = E_tor/E_pol", f"{ratio_energy:.4f}")
+c2.metric("Bt/Bp (amplitude) = max|Bphi|/max|Bpol|", f"{ratio_amp:.4f}")
 st.caption(
-    "As duas diferem por ordens de grandeza porque o toroidal fica confinado "
-    "a um volume pequeno (D6) — a literatura é descuidada sobre qual usa."
+    "The two differ by orders of magnitude because the toroidal field is "
+    "confined to a small volume (D6) — the literature is often careless "
+    "about which one it uses."
 )
 
-st.subheader("Figuras (plano meridional)")
+st.subheader("Figures (meridional plane)")
 f1, f2, f3 = st.columns(3)
 with f1:
     st.pyplot(plots.plot_density(rho, r, theta, H=H))
@@ -267,12 +270,12 @@ with f3:
     if np.any(Bphi != 0):
         st.pyplot(plots.plot_toroidal(Bphi, r, theta))
     else:
-        st.info("sem campo toroidal (Bt/Bp alvo = 0)")
+        st.info("no toroidal field (Bt/Bp target = 0)")
 
-# ---------------- persistencia (R2) ----------------
+# ---------------- persistence (R2) ----------------
 st.divider()
-if st.button("salvar esta corrida"):
+if st.button("save this run"):
     scalars_json = {k: float(v) for k, v in scalars_display.items()}
     fields = {"rho": rho, "Phi": Phi, "u": u, "H": H, "Bphi": Bphi, "r": r, "theta": theta}
     h = store.save_run(params, scalars_json, fields)
-    st.success(f"corrida salva: {h}")
+    st.success(f"run saved: {h}")
