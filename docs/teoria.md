@@ -788,6 +788,34 @@ g/cm³** (¹⁶O; up to `~1.4×10¹¹` for pure ⁴He) — V1's high-`ρc` seque
 is a numerical asymptote check, not a claim about real stars, and any
 run intended for Castro export needs `ρc` inside the physical range.
 
+### 1.13 Sweep of the `ρ`-based surface-criterion bug class
+
+The `surface_radius()` bug (§1.11) is structural, not a one-off: *any*
+logic using `ρ==0`/`ρ>0` to locate or test the stellar surface is
+susceptible, because the EOS clip (`density_of_enthalpy`) produces an
+*exact* zero and destroys sub-cell position information; `H` crosses
+zero continuously and does not. Every `ρ`-based comparison in the
+codebase was reviewed for this specific failure mode:
+
+| Location | Verdict | Why |
+|---|---|---|
+| `surface_radius`, `equatorial_polar_radii`, `surface_field`, `surface_dipolarity`, `toroidal.find_uc`/`_surface_u_profile`/`impose_toroidal`/`solve_zeta_for_energy_ratio` | **Migrated to `H`** | Was searching for a sub-grid crossing position — exactly the failure mode |
+| `equatorial_mass_loss_ratio` | Already correct | Takes `R_eq` as an argument (from the now-fixed chain above); interpolates the continuous field `dΦ/dr`, never touches `ρ` directly |
+| `toroidal.check_uc_tangency` (`vacuum = ρ≤0`) | Adequate, kept | Pointwise boolean membership at *existing* grid points; `ρ≤0 ⟺ H≤0` exactly everywhere by construction, no interpolation involved |
+| `toroidal.torus_radial_extent` (`ρ[:,j]>0`) | Adequate, kept | Deliberately reports grid-cell radii (Castro cell-counting check) — quantization is the intended semantics |
+| `toroidal.closed_torus_volume_fraction` (`inside_star=ρ>0`) | Adequate, kept | Feeds a volume integral (grid-summation quadrature); sub-cell precision isn't part of that quadrature's design regardless of boundary criterion |
+| `terms/toroidal_sc.py :: B_phi()` (`ρ_safe`) | Adequate, kept | Numerical safety clamp before a fractional power, not surface detection |
+| `dashboard/plots.py :: plot_flux_contours` (`inside_star=ρ>0`) | Adequate, kept | Purely a plot line-style choice (solid vs. dashed); the actual boundary drawn in the same figure correctly uses `H` |
+| `diagnostics.density_peak_location` (`argmax(ρ)`) | Adequate, unrelated | Finds an *interior* maximum (exact discrete argmax, no interpolation) — not a boundary crossing |
+| Domain-overflow detection | **Does not exist** | Not an instance of this bug class (not an interpolation-precision issue — a "should this radius even be trusted" question), but a related gap surfaced by the same investigation (the branch-jump seen chasing V-R1, §1.11) — not implemented here, flagged in §7 |
+
+**Regression test** (generic, not tied to one function):
+`scf/tests/test_surface_radius_continuity.py` scans `Ω_c` continuously
+and checks `R_eq` shows no grid-plateau signature. Confirmed
+discriminating: a standalone reimplementation of the old `ρ`-based
+formula gives only 23% unique values across the scan (staircase); the
+current `H`-based code gives 100% (continuous).
+
 ---
 
 ## 2. Tab 1 — Equilibrium
@@ -1125,6 +1153,14 @@ initiative (rule G1):
     there) but not implemented as production code — out of scope for now
     since differential rotation (the project's actual target) does not
     hit this problem in the tested range.
+11. **No domain-overflow detection** (§1.13) — nothing checks whether a
+    computed `R_eq`/`R_pol` has suspiciously landed at (or near) the
+    outer edge of the computational domain, which is exactly the failure
+    signature seen when chasing V-R1 (the SCF snapping to a spurious
+    branch that fills the whole box). Not the same bug class as
+    `surface_radius` (this is a "should this radius be trusted at all"
+    question, not an interpolation-precision one) — surfaced by the same
+    investigation, not implemented here.
 
 ---
 

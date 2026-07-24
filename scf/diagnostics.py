@@ -132,7 +132,14 @@ def equatorial_mass_loss_ratio(Phi, rotation, r, theta, R_eq):
     dentro, entao seu MODULO e' dPhi/dr). Razao -> 1 significa que a
     gravidade efetiva se anula no equador (breakup Kepleriano, a estrela
     perde massa ali); razao > 1 e' configuracao que nao pode existir em
-    equilibrio. rotation=None ou R_eq<=0 -> 0.0 (sem rotacao, sem risco)."""
+    equilibrio. rotation=None ou R_eq<=0 -> 0.0 (sem rotacao, sem risco).
+
+    REVISADO (varredura da classe de bug de surface_radius, ver
+    docs/teoria.md Sec 1.11): esta funcao NAO usa rho diretamente -- recebe
+    R_eq como argumento (do chamador, que ja' vem de
+    equatorial_polar_radii(H,...), corrigido) e interpola dPhi/dr (campo
+    continuo, nunca clipado) nesse raio via np.interp(). Ja' estava correta
+    antes desta varredura, por construcao."""
     if rotation is None or R_eq <= 0:
         return 0.0
     j_eq = len(theta) // 2
@@ -246,6 +253,19 @@ def equatorial_polar_radii(H, r, theta):
 def density_peak_location(rho, r, theta):
     """(r, theta) do maximo global de rho — deve ficar em r=0 se o centro
     continua sendo o ponto mais denso; usado para checar se a ancoragem em
-    rho_c (fixada em r=0) ainda faz sentido fisico em campo forte."""
+    rho_c (fixada em r=0) ainda faz sentido fisico em campo forte.
+
+    REVISADO (varredura da classe de bug de surface_radius, ver
+    docs/teoria.md Sec 1.11): np.argmax(rho) e' ADEQUADO aqui, categoria
+    diferente de erro. Isto busca um MAXIMO interior (discreto, exato por
+    construcao — argmax nao interpola nada), nao um cruzamento de
+    fronteira; nao ha' clip da EOS envolvido (rho e' estritamente positivo
+    no interior, o clip so' afeta o exterior/vacuo) nem posicao sub-malha
+    sendo procurada.
+
+    NOTA DE ESTADO: esta funcao nao e' chamada por nenhuma pagina do
+    dashboard ainda (gap ja' registrado antes desta varredura) — a
+    migracao de pico de densidade em campo/rotacao fortes hoje so' e'
+    inspecionada via o grafico plots.plot_density_profile() (Aba 1)."""
     i, j = np.unravel_index(np.argmax(rho), rho.shape)
     return r[i], theta[j], i, j

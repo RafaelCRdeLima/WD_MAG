@@ -146,6 +146,11 @@ class ToroidalSC:
         return (2 * self.m - 1) * self._coef() * s ** (2 * self.m - 2)
 
     def B_phi(self, rho, varpi):
+        # REVISADO (varredura da classe de bug de surface_radius, ver
+        # docs/teoria.md Sec 1.11): rho_safe aqui e' so' um clamp de
+        # seguranca numerica (evita base negativa em ruido de ponto
+        # flutuante elevada a uma potencia fracionaria m) -- NAO e'
+        # deteccao de superficie, nenhuma interpolacao envolvida.
         rho_safe = np.where(rho > 0, rho, 0.0)
         with np.errstate(invalid="ignore"):
             return self.K * rho_safe ** self.m * varpi ** (2 * self.m - 1)

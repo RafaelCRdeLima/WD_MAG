@@ -70,6 +70,12 @@ def plot_flux_contours(u, r, theta, rho=None, u_c=None, H=None, n_levels=7):
     drawn contour lines by up to about one grid cell even when they are
     mathematically exactly tangent (verified: the visual gap shrinks
     roughly linearly with grid spacing and vanishes at high resolution)."""
+    # REVISED (surface_radius bug-class sweep, see docs/teoria.md Sec 1.11):
+    # `rho > 0` here is ADEQUATE, does not need H. This mask only decides
+    # a plot LINE STYLE (solid black vs. dashed gray) -- purely cosmetic,
+    # sub-cell precision is irrelevant for a style choice. The actual
+    # physical boundary drawn in this same figure uses H correctly (the
+    # cyan H=0 contour below).
     varpi, z = _meridional_grid(r, theta)
     fig, ax = plt.subplots(figsize=(4.5, 6.1))
     umin, umax = np.min(u), np.max(u)

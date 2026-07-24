@@ -867,6 +867,70 @@ $\sim1.4\times10^{11}$ for pure $^4$He) --- V1's high-$\rho_c$ sequence
 is a numerical asymptote check, not a claim about real stars, and any
 run intended for Castro export needs $\rho_c$ inside the physical range.
 
+\subsection{\texorpdfstring{Sweep of the $\rho$-based surface-criterion bug class}{Sweep of the rho-based surface-criterion bug class}}
+\label{sec:rho-bug-sweep}
+
+The \code{surface\_radius()} bug (\S\ref{sec:rotation}) is
+structural, not a one-off: \emph{any} logic using $\rho=0$/$\rho>0$ to
+locate or test the stellar surface is susceptible, because the EOS clip
+(\code{density\_of\_enthalpy}) produces an \emph{exact} zero and destroys
+sub-cell position information; $H$ crosses zero continuously and does
+not. Every $\rho$-based comparison in the codebase was reviewed for this
+specific failure mode:
+
+\newcommand{\ccode}[1]{\texttt{\small\seqsplit{#1}}}
+\begin{center}
+\begin{longtable}{@{}p{4.0cm}p{2.6cm}p{8.5cm}@{}}
+\toprule
+Location & Verdict & Why\\
+\midrule
+\endhead
+\ccode{surface\_radius}, \ccode{equatorial\_polar\_radii},
+\ccode{surface\_field}, \ccode{surface\_dipolarity},
+\ccode{toroidal.find\_uc}/\ccode{\_surface\_u\_profile}/
+\ccode{impose\_toroidal}/\ccode{solve\_zeta\_for\_energy\_ratio} &
+\textbf{Migrated to $H$} & Was searching for a sub-grid crossing
+position --- exactly the failure mode\\
+\ccode{equatorial\_mass\_loss\_ratio} & Already correct & Takes $R_{eq}$
+as an argument (from the now-fixed chain above); interpolates the
+continuous field $d\Phi/dr$, never touches $\rho$ directly\\
+\ccode{toroidal.check\_uc\_tangency} ($\mathrm{vacuum}=\rho\le0$) &
+Adequate, kept & Pointwise boolean membership at \emph{existing} grid
+points; $\rho\le0\Leftrightarrow H\le0$ exactly everywhere by
+construction, no interpolation involved\\
+\ccode{toroidal.torus\_radial\_extent} ($\rho[:,j]>0$) & Adequate, kept &
+Deliberately reports grid-cell radii (Castro cell-counting check) ---
+quantization is the intended semantics\\
+\ccode{toroidal.closed\_torus\_volume\_fraction}
+($\mathrm{inside\_star}=\rho>0$) & Adequate, kept & Feeds a volume
+integral (grid-summation quadrature); sub-cell precision isn't part of
+that quadrature's design regardless of boundary criterion\\
+\ccode{terms/toroidal\_sc.py :: B\_phi()} ($\rho_{safe}$) & Adequate,
+kept & Numerical safety clamp before a fractional power, not surface
+detection\\
+\ccode{dashboard/plots.py :: plot\_flux\_contours}
+($\mathrm{inside\_star}=\rho>0$) & Adequate, kept & Purely a plot
+line-style choice (solid vs.\ dashed); the actual boundary drawn in the
+same figure correctly uses $H$\\
+\ccode{diagnostics.density\_peak\_location} ($\mathrm{argmax}(\rho)$) &
+Adequate, unrelated & Finds an \emph{interior} maximum (exact discrete
+argmax, no interpolation) --- not a boundary crossing\\
+Domain-overflow detection & \textbf{Does not exist} & Not an instance
+of this bug class (not an interpolation-precision issue --- a ``should
+this radius even be trusted'' question), but a related gap surfaced by
+the same investigation (the branch-jump seen chasing V-R1, above) ---
+not implemented here, flagged in \S\ref{sec:aberto}\\
+\bottomrule
+\end{longtable}
+\end{center}
+
+\textbf{Regression test} (generic, not tied to one function):
+\code{scf/tests/test\_surface\_radius\_continuity.py} scans $\Omega_c$
+continuously and checks $R_{eq}$ shows no grid-plateau signature.
+Confirmed discriminating: a standalone reimplementation of the old
+$\rho$-based formula gives only 23\% unique values across the scan
+(staircase); the current $H$-based code gives 100\% (continuous).
+
 \clearpage
 \section{Tab 1 --- Equilibrium}
 \label{sec:aba1}
@@ -1248,6 +1312,15 @@ initiative (rule G1):
   implemented as production code --- out of scope for now since
   differential rotation (the project's actual target) does not hit this
   problem in the tested range.
+\item \textbf{No domain-overflow detection}
+  (\S\ref{sec:rho-bug-sweep}) --- nothing checks whether a computed
+  $R_{eq}$/$R_{pol}$ has suspiciously landed at (or near) the outer edge
+  of the computational domain, which is exactly the failure signature
+  seen when chasing V-R1 (the SCF snapping to a spurious branch that
+  fills the whole box). Not the same bug class as \code{surface\_radius}
+  (this is a ``should this radius be trusted at all'' question, not an
+  interpolation-precision one) --- surfaced by the same investigation,
+  not implemented here.
 \end{enumerate}
 
 \section{References}

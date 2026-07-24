@@ -50,8 +50,15 @@ def check_uc_tangency(u, rho, H, r, theta, u_c):
     real precisa ser feita aqui, com a mesma interpolacao 1D por linha de
     theta usada em find_uc(), nao no desenho. Recebe rho E H: H para achar
     a superficie (surface_radius), rho para a checagem pontual de vacuo
-    abaixo (essa NAO sofre do bug de interpolacao -- e' so' um teste
-    booleano rho<=0 por ponto de malha, nao uma busca de posicao sub-malha).
+    abaixo.
+
+    REVISADO (varredura da classe de bug de surface_radius, ver
+    docs/teoria.md Sec 1.11): `vacuum = rho <= 0` e' ADEQUADO, nao sofre
+    do bug. rho<=0 <=> H<=0 exatamente em CADA ponto de malha (pela
+    propria construcao do clip da EOS, eos.density_of_enthalpy — os dois
+    campos nunca discordam sobre qual ponto e' vacuo), e o teste e' so'
+    booleano por ponto de malha ja' existente, nao uma busca de posicao
+    sub-malha (nao ha' "interpolacao" para degenerar aqui).
 
     Retorna dict:
       theta_tangent, r_tangent : localizacao do ponto de tangencia (rad, cm)
@@ -134,7 +141,16 @@ def bt_bp_ratios(Br, Bth, Bphi, r, theta):
 def torus_radial_extent(u, rho, r, theta, u_c, j_index=None):
     """Espessura radial do toro (regiao u>u_c) ao longo de um theta fixo
     (equador por padrao) — usado na Aba 3 para checar quantas celulas do
-    Castro atravessam o toro."""
+    Castro atravessam o toro.
+
+    REVISADO (varredura da classe de bug de surface_radius, ver
+    diagnostics.surface_radius e docs/teoria.md Sec 1.11): `rho[:, j] > 0`
+    aqui e' ADEQUADO, nao precisa de H. Este e' um teste booleano por
+    ponto de malha (rho<=0 <=> H<=0 exatamente, sempre, pela propria
+    construcao do clip da EOS — nao ha' divergencia possivel entre os
+    dois), e o proposito explicito da funcao e' CONTAR CELULAS de malha
+    (r_inner/r_outer sao raios de grade, nao posicoes sub-malha) — a
+    quantizacao e' o comportamento correto aqui, nao um artefato."""
     j = j_index if j_index is not None else len(theta) // 2
     in_torus = (u[:, j] > u_c) & (rho[:, j] > 0)
     if not np.any(in_torus):
@@ -145,7 +161,15 @@ def torus_radial_extent(u, rho, r, theta, u_c, j_index=None):
 
 
 def closed_torus_volume_fraction(u, rho, r, theta, u_c):
-    """fracao do volume estelar com u > u_c (o toro de linhas fechadas)."""
+    """fracao do volume estelar com u > u_c (o toro de linhas fechadas).
+
+    REVISADO (mesma varredura acima): `inside_star = rho > 0` e' ADEQUADO
+    aqui. Alimenta uma integral de VOLUME (soma sobre celulas de malha,
+    via volume_integral/trapezoid) — precisao sub-celula na fronteira nao
+    faz parte do desenho desta quadratura de jeito nenhum, com qualquer
+    criterio de fronteira (mesma limitacao inerente de W, Pi, E_mag, todas
+    somadas do mesmo jeito). Nao e' a mesma categoria de erro que
+    surface_radius (que buscava uma POSICAO precisa, nao uma soma)."""
     inside_star = rho > 0
     in_torus = (u > u_c) & inside_star
     vol_torus = diag.volume_integral(in_torus.astype(float), r, theta)
