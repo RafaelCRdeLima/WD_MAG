@@ -634,6 +634,176 @@ source of truth (dashboard rule R4): \code{cm\_to\_km()},
 \code{g\_to\_msun()}, \code{format\_gauss()}, \code{format\_km()},
 \code{format\_km\_value()}.
 
+\subsection{Rotation and the self-consistent toroidal branch}
+\label{sec:rotation}
+
+Extension added after the original poloidal-only spine, motivated by the
+collaboration's interest in $\sim2\,M_\odot$ white dwarfs as SN~Ia
+progenitors: differential rotation plus a toroidal field, because the two
+deformations oppose each other (rotation flattens, toroidal elongates),
+which pushes back the mass-shedding limit.
+
+\textbf{Architecture.} \code{scf.hachisu\_scf()} takes three optional
+\emph{terms} (\code{scf/terms/}) instead of one function per physics
+combination --- each term contributes an additive piece to the same
+Bernoulli equation:
+\begin{equation}
+H + \Phi - C_{rot}(\varpi) - M_{pol}(u) + M_{tor}(\rho\varpi^2) = C
+\end{equation}
+rearranged for the loop: $H = C - \Phi + C_{rot}(\varpi) + M_{pol}(u) -
+M_{tor}(\rho\varpi^2)$. \code{rotation}/\code{poloidal}/\code{toroidal} =
+\code{None} turns a term off (zero contribution, zero energy).
+\code{poloidal} and \code{toroidal} are mutually exclusive (out of scope:
+self-consistent mixed field --- same reason as D6, barotropy does not
+deliver a free Bt/Bp). With all three \code{None}, the loop reproduces
+the pre-extension code \textbf{bit for bit} (checked against a frozen
+copy of the old \code{scf.py}, \code{scf/tests/test\_regression\_v0.py}).
+
+\textbf{Rotation} (\code{scf/terms/rotation.py}): j-constant law,
+\begin{equation}
+\Omega(\varpi) = \frac{\Omega_c A^2}{A^2+\varpi^2}
+\end{equation}
+with rigid rotation as the $A\to\infty$ limit, handled analytically (not
+a large-but-finite $A$ substitute). Its Bernoulli potential has a closed
+form,
+\begin{equation}
+C_{rot}(\varpi) = \frac{\Omega_c^2 A^2}{2}\frac{\varpi^2}{A^2+\varpi^2}
+\end{equation}
+reducing to $\tfrac{1}{2}\Omega_c^2\varpi^2$ as $A\to\infty$.
+
+The virial theorem gains the rotational kinetic term:
+\begin{align}
+2T + W + 3\Pi + \mathcal{M} &= 0 \ ,\qquad T = \tfrac{1}{2}\int \rho\,\Omega^2(\varpi)\,\varpi^2\,dV\\
+\mathrm{VE} &= \frac{|2T+W+3\Pi+\mathcal{M}|}{|W|}
+\end{align}
+
+\arrowto{diagnostics.virial\_error()} (now takes \code{T=0.0}, default reduces exactly to the old formula) and \code{diagnostics.virial\_error\_terms()} (the term-aware wrapper --- pulls $T$/$B_r$/$B_\theta$/$B_\varphi$ from whichever terms are active and calls \code{virial\_error()}, so the residual formula itself lives in exactly one place).
+
+\textbf{Stability/termination diagnostics:}
+\begin{itemize}[leftmargin=1.4em]
+\item $T/|W|$: $\ge0.14$ secular non-axisymmetric instability threshold
+  (Ostriker \& Bodenheimer 1973), $\ge0.27$ dynamical bar-mode threshold.
+  Same traffic-light convention as VE; blocks export (Tab 3) at
+  $\ge0.14$, same as VE's R5.
+\item Equatorial mass-loss ratio: $\Omega^2(R_{eq})R_{eq} \big/ (d\Phi/dr$
+  at $R_{eq}$, equator$)$ --- $\to1$ signals the effective gravity
+  vanishing at the equator (Keplerian breakup).
+  \arrowto{diagnostics.equatorial\_mass\_loss\_ratio()}
+\end{itemize}
+
+\textbf{Self-consistent purely toroidal field}
+(\code{scf/terms/toroidal\_sc.py}): $B_\varphi = K\rho^m\varpi^{2m-1}$,
+$m\ge1$. Derived from the Lorentz force (Maxwell stress tensor, verified
+symbolically with SymPy for $m=1,2,3/2$ --- residual exactly 0;
+\code{scf/tests/test\_toroidal\_sc.py}):
+\begin{equation}
+M_{tor}(s) = \frac{mK^2}{4\pi(2m-1)}\,s^{2m-1}\ ,\qquad s=\rho\varpi^2
+\end{equation}
+
+Unlike $M_{pol}(u)$, $M_{tor}$ depends on $\rho$ --- the \emph{unknown}
+being solved for at each grid point --- so step 9 of the SCF loop
+(\S\ref{sec:loop}) stops being a direct EOS inversion and becomes a
+per-point root find ($H(\rho)+M_{tor}(\rho\varpi^2)=\mathrm{RHS}$,
+monotonic increasing in $\rho$, safe to bracket with
+\code{scipy.optimize.brentq} --- \arrowto{scf.py :: \_solve\_rho\_implicit()}). This branch does \textbf{not} use Grad-Shafranov at all --- no flux function, no $\Delta^*$, no Green's function; $B_\varphi$ is an algebraic function of the local $\rho$, not a PDE solution.
+
+Validated: turning on the field at fixed $\rho_c$ increases the mass
+(sign check); pure toroidal field produces \textbf{prolate} deformation
+($R_{pol}>R_{eq}$, opposite of the poloidal/oblate case), VE closes
+($\sim4\times10^{-4}$).
+
+\begin{notebox}{Correction --- the sign of the magnetic virial identity, and why it is not ``$M_{tor}$ depends on $\rho$''}
+The magnetic virial identity for this branch is
+\begin{equation}
+\int \rho\,\nabla M_{tor}\cdot\mathbf{r}\,dV \ =\ -\int \frac{B_\varphi^2}{8\pi}\,dV
+\end{equation}
+a \textbf{minus} sign --- confirmed by an independent derivation (Maxwell
+stress tensor divergence: $\int\mathbf{r}\cdot\mathbf{f}_L\,dV=+\int
+B^2/8\pi\,dV$ in general, for any purely toroidal field, regardless of
+any Bernoulli convention) and by clean numerical convergence with grid
+refinement ($2.27\%\to1.00\%\to0.36\%\to0.14\%$ at $nr=65\to257$).
+
+The first version of this note attributed the sign to ``$M_{tor}$ depends
+on $\rho$, $M_{pol}$ does not.'' \textbf{That attribution was wrong},
+caught on review. Here is the actual mechanism: writing the master
+Bernoulli as $H+\Phi-C_{rot}-M_{pol}+M_{tor}=C$ (note the signs: $M_{pol}$
+enters with a minus, $M_{tor}$ with a plus) and comparing its gradient
+against the momentum equation gives $\mathbf{F}_{L,tor}/\rho=
+-\nabla M_{tor}$ --- the minus comes directly from $M_{tor}$ having been
+written with a \textbf{plus} sign in the master equation, full stop.
+Substituting into the sign-fixed, convention-free Maxwell identity
+$\int\mathbf{r}\cdot\mathbf{F}_L\,dV=+\int B^2/8\pi\,dV$ is what produces
+the minus sign in the virial identity. Had the master equation instead
+been written with $-M_{tor}$, the virial identity would come out $+$,
+with $M_{tor}$ depending on $\rho$ in exactly the same way either time.
+\textbf{$\rho$ entering $M_{tor}$ is why the SCF inversion becomes
+implicit (a fact about the algorithm's structure) --- it has nothing to
+do with which sign the virial identity carries (a fact about which
+convention was chosen when the term was first written into the Bernoulli
+equation).} Two different questions, easy to conflate, and conflating
+them is exactly the kind of mistake this project has already been burned
+by once (\S\ref{sec:gs}'s Green's-function bug survived because
+independent-looking checks secretly shared one derivation). Get the
+causal story right here or a future reader ``fixing'' the (correct) code
+to match the (wrong) causal explanation is a real, specific risk --- see
+\code{scf/terms/toroidal\_sc.py} for the full derivation.
+\end{notebox}
+
+\textbf{V-R1/V-R2 status (rigid vs.\ differential rotation, no field).}
+V-R2 (differential, j-constant, $A=0.3\,R_{guess}$) reaches
+$2.19\,M_\odot$ against the $\sim2.2\,M_\odot$ target (Yoon \& Langer
+2005) --- \textbf{0.40\% error}, reached with
+$\mathrm{mass\_loss\_ratio}\sim0.13$, comfortably away from breakup.
+\code{scf/tests/test\_differential\_rotation.py}.
+
+V-R1 (rigid) \textbf{does not validate} against the $\sim1.5\,M_\odot$
+target (Hachisu et al.\ 2012; Boshkayev et al.\ 2013). At
+$\rho_c=10^{12}$, stepping $\Omega_c$ upward with continuation, the
+sequence terminates \emph{numerically} at $R_{pol}/R_{eq}\approx0.932$,
+$\Omega_c\approx26.47$, with \textbf{mass\_loss\_ratio only 0.135} ---
+far from the $\to1$ that a genuine mass-shedding termination requires,
+and far from the Roche-model expectation for a centrally-condensed
+($n\approx3$) configuration, $R_{pol}/R_{eq}=2/3\approx0.667$ at real
+breakup. The cause is not resolved. Two suspects, not yet investigated
+(not on the project's critical path --- Jorge wants differential
+rotation, which already works): outer-layer radial resolution, and ---
+most likely --- $\Omega_c$ itself being a bad control parameter this
+close to the sequence's end (a documented phenomenon in the
+rotating-SCF literature; Hachisu's own method sidesteps it by
+parametrizing on axis ratio and solving for $\Omega^2$, not the
+reverse). A direct test confirms this: bisecting for a target axis ratio
+instead of imposing $\Omega_c$ directly saturates at the same point ---
+no smaller axis ratio is reachable by continuation in $\Omega_c$, for
+any target. The mechanism itself is not in doubt: $(M-M_0)/M_0$ tracks
+$T/|W|$ with a stable proportionality coefficient ($\sim3.0$) across the
+whole tested range, and V-R6 (below) independently confirms $T$. See
+\code{scf/tests/test\_rotation.py} for the full numbers and reasoning
+chain.
+
+\begin{whybox}{Bug found and fixed during this investigation (unrelated to the V-R1 question above, but real and previously unnoticed)}
+\code{diagnostics.surface\_radius()} (and everything built on it ---
+\code{equatorial\_polar\_radii()}, \code{surface\_field()},
+\code{surface\_dipolarity()}, \code{toroidal.find\_uc()},
+\code{impose\_toroidal()}) used to take $\rho$ and linear-interpolate
+where it crosses zero. But $\rho=\mathrm{EOS}^{-1}(H)$ is clipped to
+\emph{exactly} $0.0$ for $H\le0$ (\code{eos.density\_of\_enthalpy}) ---
+so the grid point just past the surface always has $\rho=0.0$ exactly,
+which makes the interpolation fraction collapse to exactly $1.0$ and the
+function always return a raw grid point, never a true sub-grid position.
+Radii were silently grid-quantized project-wide. Fixed by interpolating
+on $H$ instead (continuous, crosses zero smoothly between grid points,
+never clipped) --- verified to shift $R_{eq}$/$R_{pol}$ by tens of km on
+a modest mesh ($nr=65$), not a cosmetic correction. Found by noticing
+that a rotation sequence's $R_{pol}/R_{eq}$ was landing on suspiciously
+exact small integer ratios ($37/39$, $38/39$, \ldots) --- the classic
+signature of grid quantization, not physics.
+\end{whybox}
+
+\textbf{T (Fase 1, V-R6).} Computed two independent ways --- once via
+\code{rotation.energy()}, once via a from-scratch volume integral
+written in the test, not calling any shared code beyond $\Omega(\varpi)$
+--- and the two agree to machine precision ($\mathrm{rel\_diff}=0.00\times10^{0}$).
+
 \clearpage
 \section{Tab 1 --- Equilibrium}
 \label{sec:aba1}
@@ -886,15 +1056,16 @@ reproduction impossible even knowing the hash.
 both to name the run's directory and for Tab 2 to skip already-computed
 points.
 
-\textbf{Schema version:} \textbf{there is no} \code{schema\_version}
-field (or equivalent) in \code{manifest.json} or \code{scalars.json}
-currently. When the set of scalars changed during this project (for
-example, when \code{B\_pol,max (G)} was added to Tab 2's schema), runs
-saved before the change ended up with missing columns in
-\code{index.csv}, breaking charts that expected the new column --- this
-actually happened during development and was worked around by manually
-deleting the old cache, not by a versioning mechanism. Recorded in
-\S\ref{sec:aberto} as a gap.
+\textbf{Schema version:} \textbf{fixed} --- \code{store.SCHEMA\_VERSION}
+now guards \code{run\_exists()}, so a schema mismatch is a cache miss
+instead of a silent hit with missing columns. Added after the set of
+scalars changed during this project more than once (for example, when
+\code{B\_pol,max (G)} was added to Tab 2's schema, and again when
+rotation/toroidal\_sc added \code{T}, \code{T/|W|}, etc.) and runs saved
+before each change ended up with missing columns in \code{index.csv},
+breaking charts that expected the new column --- this actually happened
+during development and was worked around by manually deleting the old
+cache before the version guard existed.
 
 \textbf{Features:} filterable/sortable table (\code{st.data\_editor},
 formatted per column per rule R4 --- gauss in scientific notation, km
@@ -951,6 +1122,14 @@ $l_{max}=16$ configuration unless otherwise noted:
   (\code{gfortran}, \code{libhdf5-openmpi-dev}, \code{libopenmpi-dev})
   have not yet been installed in this environment. Nothing in Tab 3 has
   been tested against a real Castro build.
+\item \textbf{Rigid rotation (V-R1) does not validate against the
+  literature ($\sim1.5\,M_\odot$)} --- the $\Omega_c$-controlled sequence
+  terminates numerically at $R_{pol}/R_{eq}\approx0.93$ with mass-loss
+  ratio only $0.135$ (should be $\to1$ at real breakup; the Roche model
+  predicts $R_{pol}/R_{eq}=2/3$ for this EOS's central concentration).
+  Not on the project's critical path (differential rotation, V-R2,
+  already reaches the $\sim2.2\,M_\odot$ target at $0.40\%$ error, far
+  from breakup) --- see \S\ref{sec:rotation}.
 \end{itemize}
 
 \section{Open questions}
@@ -977,10 +1156,8 @@ initiative (rule G1):
 \item \textbf{$B_{unit}=R\rho\sqrt{8\pi G}$} (\S1.10, natural field unit)
   is not implemented --- it was used only as an order-of-magnitude
   estimate during debugging.
-\item \textbf{No \code{schema\_version}} in
-  \code{manifest.json}/\code{scalars.json} (\S\ref{sec:aba4}) ---
-  changes to the set of scalars have already broken \code{index.csv} for
-  old runs once during this project.
+\item \textbf{\code{schema\_version}} was missing --- \textbf{fixed}, see
+  \S\ref{sec:aba4}.
 \item \textbf{\code{store.mark\_reference()}} records the
   \code{reference} flag in the index, but no other tab (in particular
   Tab 2, which per the original prompt should show reference runs on its
@@ -998,6 +1175,16 @@ initiative (rule G1):
   exist and are correct (checked in this work cycle), but are not called
   by any export code yet --- see the limitation in
   \S\ref{sec:limitacoes}.
+\item \textbf{Rigid-rotation sequence termination} (\S\ref{sec:rotation},
+  V-R1) --- not resolved. The standard remedy (parametrize the
+  near-terminal sequence by axis ratio instead of $\Omega_c$, solving
+  $\Omega_c$ by an outer root-find --- the technique Hachisu's own method
+  uses) was identified and spot-checked (a direct bisection on axis ratio
+  saturates at the same point found by stepping $\Omega_c$, confirming
+  $\Omega_c$ degenerates as a control parameter there) but not
+  implemented as production code --- out of scope for now since
+  differential rotation (the project's actual target) does not hit this
+  problem in the tested range.
 \end{enumerate}
 
 \section{References}
