@@ -17,6 +17,7 @@
 \usepackage{longtable}
 \usepackage{array}
 \usepackage{seqsplit}
+\usepackage{graphicx}
 \usepackage{enumitem}
 \usepackage{xcolor}
 
@@ -1005,6 +1006,7 @@ All radial axes in km, field always in gauss with a colorbar in
 scientific notation (rule R4, \S1.10).
 
 \section{Tab 2 --- Sweep}
+\label{sec:aba2}
 
 \arrowto{dashboard/pages/2\_sweep.py, dashboard/sweep\_worker.py}
 
@@ -1237,6 +1239,372 @@ run into Tab 1 (via \code{st.session\_state["reload\_run\_params"]} +
 --- today it only records the flag; no other tab reads \code{reference}
 yet, see \S\ref{sec:aberto}).
 
+\section{Results}
+\label{sec:results}
+
+The infrastructure built for the post-\code{fab74b0} closeout (rotation
++ self-consistent toroidal terms, the $\rho_c$ validity gate, the Tab 2
+grid extension) exists to answer one physics question: \textbf{is the
+$\sim2\,M_\odot$ target reachable within the $\rho_c$ range this EOS
+can actually claim to describe (\S\ref{sec:rho-c-gate})?} This section
+reports two direct investigations run against that question, both using
+the real solver/sweep code paths (not estimates) --- the first result
+to come out of this session that is about the star, not about the tool.
+
+\subsection{Does a self-consistent toroidal field extend or shorten the rotation limit?}
+
+Rigid rotation alone ($K=0$) is known not to validate against the
+literature (\S\ref{sec:rotation}, V-R1): the $\Omega_c$-controlled
+sequence at $\rho_c=10^{12}$ terminates numerically near
+$\Omega_c\approx26$, with mass-loss ratio only $0.135$ --- far from the
+$\to1$ a real mass-shedding termination requires. Before this section,
+it was an open question whether combining rotation with a
+self-consistent toroidal field (which favors a \textbf{prolate}
+deformation, opposite to rotation's oblate one, \S\ref{sec:rotation})
+would push that numerical limit to higher $\Omega_c$, since the two
+deformations act in opposite directions on the star's shape.
+
+\textbf{It does the opposite.} Continuation in $\Omega_c$ was run
+twice, same mesh ($n_r=129$, $n_\theta=65$, domain $2\times R_{guess}$)
+and same $\rho_c=10^{12}$, so the comparison is apples-to-apples: once
+with $K=0$, once with a moderate self-consistent toroidal field
+($K=3\times10^{-3}$, $m=1$ --- chosen by probing as the smallest $K$
+that already produces a substantial static deformation,
+$E_{tor}/|W|\approx0.18$ at $\Omega_c=0$, while still converging
+cleanly, $VE=5.2\times10^{-4}$).
+
+\begin{center}
+\begin{tabular}{@{}rrrrr@{}}
+\toprule
+$\Omega_c$ (rad/s) & $K{=}0$: mlr & $K{=}0$: VE & $K{=}3{\times}10^{-3}$: mlr & $K{=}3{\times}10^{-3}$: VE\\
+\midrule
+0    & 0.000 & $1.78\times10^{-3}$ & 0.000 & $5.18\times10^{-4}$\\
+10   & 0.017 & $1.77\times10^{-3}$ & 0.139 & $5.27\times10^{-4}$\\
+15   & 0.040 & ---                 & 0.460 & $5.37\times10^{-4}$\\
+20   & 0.074 & $1.77\times10^{-3}$ & \textbf{1.871} & $2.41\times10^{-3}$\\
+24   & 0.112 & $1.77\times10^{-3}$ & 2.525 & $1.90\times10^{-2}$\\
+26   & 0.135 & $1.76\times10^{-3}$ & 2.844 & $3.82\times10^{-2}$\\
+26.5 & \emph{5.04 (spurious branch)} & --- & 2.922 & $4.44\times10^{-2}$\\
+32   & \emph{(not reached)} & --- & 3.722 & $1.61\times10^{-1}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+(mlr = equatorial mass-loss ratio. Full per-point numbers, including
+$M/M_\odot$ and $q=R_{pol}/R_{eq}$, are in the investigation scripts
+this table was built from --- kept here to the two reliability
+diagnostics used throughout this project.)
+
+\begin{center}
+\includegraphics[width=0.95\textwidth]{figures/termination_K0_vs_K.png}
+\end{center}
+
+With $K=0$, mass-loss ratio grows slowly and stays at $0.135$ even at
+$\Omega_c=26$ --- nowhere near breakup --- while VE stays flat at
+$\approx1.8\times10^{-3}$ regardless of $\Omega_c$ (a mesh-resolution
+offset from this particular domain choice, not a rotation effect; it
+does not move with $\Omega_c$). The $\Omega_c=26.5$ point jumps to
+mass-loss ratio $5.04$ --- the same spurious branch / domain-overflow
+artifact already flagged in \S\ref{sec:rho-bug-sweep}'s sweep and
+\S\ref{sec:aberto}'s open questions, not a physical result.
+
+With $K=3\times10^{-3}$, both diagnostics \textbf{fail together and
+smoothly}, between $\Omega_c=15$ and $\Omega_c=20$: mass-loss ratio
+crosses 1 (unphysical past this point by the diagnostic's own
+construction) at almost exactly the same $\Omega_c$ where VE crosses
+the $10^{-3}$ acceptance threshold and then keeps climbing
+monotonically to $0.16$ by $\Omega_c=32$ --- a genuine, progressive
+loss of virial balance, not a branch jump. \textbf{The practical
+rotation limit at this $K$ is therefore $\Omega_c\approx17$--$18$,
+about a third lower than the $K=0$ case's $\approx26$.} The naive
+expectation (opposing deformations should extend the sequence) does
+not hold here; the two effects do not add destructively on the star's
+shape in a way that buys extra rotational stability --- if anything,
+the combination reaches its own instability signature earlier.
+
+This also puts the item-4 combined-mode convergence check (rigid
+rotation + toroidal self-consistent, 18/18 converged, no exceptions ---
+\S\ref{sec:aberto}) in its correct context: that grid used $K$ up to
+$10^{-3}$ and $\Omega_c$ up to $40$, a region where --- per the table
+above --- the toroidal contribution to $E_{tor}/|W|$ is still small
+enough ($\approx3.6\times10^{-2}$ at $K=10^{-3}$,
+\S\ref{sec:results-priority}) that this shortening effect had not yet
+kicked in. 18/18 was a real result about \emph{that} corner of the
+plane, not evidence that the effect seen here at $K=3\times10^{-3}$
+doesn't exist.
+
+\subsection{\texorpdfstring{$M$ vs $\rho_c$ per $K$ in the toroidal-dominated regime (priority plot)}{M vs rho\_c per K in the toroidal-dominated regime (priority plot)}}
+\label{sec:results-priority}
+
+\textbf{This section supersedes its own first version.} The original
+pass concluded ``2 $M_\odot$ is not demonstrated as reachable'' from
+the sweep below. That conclusion was wrong --- driven entirely by a
+computational domain too small for the deformed configurations it was
+trying to certify. The corrected result is at the end of this section
+(\textbf{6.2e}); the original numbers, the domain-isolation methodology
+that found the mistake, and the confound it took two attempts to break
+are kept below rather than deleted, because the sequence ``we concluded
+X, then found it was a box artifact, the corrected answer is not-X'' is
+what stops the same mistake from being rediscovered from scratch ---
+this project has had that happen before (\S\ref{sec:gs},
+\S\ref{sec:rotation}).
+
+\medskip\noindent\textbf{6.2a --- Superseded conclusion (kept for the record).}
+
+The priority plot (item 4 of the closeout plan --- the figure meant for
+the collaborator), run through \code{sweep\_worker.run\_one()},
+\code{field=toroidal (self-consistent)}, no rotation, $\mu_e=2$,
+$\rho_c$ from $3\times10^9$ to $10^{12}$ g/cm$^3$,
+$K\in\{0,10^{-3},3\times10^{-3}\}$, mesh $N_r=129$, $N_\theta=65$,
+domain $1.3\times R_{guess}$ (Tab 2's default, sized from the
+field-free estimate \code{seed.r\_guess(rho\_c)}):
+
+\begin{center}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+$\rho_c$ (g/cm$^3$) & valid? & $M/M_\odot$, $K{=}0$ (frac$_{pol}$) & $M/M_\odot$, $K{=}10^{-3}$ (frac$_{pol}$) & $M/M_\odot$, $K{=}3{\times}10^{-3}$ (frac$_{pol}$)\\
+\midrule
+$3\times10^9$    & yes & 1.387 (0.910) & 1.463 (1.000) & 1.641 (\textbf{1.000})\\
+$1\times10^{10}$ & yes & 1.411 (0.871) & 1.493 (1.000) & 1.773 (\textbf{1.000})\\
+$2\times10^{10}$ & no  & 1.419 (0.843) & 1.503 (0.972) & 1.840 (\textbf{1.000})\\
+$3\times10^{10}$ & no  & 1.422 (0.826) & 1.507 (0.952) & 1.877 (\textbf{1.000})\\
+$5\times10^{10}$ & no  & 1.425 (0.802) & 1.511 (0.926) & 1.919 (\textbf{1.000})\\
+$1\times10^{11}$ & no  & 1.428 (0.769) & 1.515 (0.888) & 1.971 (\textbf{1.000})\\
+$2\times10^{11}$ & no  & 1.430 (0.734) & 1.518 (0.849) & 2.016 (\textbf{1.000})\\
+$5\times10^{11}$ & no  & 1.432 (0.688) & 1.519 (0.796) & 2.064 (\textbf{1.000})\\
+$1\times10^{12}$ & no  & 1.432 (0.653) & 1.520 (0.756) & 2.092 (\textbf{1.000})\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+frac$_{pol}$ (\code{diagnostics.domain\_overflow\_check()}, added after
+this table was first produced, then applied retroactively to check it)
+is $R_{pol}/r_{max}$ --- $1.000$ means the computed ``surface'' is the
+domain edge itself, not a physical radius. \textbf{Every single
+$K=3\times10^{-3}$ point overflows exactly.} $K=10^{-3}$ overflows at
+low $\rho_c$ and gets progressively (but not completely) better at high
+$\rho_c$. Even $K=0$ (field-free) sits at frac$_{pol}=0.91$ at the
+lowest $\rho_c$ tested --- not flagged as failing by the VE gate at the
+time, but a sign that $1.3\times R_{guess}$ was already a tight margin
+before any field was added.
+
+\begin{center}
+\includegraphics[width=0.8\textwidth]{figures/priority_plot_toroidal.png}
+\end{center}
+
+\medskip\noindent\textbf{6.2b --- Domain-isolation methodology.}
+
+Domain size and mesh resolution were varied \textbf{one at a time},
+never together --- mixing them was exactly what produced an inverted
+diagnosis on the first attempt at this (\S6.2c below). Two experiments,
+both at $\rho_c=10^{12}$, $K$ fixed:
+
+\begin{itemize}[leftmargin=1.4em,itemsep=0.2em]
+\item \textbf{Experiment A (resolution only):} domain fixed at
+  $1.3\times R_{guess}$, $(N_r,N_\theta)$ stepped $129\to257\to385$.
+  VE does not improve ($1.43\times10^{-2}\to1.50\times10^{-2}
+  \to1.51\times10^{-2}$), and frac$_{pol}=1.000$ (overflow) at
+  \textbf{every} resolution.
+\item \textbf{Experiment B (domain only):} $\Delta r$ held fixed,
+  domain extended $1.3\times R_{guess}\to2.6\times R_{guess}
+  \to3.9\times R_{guess}$ ($N_r$ scaled to keep $\Delta r$ constant).
+  VE falls from $1.43\times10^{-2}$ to $2.49\times10^{-4}$ the moment
+  the domain doubles and overflow clears, then stays identical when the
+  domain triples.
+\end{itemize}
+
+\textbf{Criterion adopted: frac$_{pol}\lesssim0.2$.} An earlier pass
+used frac$_{pol}<0.83$ as ``safe,'' too loose --- VE was already
+failing at frac$_{pol}=0.40$ for some configurations (\S6.2c).
+
+\textbf{Cold-start fails at the $K$ values that matter here.} Direct
+solves at $K\ge5\times10^{-3}$ do not converge at any domain size
+tried. Continuation from $K=0$, warm-started step by step, is required.
+
+\medskip\noindent\textbf{6.2c --- Breaking the $K$ vs frac$_{pol}$ confound (and a real bug found along the way).}
+
+A second confound remained: in every table where $K$ increases,
+frac$_{pol}$ increases too (a stronger toroidal field makes the star
+more prolate), so ``VE worsens with $K$'' and ``VE worsens with
+frac$_{pol}$'' cannot be told apart from a $K$-only sweep at one fixed
+domain. Isolating it: $K=5\times10^{-3}$ fixed, domain \textbf{only}
+varied ($\Delta r$ fixed, $10\times\to24\times R_{guess}$, continuation
+from $K=0$ at each domain size):
+
+\begin{center}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+domain & frac$_{pol}$ & $M/M_\odot$ & VE\\
+\midrule
+$10\times R_{guess}$ & 0.403 & 3.4133 & $3.743\times10^{-3}$\\
+$14\times R_{guess}$ & 0.284 & 3.4133 & $3.743\times10^{-3}$\\
+$18\times R_{guess}$ & 0.221 & 3.4134 & $3.744\times10^{-3}$\\
+$24\times R_{guess}$ & 0.165 & 3.4134 & $3.744\times10^{-3}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Stationary.} $M$ and VE do not move as frac$_{pol}$ drops from
+$0.40$ to $0.17$ --- not a domain artifact at $K=5\times10^{-3}$.
+
+\textbf{The next hypothesis was $l_{max}$:} strongly prolate
+configurations need more multipoles to represent in the gravity solve's
+Legendre expansion. Testing $l_{max}=16\to32\to48$ surfaced a real,
+previously unknown bug instead of confirming the hypothesis:
+\textbf{$l_{max}=48$ crashed with a NaN} (the implicit toroidal density
+solve got a non-finite input). Tracing it to \code{poisson.py}: the
+radial Green's function formed $r'^{l+2}$ and $r^{-(l+1)}$
+\textbf{separately} before dividing. For stellar radii
+($\sim10^7$--$10^9$ cm), $r'^{50}$ at $l=48$ overflows float64
+($\sim1.8\times10^{308}$) outright --- and even at this project's
+default $l_{max}=16$, the two absolute factors are separated by
+$\sim270$ orders of magnitude before a division meant to cancel most of
+that scale, quietly losing precision rather than crashing. Fixed by
+rewriting the radial integrals as a recursion that only ever forms
+ratios $(r_{i-1}/r_i)^{l+1}\le1$ and $(r_i/r_{i+1})^l\le1$ ---
+mathematically the same integral, no absolute power of $r$ is ever
+formed (\code{scf/poisson.py}, \code{scf/tests/test\_poisson.py} ---
+regression test at $l_{max}=48$ on a stellar-scale domain, which
+crashed before the fix).
+
+With the fix, $l_{max}$ is cleanly ruled out --- $16\to32\to48$ moves
+VE by $<10\%$ at both $K=5\times10^{-3}$
+($3.74\times10^{-3}\to4.13\times10^{-3}$) and $K=4\times10^{-3}$
+($1.24\times10^{-3}\to1.29\times10^{-3}$), no longer crashing at $48$.
+
+\textbf{Mesh resolution, isolated} (domain $24\times R_{guess}$ fixed,
+$l_{max}=16$ fixed, $\Delta r$ stepped via $N_r\in\{257,385,787,2364\}$)
+gives a clean answer for $K=4\times10^{-3}$ and an open one for
+$K=5\times10^{-3}$:
+
+\begin{center}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+$N_r$ & $\Delta r$ (cm) & $K{=}4{\times}10^{-3}$: VE & $K{=}5{\times}10^{-3}$: VE\\
+\midrule
+257  & $3.53\times10^6$ & $1.12\times10^{-2}$ & $8.21\times10^{-3}$\\
+385  & $2.35\times10^6$ & $5.43\times10^{-3}$ & $3.97\times10^{-3}$\\
+787  & $1.15\times10^6$ & $1.29\times10^{-3}$ & $9.60\times10^{-4}$\\
+2364 & $3.82\times10^5$ & $1.24\times10^{-3}$ & $3.74\times10^{-3}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+$K=4\times10^{-3}$ converges monotonically to $\approx1.2$--$1.3
+\times10^{-3}$ --- just above the $10^{-3}$ gate, real and mesh-stable,
+not certified. $K=5\times10^{-3}$ is \textbf{not monotonic} ---
+$N_r=787$ gives a better VE than both its neighbors, even after the
+\code{poisson.py} fix. This is an honest open result: something about
+this configuration keeps mesh refinement from converging cleanly, and
+it is flagged as open (\S\ref{sec:aberto}) rather than called physical
+or numerical. It does not change anything about $K=3\times10^{-3}$.
+
+\textbf{$K=3\times10^{-3}$ re-verified, both axes, after the
+\code{poisson.py} fix:} domain-only ($10\times\to20\times R_{guess}$):
+$M=2.1426$, $VE=2.706\to2.705\times10^{-4}$, unchanged to 4 significant
+figures. Mesh-only (domain $24\times R_{guess}$ fixed, $N_r:
+257\to787\to2364$): $VE=1.54\times10^{-2}\to1.65\times10^{-3}
+\to2.71\times10^{-4}$, monotonic, clean, no wobble. $K=3\times10^{-3}$
+was never in the ambiguous zone.
+
+\medskip\noindent\textbf{6.2d --- The analytical prediction, and its confirmation.}
+
+Before rerunning the sweep at valid $\rho_c$, a prediction was made
+from the field law itself ($B_\varphi=K\rho\varpi$ for $m=1$):
+
+\[
+E_{mag}\sim\frac{K^2\rho^2 R^5}{8\pi}\ ,\qquad
+|W|\sim\frac{GM^2}{R}\sim G\rho^2R^5
+\quad\Longrightarrow\quad
+\frac{E_{mag}}{|W|}\sim\frac{K^2}{8\pi G}\ ,\ \text{independent of } \rho_c, R
+\]
+
+$\rho$ and $R$ cancel --- the dimensionless field strength should
+depend on $K$ alone, up to an $O(1)$ shape factor that drifts slowly as
+the effective polytropic index slides from $3/2$ toward $3$ along the
+sequence. \textbf{Prediction: a fractional mass gain of $\sim50\%$ at
+$K=3\times10^{-3}$, essentially the same at any $\rho_c$.}
+
+Measured, at three $\rho_c$ spanning two and a half decades:
+
+\begin{center}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+$\rho_c$ (g/cm$^3$) & $M(K{=}0)$ & $M(K{=}3{\times}10^{-3})$ & gain & $E_{tor}/|W|$\\
+\midrule
+$1\times10^{10}$ & 1.4108 & 2.0722 & \textbf{+46.9\%} & 0.1809\\
+$1.5\times10^{10}$ & 1.4159 & 2.0874 & \textbf{+47.4\%} & 0.1805\\
+$1\times10^{12}$ & 1.4323 & 2.1426 & \textbf{+49.6\%} & 0.1790\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+$E_{tor}/|W|$ varies \textbf{0.9\%} across two and a half decades in
+$\rho_c$ --- the predicted near-invariance holds to within the
+precision of this check. This is the strongest validation this project
+has produced for anything in the rotation/toroidal extension: a
+quantitative prediction made \emph{before} the confirming run, from
+first principles, matched by an independent numerical result to within
+a couple of percent.
+
+\medskip\noindent\textbf{6.2e --- The result.}
+
+\textbf{Portable statement} (adopted as the primary form everywhere in
+this project, since $K$ is internal to the $B_\varphi=K\rho^m
+\varpi^{2m-1}$ ansatz and means nothing outside it; $E_{tor}/|W|$ is
+what transfers):
+
+\begin{quote}
+A toroidal field with \textbf{$E_{tor}/|W|\approx0.18$} raises the
+equilibrium mass by \textbf{$\sim47\%$}, essentially independent of
+central density, giving $M>2\,M_\odot$ inside the range the
+inverse-beta-decay threshold allows.
+\end{quote}
+
+Field strength in gauss, at the three certified points above ($m=1$,
+no rotation):
+
+\begin{center}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+$\rho_c$ (g/cm$^3$) & $B_{tor,max}$ (G) & $B_{tor,mean}$, volume-weighted (G)\\
+\midrule
+$1\times10^{10}$ & $1.95\times10^{14}$ & $7.94\times10^{12}$\\
+$1.5\times10^{10}$ & $2.56\times10^{14}$ & $9.88\times10^{12}$\\
+$1\times10^{12}$ (reference, outside the valid band) & $4.21\times10^{15}$ & $1.14\times10^{14}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The collaborator's group describes their target as a toroidal-dominated
+interior field up to $\sim10^{14}$ G. At the two physically valid
+points, $B_{tor,max}$ comes out to $2$--$3\times10^{14}$ G --- the same
+order of magnitude as that target, reached from a Maxwell-consistent
+self-consistent-field calculation with no tuning toward that number.
+Reported as measured, not adjusted to match.
+
+\medskip\noindent\textbf{6.2f --- What is not done yet.}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=0.2em]
+\item \textbf{No rotation in these configurations.} \S6.1 found that
+  adding rigid rotation on top of a self-consistent toroidal field
+  \emph{shortens} the tolerable $\Omega_c$ range relative to rotation
+  alone, not the reverse --- the $+47\%$ mass gain here is a static
+  ceiling for the toroidal branch by itself, not a floor that rotation
+  adds to.
+\item \textbf{No poloidal component, hence no exterior field or
+  surface dipole.} A purely toroidal field is confined to the star ---
+  there is no dipole moment for magnetic braking to act on, the actual
+  evolutionary driver in the collaborator's project. This branch alone
+  cannot represent that physics.
+\item \textbf{No stability check.} These are 2D axisymmetric
+  equilibria; a purely toroidal field is exactly the configuration
+  subject to the Tayler $m=1$ instability (Markey \& Tayler 1973,
+  \S\ref{sec:refs}) --- nothing here tests stability to a
+  non-axisymmetric perturbation, only axisymmetric hydrostatic and
+  virial balance.
+\end{itemize}
+
 \section{Known limitations}
 \label{sec:limitacoes}
 
@@ -1356,9 +1724,41 @@ initiative (rule G1):
   (this is a ``should this radius be trusted at all'' question, not an
   interpolation-precision one) --- surfaced by the same investigation,
   not implemented here.
+\item \textbf{\code{seed.r\_guess()} under-sizes the sweep's
+  computational domain for strongly toroidal-deformed configurations}
+  (\S\ref{sec:results-priority}) --- \textbf{resolved for the boundary
+  that matters}: it was domain truncation, not physics
+  (\S6.2a--\S6.2c). Tab 2's $1.3\times R_{guess}$ default still
+  under-sizes the domain for $K\gtrsim10^{-3}$ and should not be
+  trusted for toroidal-dominated sweeps without checking
+  \code{diagnostics.domain\_overflow\_check()}, but this is no longer
+  an open question about which of two explanations is correct --- it
+  is a known, characterized limitation of the sweep tool's default
+  sizing, fixed for individual points by hand in \S\ref{sec:results-priority}
+  rather than fixed in the tool itself (out of scope for this cycle).
+  See the next item for what is still genuinely unresolved.
+\item \textbf{$K=5\times10^{-3}$ ($\rho_c=10^{12}$) does not converge
+  cleanly under mesh refinement, even after the \code{poisson.py}
+  overflow fix} (\S6.2c) --- $N_r\in\{257,385,787,2364\}$ at fixed
+  domain gives VE $8.21\times10^{-3}\to3.97\times10^{-3}
+  \to9.60\times10^{-4}\to3.74\times10^{-3}$: not monotonic, $N_r=787$
+  outperforms both its neighbors. Domain-only refinement at this same
+  $K$ (\S6.2c) IS stationary, so the non-monotonicity is specific to
+  $\Delta r$, not domain size. Two untested hypotheses: (1) a genuine
+  sensitivity of the implicit toroidal branch
+  (\code{\_solve\_rho\_implicit}) near a marginal equilibrium, where
+  the Picard iteration lands on slightly different nearby fixed points
+  depending on mesh spacing; (2) a numerical effect distinct from the
+  Green's-function overflow already found and fixed. Does not affect
+  the certified boundary ($K=3\times10^{-3}$, reverified clean on both
+  domain and mesh axes) or the headline $+47\%$ mass-gain result,
+  since that result never depended on $K\ge4\times10^{-3}$. Would need
+  comparing full $\rho(r,\theta)$ profiles across mesh sizes (not just
+  scalars) to tell the two hypotheses apart; not done here.
 \end{enumerate}
 
 \section{References}
+\label{sec:refs}
 
 \textbf{SCF method and magnetized equilibria}
 \begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
