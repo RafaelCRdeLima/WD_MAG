@@ -145,6 +145,7 @@ zeta_target_ratio = 0.0
 m_tor = 1
 K_tor = 0.0
 m_tor_sc = 1.0
+_e_tor_w_placeholder = None
 
 if field_mode == "poloidal":
     st.sidebar.markdown("*Poloidal field (k0)*")
@@ -222,6 +223,13 @@ elif field_mode == "toroidal (self-consistent)":
     K_tor = 10 ** log_K
     m_tor_sc = st.sidebar.slider("m (toroidal power law, B_phi ~ rho^m)", 1.0, 3.0,
                                   float(_reload.get("m_tor_sc", 1.0)) if _reload else 1.0, 0.5)
+    # filled after the SCF solve below (st.empty() reserves the position
+    # here, next to K, rather than wherever the fill call happens to sit
+    # in the script — E_tor/|W| is the portable form of this run's field
+    # strength, docs/teoria.md Sec 6.2e: K itself means nothing outside
+    # this project's specific B_phi=K*rho^m*varpi^(2m-1) ansatz, so this
+    # is the number that should sit next to the K control, not K alone.
+    _e_tor_w_placeholder = st.sidebar.empty()
 
 st.sidebar.header("Numerical parameters")
 _Nr_opts = [65, 129, 161, 257]
@@ -351,6 +359,9 @@ Bphi = Bphi_d6 + ve_terms["Bphi"]
 # the residual formula (diag.virial_error), not reimplemented here
 VE, W, Pi, E_mag, _T2 = diag.virial_error(rho, Phi, H, Br, Bth, Bphi, r, theta, mu_e, T=T)
 E_pol, E_tor, _ = diag.magnetic_energies(Br, Bth, Bphi, r, theta)
+if _e_tor_w_placeholder is not None:
+    _e_tor_w = E_tor / abs(W) if W != 0 else float("nan")
+    _e_tor_w_placeholder.metric("E_tor/|W| (this run)", f"{_e_tor_w:.4f}")
 M = scf_mod.total_mass(rho, r, theta)
 R_eq, R_pol = diag.equatorial_polar_radii(H, r, theta)
 rho_mean = M / (4.0 / 3.0 * np.pi * ((R_eq**2 * R_pol) ** (1.0 / 3.0)) ** 3) if R_eq > 0 else float("nan")

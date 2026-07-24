@@ -252,12 +252,35 @@ if fail_rows:
 # This is the figure that goes to the collaborator (see closeout prompt,
 # item 4). Built first, before any other plot, on purpose.
 st.subheader("M vs rho_c, one curve per K (priority plot)")
+# K is internal to this project's B_phi=K*rho^m*varpi^(2m-1) ansatz and
+# means nothing outside it -- E_tor/|W| is the portable form (see
+# docs/teoria.md Sec 6.2e: E_tor/|W| varies <1% across 2.5 decades in
+# rho_c at fixed K, so it's the quantity that actually transfers to a
+# collaborator, not K). No inverse solve exists yet for this branch
+# (unlike the D6 poloidal branch's solve_zeta_for_energy_ratio()), so
+# this can't be a real INPUT sweep axis -- E_mag/|W| (==E_tor/|W| here,
+# since this branch has no poloidal component) is already computed per
+# point, so grouping/labeling the already-swept K points by it is exact
+# and does not need that missing piece.
+_group_by_ve = (field_mode == "toroidal (self-consistent)" and "K_tor" in df.columns
+                 and st.checkbox("group curves by E_tor/|W| instead of raw K", value=False))
 if "K_tor" in df.columns and df["rho_c"].nunique() > 1:
     fig_priority = go.Figure()
-    for K_val, sub in df.sort_values("rho_c").groupby("K_tor"):
+    if _group_by_ve:
+        df["_group_key"] = df["E_mag/|W|"].round(2)
+        group_col = "_group_key"
+    else:
+        group_col = "K_tor"
+    for group_val, sub in df.sort_values("rho_c").groupby(group_col):
         sub_valid = sub[sub["rho_c_valid"]]
         sub_invalid = sub[~sub["rho_c_valid"]]
-        label = f"K={K_val:.2e}" if K_val > 0 else "K=0 (no toroidal field)"
+        K_val = sub["K_tor"].iloc[0]
+        e_tor_w_mean = sub["E_mag/|W|"].mean()
+        if _group_by_ve:
+            label = f"E_tor/|W|≈{group_val:.2f}" if group_val > 0 else "E_tor/|W|=0 (no toroidal field)"
+        else:
+            label = (f"K={K_val:.2e} (E_tor/|W|≈{e_tor_w_mean:.3f})" if K_val > 0
+                      else "K=0 (no toroidal field)")
         fig_priority.add_trace(go.Scatter(
             x=sub["rho_c"], y=sub["M/M_sun"], mode="lines+markers",
             name=label, line=dict(width=2)))
@@ -266,7 +289,7 @@ if "K_tor" in df.columns and df["rho_c"].nunique() > 1:
                 x=sub_invalid["rho_c"], y=sub_invalid["M/M_sun"], mode="markers",
                 marker=dict(symbol="x", size=10, color="red"),
                 name=f"{label} (rho_c >= neutronization threshold)",
-                showlegend=bool(K_val == df["K_tor"].iloc[0])))
+                showlegend=bool(group_val == df[group_col].iloc[0])))
     fig_priority.add_vline(x=rho_c_neutronization, line_dash="dash", line_color="red",
                             annotation_text="inverse beta-decay threshold "
                                             f"(mu_e={mu_e}, Boshkayev+2013)")
