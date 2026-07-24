@@ -250,6 +250,35 @@ def equatorial_polar_radii(H, r, theta):
     return surface_radius(H, r, j_eq), surface_radius(H, r, j_pole)
 
 
+def domain_overflow_check(R_eq, R_pol, r_max, tol=0.1):
+    """Flags whether the computed surface radius has landed suspiciously
+    close to the outer edge of the computational domain (r_max = r[-1])
+    in EITHER direction, independently. This is the item-11 gap (docs/
+    teoria.md Sec 1.13/Sec 8): a radius near r_max is not trustworthy --
+    the true surface may be truncated by too small a box, not genuinely
+    located there.
+
+    Checks R_eq and R_pol separately, on purpose: an oblate
+    (rotation-dominated) star overflows at the EQUATOR first (R_eq grows,
+    R_pol shrinks); a prolate (toroidal-dominated) star overflows at the
+    POLE first (R_pol grows, R_eq shrinks) -- the two failure modes are
+    each other's mirror image in shape, so a check that only looks at one
+    of the two radii misses exactly the family of configurations where
+    the OTHER one is the one running away. Neither direction is checked
+    by any existing code path before this function."""
+    frac_eq = R_eq / r_max
+    frac_pol = R_pol / r_max
+    overflow_eq = frac_eq > (1.0 - tol)
+    overflow_pol = frac_pol > (1.0 - tol)
+    return {
+        "frac_eq": frac_eq,
+        "frac_pol": frac_pol,
+        "overflow_eq": overflow_eq,
+        "overflow_pol": overflow_pol,
+        "overflow": overflow_eq or overflow_pol,
+    }
+
+
 def density_peak_location(rho, r, theta):
     """(r, theta) do maximo global de rho — deve ficar em r=0 se o centro
     continua sendo o ponto mais denso; usado para checar se a ancoragem em
