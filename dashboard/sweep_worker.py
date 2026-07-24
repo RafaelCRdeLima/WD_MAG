@@ -13,6 +13,82 @@ for _p in (str(_SCF_DIR), str(_DASHBOARD_DIR)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+# Certified methodology (docs/teoria.md Sec 6.2b-c): the self-consistent
+# toroidal branch needs continuation from K=0 (cold start does not converge
+# at the K values that matter, e.g. K>=5e-3) and a domain sized until the
+# star's polar radius comfortably clears the box edge (a purely-toroidal
+# field deforms PROLATE, so it is the POLE that overflows first -- checking
+# only the equator, as an oblate/rotation-only check would, misses this
+# family entirely). frac_pol<=0.2 was the tightened criterion adopted after
+# frac_pol=0.4 was found still VE-failing at frac_pol=0.83 (the criterion
+# used before this fix).
+_FRAC_MAX = 0.2
+_INITIAL_DOMAIN_MULT = 10.0
+_MAX_DOMAIN_GROWTHS = 4
+_K_STEP = 1e-3  # increment validated by the Sec 6.2c continuation studies
+# Delta r / R_guess validated in Sec 6.2 (nr=986 at domain=10xR_guess).
+# NOT derived from the UI's Nr slider (default 129, dr/R_guess~0.08) --
+# that resolution was never validated for this branch and silently gives
+# an uncertified VE (found while porting this methodology: dr/R_guess~0.08
+# gave VE~4.6e-3 at a point independently confirmed certified at ~4e-4
+# with the finer, validated ratio below).
+_DR_OVER_RGUESS = 3.824e5 / 3.766e7
+
+
+def _solve_toroidal_certified(rho_c, R_guess, K_tor, m_tor_sc, rotation, mu_e,
+                               Nr_base, Ntheta, lmax, tol, max_iter):
+    """Continuation in K from 0 to K_tor, growing the domain (Delta r held
+    fixed, Nr scaled up with it -- Experiment B, docs/teoria.md Sec 6.2b)
+    until frac_pol/frac_eq <= _FRAC_MAX or the growth budget runs out.
+
+    Returns (result, r, theta, overflow) -- result is None if the SCF
+    itself failed to converge at some step along the continuation path
+    (a real non-convergence, not a domain-sizing problem, reported as a
+    failure same as before); overflow is the domain_overflow_check() dict
+    for the final attempt either way (best-effort even if _FRAC_MAX was
+    never reached, so the caller can see how far off it was rather than
+    silently trusting an under-sized box)."""
+    import numpy as np
+    import scf as scf_mod
+    import diagnostics as diag
+    from terms.toroidal_sc import ToroidalSC
+
+    n_steps = max(1, int(np.ceil(K_tor / _K_STEP))) if K_tor > 0 else 0
+    k_path = list(np.linspace(0.0, K_tor, n_steps + 1))
+
+    dr_target = _DR_OVER_RGUESS * R_guess
+    domain_mult = _INITIAL_DOMAIN_MULT
+    result = overflow = r = theta = None
+
+    for _attempt in range(_MAX_DOMAIN_GROWTHS + 1):
+        domain = domain_mult * R_guess
+        Nr = max(int(round(domain / dr_target)) + 1, Nr_base)
+        r = np.linspace(0, domain, Nr)
+        theta = np.linspace(0, np.pi, Ntheta)
+        rho_seed = scf_mod.initial_guess(r, theta, rho_c, R_guess)
+
+        converged_path = True
+        for K in k_path:
+            toroidal = ToroidalSC(K=K, m=m_tor_sc) if K > 0 else None
+            result = scf_mod.hachisu_scf(rho_seed, r, theta, rho_c, rotation=rotation,
+                                          toroidal=toroidal, mu_e=mu_e, lmax=lmax,
+                                          tol=tol, max_iter=int(max_iter))
+            if not result["converged"]:
+                converged_path = False
+                break
+            rho_seed = result["rho"]
+
+        if not converged_path:
+            return None, r, theta, None
+
+        R_eq, R_pol = diag.equatorial_polar_radii(result["H"], r, theta)
+        overflow = diag.domain_overflow_check(R_eq, R_pol, r[-1], tol=0.1)
+        if max(overflow["frac_eq"], overflow["frac_pol"]) <= _FRAC_MAX:
+            return result, r, theta, overflow
+        domain_mult *= 2.0
+
+    return result, r, theta, overflow
+
 
 def run_one(params: dict) -> dict:
     """Runs one SCF point (rho_c + whatever field/rotation params are
@@ -50,25 +126,41 @@ def run_one(params: dict) -> dict:
     tol = params.get("tol", 1e-6)
     max_iter = params.get("max_iter", 200)
 
-    r = np.linspace(0, 1.3 * R_guess, Nr)
-    theta = np.linspace(0, np.pi, Ntheta)
-    rho0 = scf_mod.initial_guess(r, theta, rho_c, R_guess)
-
-    poloidal = Poloidal(k0=k0, lmax=lmax) if field_mode == "poloidal" and k0 != 0.0 else None
-    toroidal_sc = (ToroidalSC(K=K_tor, m=m_tor_sc)
-                   if field_mode == "toroidal (self-consistent)" and K_tor > 0 else None)
     rotation = None
     if rotation_mode == "rigid":
         rotation = Rotation(Omega_c=Omega_c, A=float("inf"))
     elif rotation_mode == "differential":
         rotation = Rotation(Omega_c=Omega_c, A=A_over_Req * R_guess)
 
-    result = scf_mod.hachisu_scf(rho0, r, theta, rho_c, rotation=rotation, poloidal=poloidal,
-                                  toroidal=toroidal_sc, mu_e=mu_e, lmax=lmax,
-                                  tol=tol, max_iter=int(max_iter))
+    if field_mode == "toroidal (self-consistent)":
+        result, r, theta, overflow = _solve_toroidal_certified(
+            rho_c, R_guess, K_tor, m_tor_sc, rotation, mu_e, Nr, Ntheta, lmax, tol, max_iter)
+        if result is None:
+            return {"converged": False, "rho_c": rho_c, "k0": k0, "K_tor": K_tor, "Omega_c": Omega_c}
+        poloidal = None
+        toroidal_sc = ToroidalSC(K=K_tor, m=m_tor_sc) if K_tor > 0 else None
+    else:
+        r = np.linspace(0, 1.3 * R_guess, Nr)
+        theta = np.linspace(0, np.pi, Ntheta)
+        rho0 = scf_mod.initial_guess(r, theta, rho_c, R_guess)
+        poloidal = Poloidal(k0=k0, lmax=lmax) if field_mode == "poloidal" and k0 != 0.0 else None
+        toroidal_sc = None
 
-    if not result["converged"]:
-        return {"converged": False, "rho_c": rho_c, "k0": k0, "K_tor": K_tor, "Omega_c": Omega_c}
+        result = scf_mod.hachisu_scf(rho0, r, theta, rho_c, rotation=rotation, poloidal=poloidal,
+                                      toroidal=toroidal_sc, mu_e=mu_e, lmax=lmax,
+                                      tol=tol, max_iter=int(max_iter))
+        if not result["converged"]:
+            return {"converged": False, "rho_c": rho_c, "k0": k0, "K_tor": K_tor, "Omega_c": Omega_c}
+
+        # Domain sizing here is still the historical 1.3xR_guess default,
+        # NOT the certified frac_pol<=0.2 methodology (that was only
+        # validated for the self-consistent toroidal branch, docs/teoria.md
+        # Sec 6.2 -- porting it to poloidal/rotation-only points is
+        # unvalidated scope creep, not done here). The check below is
+        # reported for visibility only; a flagged overflow on this path is
+        # NOT auto-corrected the way the toroidal branch above is.
+        R_eq, R_pol = diag.equatorial_polar_radii(result["H"], r, theta)
+        overflow = diag.domain_overflow_check(R_eq, R_pol, r[-1], tol=0.1)
 
     rho, Phi, u, H = result["rho"], result["Phi"], result["u"], result["H"]
     ve = diag.virial_error_terms(rho, Phi, H, r, theta, mu_e,
@@ -119,6 +211,9 @@ def run_one(params: dict) -> dict:
         "equatorial mass-loss ratio": mass_loss_ratio,
         "rho_c_valid": bool(valid_rho_c),
         "VE": VE,
+        "frac_eq": overflow["frac_eq"],
+        "frac_pol": overflow["frac_pol"],
+        "domain_overflow": bool(overflow["overflow"]),
     }
     fields = {"rho": rho, "Phi": Phi, "u": u, "H": H, "Bphi": Bphi, "r": r, "theta": theta}
     return {"converged": True, "rho_c": rho_c, "k0": k0, "K_tor": K_tor, "Omega_c": Omega_c,

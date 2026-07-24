@@ -52,7 +52,16 @@ DEFAULT_RUNS_DIR = REPO_ROOT / "dashboard" / "runs"
 # than left for lazy invalidation, since they are physically pre-fix and
 # would otherwise sit there as valid-looking cache hits against the fixed
 # code.
-SCHEMA_VERSION = 4
+#
+# v4 -> v5: sweep_worker.run_one() ported the certified domain-sizing /
+# K-continuation methodology from docs/teoria.md Sec 6.2b-c into the
+# self-consistent toroidal branch (frac_pol<=0.2, continuation from K=0 --
+# the old single cold-start solve on a 1.3xR_guess domain is what produced
+# the now-superseded Sec 6.2a numbers). New columns frac_eq, frac_pol,
+# domain_overflow added to every run's scalars so the diagnostic that
+# caught the Sec 6.2a mistake is visible from the tool itself, not only
+# from a one-off investigation script.
+SCHEMA_VERSION = 5
 
 
 def params_hash(params: dict) -> str:
