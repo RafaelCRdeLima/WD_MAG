@@ -40,7 +40,19 @@ DEFAULT_RUNS_DIR = REPO_ROOT / "dashboard" / "runs"
 # sweep_worker.run_one() now also returns B_tor,max, T, T/|W|, the two
 # Bt/Bp ratios, equatorial mass-loss ratio, and rho_c_valid (item 3's
 # neutronization gate flag). Runs cached under v2 lack every one of these.
-SCHEMA_VERSION = 3
+#
+# v3 -> v4: NOT a scalar-shape change (the reason for every bump above) --
+# scf/poisson.py's radial Green's function was rewritten to fix a float64
+# overflow/precision-loss bug (formed r'^(l+2) and r^-(l+1) separately;
+# see docs/teoria.md Sec 6.2c). Every run computed before this fix, at any
+# l_max/domain combination that hit the bug, has silently wrong VE/M/field
+# values under the SAME set of column names -- run_exists() cannot detect
+# this from schema shape alone, only from the version number changing.
+# All v3 runs on disk (86 directories + index.csv) were deleted rather
+# than left for lazy invalidation, since they are physically pre-fix and
+# would otherwise sit there as valid-looking cache hits against the fixed
+# code.
+SCHEMA_VERSION = 4
 
 
 def params_hash(params: dict) -> str:
