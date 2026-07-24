@@ -13,6 +13,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from scf import hachisu_scf, initial_guess, total_mass
+from terms.poloidal import Poloidal
 import diagnostics as diag
 
 M_SUN = 1.989e33
@@ -26,8 +27,9 @@ def test_weak_field_close_to_nonmagnetic():
     theta = np.linspace(0, np.pi, ntheta)
     rho0 = initial_guess(r, theta, rho_c, R_guess)
 
-    result0 = hachisu_scf(rho0, r, theta, rho_c, k0=0.0, lmax=16, tol=1e-8, max_iter=200)
-    result_k = hachisu_scf(rho0, r, theta, rho_c, k0=1e-14, lmax=16, tol=1e-8, max_iter=200)
+    result0 = hachisu_scf(rho0, r, theta, rho_c, lmax=16, tol=1e-8, max_iter=200)
+    result_k = hachisu_scf(rho0, r, theta, rho_c, poloidal=Poloidal(k0=1e-14),
+                            lmax=16, tol=1e-8, max_iter=200)
 
     assert result0["converged"] and result_k["converged"]
 

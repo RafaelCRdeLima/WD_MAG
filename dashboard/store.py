@@ -26,6 +26,16 @@ import pandas as pd
 REPO_ROOT = Path(__file__).resolve().parent.parent  # wd-magnetizada/
 DEFAULT_RUNS_DIR = REPO_ROOT / "dashboard" / "runs"
 
+# Bumped when the SET OF SCALARS a run carries changes shape (not for
+# ordinary bug fixes to existing scalars). Rotation + self-consistent
+# toroidal added T, T/|W|, Omega_c, mass_loss_ratio, rotation_period_s to
+# scalars.json -- runs saved before this bump lack those columns. This was
+# a documented gap (docs/teoria.md Sec 7: a real regression happened once
+# during development, silently, before this check existed) -- run_exists()
+# now treats a schema mismatch as a cache miss instead of silently
+# returning a run with missing columns.
+SCHEMA_VERSION = 2
+
 
 def params_hash(params: dict) -> str:
     """Stable hash of the parameters — cache key and run directory name."""
@@ -74,9 +84,22 @@ def _runs_dir(runs_dir=None) -> Path:
 
 
 def run_exists(params: dict, runs_dir=None) -> str | None:
-    """Returns the hash if a run with these parameters already exists, else None."""
+    """Returns the hash if a run with these parameters AND the current
+    SCHEMA_VERSION already exists, else None. A schema mismatch is a
+    cache miss (forces recompute) rather than silently returning a run
+    whose scalars.json is missing newer columns (see SCHEMA_VERSION)."""
     h = params_hash(params)
-    return h if (_runs_dir(runs_dir) / h).exists() else None
+    run_dir = _runs_dir(runs_dir) / h
+    if not run_dir.exists():
+        return None
+    try:
+        with open(run_dir / "manifest.json") as f:
+            manifest = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+    if manifest.get("schema_version") != SCHEMA_VERSION:
+        return None
+    return h
 
 
 def save_run(params: dict, scalars: dict, fields: dict, runs_dir=None) -> str:
@@ -94,6 +117,7 @@ def save_run(params: dict, scalars: dict, fields: dict, runs_dir=None) -> str:
 
     manifest = {
         "hash": h,
+        "schema_version": SCHEMA_VERSION,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "git_commit": git_commit_hash(),
         "git_dirty": git_dirty(),
@@ -125,6 +149,7 @@ def _index_path(runs_dir=None) -> Path:
 
 def _append_index(h, params, scalars, manifest, runs_dir=None):
     row = {"hash": h, "timestamp": manifest["timestamp"],
+           "schema_version": manifest.get("schema_version"),
            "git_commit": manifest["git_commit"], "reference": False}
     row.update({f"param_{k}": v for k, v in params.items()})
     row.update(scalars)

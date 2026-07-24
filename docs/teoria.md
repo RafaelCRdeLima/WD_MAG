@@ -578,6 +578,168 @@ formatting — live in `dashboard/units.py`, the single source of truth
 
 ---
 
+### 1.11 Rotation and the self-consistent toroidal branch
+
+Extension added after the original poloidal-only spine, motivated by the
+collaboration's interest in ~2 M☉ white dwarfs as SN Ia progenitors:
+differential rotation plus a toroidal field, because the two deformations
+oppose each other (rotation flattens, toroidal elongates), which pushes
+back the mass-shedding limit.
+
+**Architecture.** `scf.hachisu_scf()` takes three optional *terms*
+(`scf/terms/`) instead of one function per physics combination — each
+term contributes an additive piece to the same Bernoulli equation:
+
+```
+H + Φ − C_rot(ϖ) − M_pol(u) + M_tor(ρϖ²) = C
+```
+
+rearranged for the loop: `H = C − Φ + C_rot(ϖ) + M_pol(u) − M_tor(ρϖ²)`.
+`rotation`/`poloidal`/`toroidal` = `None` turns a term off (zero
+contribution, zero energy). `poloidal` and `toroidal` are mutually
+exclusive (out of scope: self-consistent mixed field — same reason as D6,
+barotropy does not deliver a free Bt/Bp). With all three `None`, the loop
+reproduces the pre-extension code **bit for bit** (checked against a
+frozen copy of the old `scf.py`, `scf/tests/test_regression_v0.py`).
+
+**Rotation** (`scf/terms/rotation.py`): j-constant law,
+`Ω(ϖ) = Ω_c A²/(A²+ϖ²)`, with rigid rotation as the `A→∞` limit, handled
+analytically (not a large-but-finite `A` substitute). Its Bernoulli
+potential has a closed form, `C_rot(ϖ) = (Ω_c²A²/2) ϖ²/(A²+ϖ²)`, reducing
+to `½Ω_c²ϖ²` as `A→∞`.
+
+The virial theorem gains the rotational kinetic term:
+
+```
+2T + W + 3Π + ℳ = 0 ,      T = ½ ∫ ρ Ω²(ϖ) ϖ² dV
+VE = |2T + W + 3Π + ℳ| / |W|
+```
+
+→ `diagnostics.virial_error()` (now takes `T=0.0`, default reduces
+exactly to the old formula) and `diagnostics.virial_error_terms()` (the
+term-aware wrapper — pulls `T`/`Br`/`Bth`/`Bphi` from whichever terms are
+active and calls `virial_error()`, so the residual formula itself lives
+in exactly one place).
+
+**Stability/termination diagnostics:**
+- `T/|W|`: ≥0.14 secular non-axisymmetric instability threshold
+  (Ostriker & Bodenheimer 1973), ≥0.27 dynamical bar-mode threshold. Same
+  traffic-light convention as VE; blocks export (Tab 3) at ≥0.14, same as
+  VE's R5.
+- Equatorial mass-loss ratio: `Ω²(R_eq)R_eq / (dΦ/dr at R_eq, equator)` —
+  → 1 signals the effective gravity vanishing at the equator (Keplerian
+  breakup). → `diagnostics.equatorial_mass_loss_ratio()`.
+
+**Self-consistent purely toroidal field** (`scf/terms/toroidal_sc.py`):
+`B_φ = K ρ^m ϖ^{2m-1}`, `m≥1`. Derived from the Lorentz force (Maxwell
+stress tensor, verified symbolically with SymPy for `m=1,2,3/2` —
+residual exactly 0; `scf/tests/test_toroidal_sc.py`):
+
+```
+M_tor(s) = [m K² / (4π(2m−1))] s^{2m−1} ,    s = ρϖ²
+```
+
+Unlike `M_pol(u)`, `M_tor` depends on `ρ` — the *unknown* being solved for
+at each grid point — so step 9 of the SCF loop (§1.6) stops being a direct
+EOS inversion and becomes a per-point root find (`H(ρ)+M_tor(ρϖ²)=$RHS$`,
+monotonic increasing in `ρ`, safe to bracket with `scipy.optimize.brentq`
+— → `scf.py :: _solve_rho_implicit()`). This branch does **not** use
+Grad-Shafranov at all — no flux function, no `Δ*`, no Green's function;
+`B_φ` is an algebraic function of the local `ρ`, not a PDE solution.
+
+Validated: turning on the field at fixed `ρc` increases the mass (sign
+check); pure toroidal field produces **prolate** deformation
+(`R_pol > R_eq`, opposite of the poloidal/oblate case), VE closes
+(`~4×10⁻⁴`).
+
+> **Correction — the sign of the magnetic virial identity, and why it
+> is not "M_tor depends on ρ" (G4/G1).**
+> The magnetic virial identity for this branch is
+> ```
+> ∫ ρ ∇M_tor · r  dV  =  − ∫ B_φ²/8π  dV
+> ```
+> a **minus** sign — confirmed by an independent derivation (Maxwell
+> stress tensor divergence: `∫r·f_L dV = +∫B²/8π dV` in general, for any
+> purely toroidal field, regardless of any Bernoulli convention) and by
+> clean numerical convergence with grid refinement (2.27%→1.00%→0.36%→
+> 0.14% at nr=65→257).
+>
+> The first version of this note attributed the sign to "`M_tor` depends
+> on `ρ`, `M_pol` does not." **That attribution was wrong**, caught on
+> review. Here is the actual mechanism: writing the master Bernoulli as
+> `H + Φ − C_rot − M_pol + M_tor = C` (note the signs: `M_pol` enters with
+> a minus, `M_tor` with a plus) and comparing its gradient against the
+> momentum equation gives `F_L,tor/ρ = −∇M_tor` — the minus comes directly
+> from `M_tor` having been written with a **plus** sign in the master
+> equation, full stop. Substituting into the sign-fixed, convention-free
+> Maxwell identity `∫r·F_L dV = +∫B²/8π dV` is what produces the minus
+> sign in the virial identity. Had the master equation instead been
+> written with `−M_tor`, the virial identity would come out `+`, with
+> `M_tor` depending on `ρ` in exactly the same way either time. **`ρ`
+> entering `M_tor` is why the SCF inversion becomes implicit (a fact about
+> the algorithm's structure) — it has nothing to do with which sign the
+> virial identity carries (a fact about which convention was chosen when
+> the term was first written into the Bernoulli equation).** Two different
+> questions, easy to conflate, and conflating them is exactly the kind of
+> mistake this project has already been burned by once (§1.4's Green's-
+> function bug survived because independent-looking checks secretly
+> shared one derivation). Get the causal story right here or a future
+> reader "fixing" the (correct) code to match the (wrong) causal
+> explanation is a real, specific risk — see `scf/terms/toroidal_sc.py`
+> for the full derivation.
+
+**V-R1/V-R2 status (rigid vs. differential rotation, no field).** V-R2
+(differential, j-constant, `A=0.3 R_guess`) reaches `2.19 M☉` against the
+`~2.2 M☉` target (Yoon & Langer 2005) — **0.40% error**, reached with
+`mass_loss_ratio~0.13`, comfortably away from breakup.
+`scf/tests/test_differential_rotation.py`.
+
+V-R1 (rigid) **does not validate** against the `~1.5 M☉` target (Hachisu
+et al. 2012; Boshkayev et al. 2013). At `ρc=10¹²`, stepping `Ω_c` upward
+with continuation, the sequence terminates *numerically* at
+`R_pol/R_eq≈0.932`, `Ω_c≈26.47`, with **mass_loss_ratio only 0.135** —
+far from the `→1` that a genuine mass-shedding termination requires, and
+far from the Roche-model expectation for a centrally-condensed (`n≈3`)
+configuration, `R_pol/R_eq=2/3≈0.667` at real breakup. The cause is not
+resolved. Two suspects, not yet investigated (not on the project's
+critical path — Jorge wants differential rotation, which already works):
+outer-layer radial resolution, and — most likely — `Ω_c` itself being a
+bad control parameter this close to the sequence's end (a documented
+phenomenon in the rotating-SCF literature; Hachisu's own method sidesteps
+it by parametrizing on axis ratio and solving for `Ω²`, not the reverse).
+A direct test confirms this: bisecting for a target axis ratio instead of
+imposing `Ω_c` directly saturates at the same point — no smaller axis
+ratio is reachable by continuation in `Ω_c`, for any target. The
+mechanism itself is not in doubt: `(M−M₀)/M₀` tracks `T/|W|` with a
+stable proportionality coefficient (~3.0) across the whole tested range,
+and V-R6 (below) independently confirms `T`. See
+`scf/tests/test_rotation.py` for the full numbers and reasoning chain.
+
+> **Bug found and fixed during this investigation (unrelated to the V-R1
+> question above, but real and previously unnoticed).**
+> `diagnostics.surface_radius()` (and everything built on it —
+> `equatorial_polar_radii()`, `surface_field()`, `surface_dipolarity()`,
+> `toroidal.find_uc()`, `impose_toroidal()`) used to take `ρ` and
+> linear-interpolate where it crosses zero. But `ρ = EOS⁻¹(H)` is clipped
+> to *exactly* `0.0` for `H≤0` (`eos.density_of_enthalpy`) — so the grid
+> point just past the surface always has `ρ=0.0` exactly, which makes the
+> interpolation fraction collapse to exactly `1.0` and the function always
+> return a raw grid point, never a true sub-grid position. Radii were
+> silently grid-quantized project-wide. Fixed by interpolating on `H`
+> instead (continuous, crosses zero smoothly between grid points, never
+> clipped) — verified to shift `R_eq`/`R_pol` by tens of km on a modest
+> mesh (`nr=65`), not a cosmetic correction. Found by noticing that a
+> rotation sequence's `R_pol/R_eq` was landing on suspiciously exact small
+> integer ratios (`37/39`, `38/39`, ...) — the classic signature of grid
+> quantization, not physics.
+
+**T (Fase 1, V-R6).** Computed two independent ways — once via
+`rotation.energy()`, once via a from-scratch volume integral written in
+the test, not calling any shared code beyond `Ω(ϖ)` — and the two agree
+to machine precision (`rel_diff=0.00e+00`).
+
+---
+
 ## 2. Tab 1 — Equilibrium
 
 → `dashboard/pages/1_equilibrium.py`
@@ -856,6 +1018,13 @@ configuration unless otherwise noted:
   pending** — system dependencies (`gfortran`, `libhdf5-openmpi-dev`,
   `libopenmpi-dev`) have not yet been installed in this environment.
   Nothing in Tab 3 has been tested against a real Castro build.
+- **Rigid rotation (V-R1) does not validate against the literature
+  (~1.5 M☉)** — the `Ω_c`-controlled sequence terminates numerically at
+  `R_pol/R_eq≈0.93` with mass-loss ratio only `0.135` (should be `→1` at
+  real breakup; Roche model predicts `R_pol/R_eq=2/3` for this EOS's
+  central concentration). Not on the project's critical path (differential
+  rotation, V-R2, already reaches the `~2.2 M☉` target at 0.40% error, far
+  from breakup) — see §1.11.
 
 ---
 
@@ -878,9 +1047,10 @@ initiative (rule G1):
 4. **`B_unit = Rρ√(8πG)`** (§1.10, natural field unit) is not implemented
    — it was used only as an order-of-magnitude estimate during
    debugging.
-5. **No `schema_version`** in `manifest.json`/`scalars.json` (§5) —
-   changes to the set of scalars have already broken `index.csv` for old
-   runs once during this project.
+5. ~~**No `schema_version`** in `manifest.json`/`scalars.json` (§5)~~ —
+   **fixed**: `store.SCHEMA_VERSION` now guards `run_exists()`, so a
+   schema mismatch is a cache miss instead of a silent hit with missing
+   columns (added when rotation/toroidal_sc extended the scalar set).
 6. **`store.mark_reference()`** records the `reference` flag in the
    index, but no other tab (in particular Tab 2, which per the original
    prompt should show reference runs on its charts) reads that flag yet.
@@ -896,6 +1066,15 @@ initiative (rule G1):
 9. **`gauss_to_castro()`/`castro_to_gauss()`** exist and are correct
    (checked in this work cycle), but are not called by any export code
    yet — see the limitation in §6.
+10. **Rigid-rotation sequence termination (§1.11, V-R1)** — not resolved.
+    The standard remedy (parametrize the near-terminal sequence by axis
+    ratio instead of `Ω_c`, solving `Ω_c` by an outer root-find — the
+    technique Hachisu's own method uses) was identified and spot-checked
+    (a direct bisection on axis ratio saturates at the same point found by
+    stepping `Ω_c`, confirming `Ω_c` degenerates as a control parameter
+    there) but not implemented as production code — out of scope for now
+    since differential rotation (the project's actual target) does not
+    hit this problem in the tested range.
 
 ---
 

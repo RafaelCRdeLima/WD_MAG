@@ -14,25 +14,80 @@ import numpy as np
 import diagnostics as diag
 
 
-def find_uc(u, rho, r, theta):
+def _surface_u_profile(u, H, r, theta):
+    """u(r,theta) interpolado no raio da superficie (H=0), para cada
+    theta — usado por find_uc() e pela verificacao de tangencia
+    (check_uc_tangency). Recebe H, NAO rho -- ver diagnostics.surface_radius
+    para o motivo (rho e' clipado exatamente a 0 alem da superficie, o que
+    faz a interpolacao degenerar para o ponto de grade; H e' continuo e
+    cruza zero de verdade entre dois pontos de grade)."""
+    ntheta = len(theta)
+    u_surf = np.zeros(ntheta)
+    r_surf = np.zeros(ntheta)
+    for j in range(ntheta):
+        r_surf[j] = diag.surface_radius(H, r, j)
+        u_surf[j] = np.interp(r_surf[j], r, u[:, j])
+    return u_surf, r_surf
+
+
+def find_uc(u, H, r, theta):
     """u_c = valor maximo de u ao longo da superficie estelar (H=0).
 
     Contornos com u > u_c nao tocam a superficie em lugar nenhum — ficam
     inteiramente internos (linhas de fluxo fechadas). Esta e' a fronteira
     do toro (D6)."""
-    ntheta = len(theta)
-    u_surf = np.zeros(ntheta)
-    for j in range(ntheta):
-        R_surf_j = diag.surface_radius(rho, r, j)
-        u_surf[j] = np.interp(R_surf_j, r, u[:, j])
+    u_surf, _ = _surface_u_profile(u, H, r, theta)
     return np.max(u_surf)
 
 
-def impose_toroidal(u, rho, r, theta, zeta, m_tor=1):
-    """B_phi = zeta*(u-u_c)^(m_tor+1)/omega para u>u_c, 0 fora. Retorna (B_phi, u_c)."""
+def check_uc_tangency(u, rho, H, r, theta, u_c):
+    """Verificacao NUMERICA de que u=u_c e' tangente a' superficie estelar
+    em exatamente um ponto (D6) — em vez de comparar visualmente os
+    contornos u=u_c e H=0 num plot. O contour() do matplotlib usa
+    interpolacao 2D (marching squares) na malha curva (r,theta)->(varpi,z),
+    que pode deslocar visualmente duas curvas matematicamente tangentes em
+    ate' ~1 celula de malha (ver plots.plot_flux_contours) — a checagem
+    real precisa ser feita aqui, com a mesma interpolacao 1D por linha de
+    theta usada em find_uc(), nao no desenho. Recebe rho E H: H para achar
+    a superficie (surface_radius), rho para a checagem pontual de vacuo
+    abaixo (essa NAO sofre do bug de interpolacao -- e' so' um teste
+    booleano rho<=0 por ponto de malha, nao uma busca de posicao sub-malha).
+
+    Retorna dict:
+      theta_tangent, r_tangent : localizacao do ponto de tangencia (rad, cm)
+      unique                   : True se so' um theta atinge u_c na superficie
+                                  (tangencia genuina, nao um platô degenerado)
+      margin                   : (u_c - segundo maior u_surf) / |u_c| —
+                                  grande => tangencia limpa; perto de 0 =>
+                                  quase-degenerado
+      vacuum_leak               : True se algum ponto fora da estrela
+                                  (rho<=0) tem u > u_c — indicaria que o
+                                  toro extrapola a superficie fisica
+                                  (bug real, nao artefato de plot)
+    """
+    u_surf, r_surf = _surface_u_profile(u, H, r, theta)
+    jmax = int(np.argmax(u_surf))
+    sorted_surf = np.sort(u_surf)
+    second = sorted_surf[-2] if len(sorted_surf) > 1 else -np.inf
+    margin = (u_c - second) / abs(u_c) if u_c != 0 else float("nan")
+    vacuum = rho <= 0
+    vacuum_leak = bool(np.any(u[vacuum] > u_c)) if np.any(vacuum) else False
+    return {
+        "theta_tangent": theta[jmax],
+        "r_tangent": r_surf[jmax],
+        "unique": margin > 1e-6,
+        "margin": margin,
+        "vacuum_leak": vacuum_leak,
+    }
+
+
+def impose_toroidal(u, H, r, theta, zeta, m_tor=1):
+    """B_phi = zeta*(u-u_c)^(m_tor+1)/omega para u>u_c, 0 fora. Retorna
+    (B_phi, u_c). Recebe H (nao rho) -- so' usado para localizar a
+    superficie via find_uc(); ver diagnostics.surface_radius."""
     if m_tor < 1:
         raise ValueError("m_tor >= 1 exigido para B_phi e sua derivada serem continuas em u_c")
-    u_c = find_uc(u, rho, r, theta)
+    u_c = find_uc(u, H, r, theta)
     omega = r[:, None] * np.sin(theta)[None, :]
     mask = u > u_c
     with np.errstate(divide="ignore", invalid="ignore"):
@@ -42,14 +97,14 @@ def impose_toroidal(u, rho, r, theta, zeta, m_tor=1):
     return Bphi, u_c
 
 
-def solve_zeta_for_energy_ratio(u, rho, r, theta, target_ratio, m_tor=1):
+def solve_zeta_for_energy_ratio(u, H, r, theta, target_ratio, m_tor=1):
     """Ajusta zeta para atingir Bt/Bp = target_ratio (razao de ENERGIAS
     E_tor/E_pol — ver dashboard, que mostra tambem a razao de amplitudes).
 
     B_phi e' linear em zeta, logo E_tor e' quadratico em zeta: basta uma
     corrida de referencia com zeta=1 e reescalar.
     """
-    Bphi_unit, u_c = impose_toroidal(u, rho, r, theta, zeta=1.0, m_tor=m_tor)
+    Bphi_unit, u_c = impose_toroidal(u, H, r, theta, zeta=1.0, m_tor=m_tor)
     Br, Bth = diag.poloidal_field(u, r, theta)
     E_pol, _, _ = diag.magnetic_energies(Br, Bth, np.zeros_like(Br), r, theta)
     _, E_tor_unit, _ = diag.magnetic_energies(Br, Bth, Bphi_unit, r, theta)

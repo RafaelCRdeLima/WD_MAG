@@ -24,7 +24,9 @@ import diagnostics as diag
 import toroidal as tor
 import units
 import store
+import seed
 from eos import sound_speed, x_of_enthalpy
+from terms.rotation import Rotation
 
 st.set_page_config(page_title="Export — wd-magnetizada", layout="wide")
 st.title("Tab 3 — Export to Castro")
@@ -43,7 +45,7 @@ rho_c = run["params"]["rho_c"]
 
 Br, Bth = diag.poloidal_field(u, r, theta)
 M = diag.volume_integral(rho, r, theta)
-R_eq, R_pol = diag.equatorial_polar_radii(rho, r, theta)
+R_eq, R_pol = diag.equatorial_polar_radii(H, r, theta)
 
 st.subheader("Toroidal field (D6)")
 c1, c2 = st.columns(2)
@@ -54,7 +56,7 @@ Bphi = np.zeros_like(rho)
 u_c = None
 if zeta_target > 0:
     try:
-        Bphi, zeta_used, u_c = tor.solve_zeta_for_energy_ratio(u, rho, r, theta, zeta_target, m_tor=m_tor)
+        Bphi, zeta_used, u_c = tor.solve_zeta_for_energy_ratio(u, H, r, theta, zeta_target, m_tor=m_tor)
         ratio_energy, ratio_amp = tor.bt_bp_ratios(Br, Bth, Bphi, r, theta)
         cc1, cc2, cc3 = st.columns(3)
         cc1.metric("Bt/Bp (energy)", f"{ratio_energy:.4f}")
@@ -74,7 +76,20 @@ else:
 _, _, E_mag = diag.magnetic_energies(Br, Bth, Bphi, r, theta)
 W = diag.gravitational_energy(rho, Phi, r, theta)
 Pi = diag.pressure_integral(H, r, theta, mu_e)
-VE, _, _, _ = diag.virial_error(rho, Phi, H, Br, Bth, Bphi, r, theta, mu_e)
+
+# rotation (if the loaded equilibrium had it) -- reconstructed from the
+# saved params so VE here (2T+W+3Pi+E_mag) matches what Tab 1 reported,
+# not just the field-only virial. See scf/terms/rotation.py.
+_Omega_c = run["params"].get("Omega_c", 0.0)
+_A_over_Req = run["params"].get("A_over_Req", 0.0)
+rotation = None
+if _Omega_c > 0:
+    _A = float("inf") if _A_over_Req <= 0 else _A_over_Req * seed.r_guess(rho_c)
+    rotation = Rotation(Omega_c=_Omega_c, A=_A)
+T = rotation.energy(rho, r, theta)["T"] if rotation is not None else 0.0
+T_over_W = T / abs(W) if W != 0 else float("nan")
+
+VE, _, _, _, _ = diag.virial_error(rho, Phi, H, Br, Bth, Bphi, r, theta, mu_e, T=T)
 
 st.subheader("Derived scales")
 rho_mean_est = M / (4.0 / 3.0 * np.pi * R_eq**2 * R_pol) if R_eq > 0 else float("nan")
@@ -140,14 +155,23 @@ box_params_display = {
 st.table({"parameter": list(box_params_display.keys()),
           "value": list(box_params_display.values())})
 
-# ---------------- export (R5: blocked if VE > 1e-3) ----------------
+# ---------------- export (R5: blocked if VE > 1e-3 or T/|W| >= 0.14) ----------------
 st.divider()
 st.subheader("Export")
-if VE >= 1e-3:
+_ve_ok = VE < 1e-3
+_tw_ok = T_over_W < 0.14
+if not _ve_ok:
     st.error(f"Export disabled: VE = {VE:.3e} >= 1e-3 (plan's V3). "
              f"This equilibrium is not reliable enough to become Castro "
              f"initial data. There is no option to force it.")
-else:
+if rotation is not None:
+    if not _tw_ok:
+        st.error(f"Export disabled: T/|W| = {T_over_W:.3e} >= 0.14 (secular "
+                 "non-axisymmetric instability threshold, Ostriker & Bodenheimer "
+                 "1973). There is no option to force it.")
+    else:
+        st.success(f"T/|W| = {T_over_W:.3e} < 0.14 — rotational stability OK.")
+if _ve_ok and _tw_ok:
     st.success(f"VE = {VE:.3e} < 1e-3 — export enabled.")
     if st.button("generate HDF5 + inputs + manifest", type="primary"):
         # source_run_* preserves the parameters of the loaded poloidal

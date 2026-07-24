@@ -163,6 +163,26 @@ fig_m_b = px.scatter(df, x="rho_c", y="M/M_sun", color="B_pol,max (G)",
 fig_m_b.update_layout(coloraxis_colorbar=dict(tickformat=".2e", title="B (G)"))
 st.plotly_chart(fig_m_b, key="m_b_chart")
 
+st.subheader("Dipolarity (B_polo/B_eq) vs k0")
+st.caption(
+    "B_polo/B_eq at the stellar surface — exactly 2 for a pure dipole; "
+    "departure measures multipole contamination as the poloidal field "
+    "strengthens (see diagnostics.surface_dipolarity, Tab 1). k0=0 points "
+    "are omitted (log x-axis, and the field-free case has no field to "
+    "measure a ratio of)."
+)
+df_dip = df[df["k0"] > 0]
+if len(df_dip) > 0 and "dipolarity" in df_dip.columns:
+    fig_dip = px.scatter(df_dip, x="k0", y="dipolarity", color="rho_c",
+                          color_continuous_scale="Viridis", log_x=True,
+                          hover_data={"hash": True, "rho_c": ":.3e", "VE": ":.3e",
+                                      "B_polo (G)": ":.3e", "B_eq (G)": ":.3e"})
+    fig_dip.add_hline(y=2.0, line_dash="dash", line_color="gray",
+                       annotation_text="pure dipole (=2)")
+    st.plotly_chart(fig_dip, key="dipolarity_chart")
+else:
+    st.caption("no k0>0 points with dipolarity data yet — run the sweep.")
+
 st.subheader("VE heat map over the grid")
 if len(df["k0"].unique()) > 1 and len(df["rho_c"].unique()) > 1:
     pivot = df.pivot_table(index="k0", columns="rho_c", values="VE", aggfunc="mean")
