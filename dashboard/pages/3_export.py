@@ -47,7 +47,17 @@ mu_e = run["params"].get("mu_e", 2.0)
 rho_c = run["params"]["rho_c"]
 
 Br, Bth = diag.poloidal_field(u, r, theta)
+# M is both "the mass of the exported/final configuration" AND "the mass
+# of the source poloidal equilibrium" -- the same quantity, not a
+# coincidence. D6's toroidal imposition (below) computes B_phi from the
+# already-converged u/H alone; it never touches rho. Nothing downstream
+# of this line changes rho, so mass is fixed entirely by the poloidal
+# equilibrium and is exactly invariant under the toroidal imposition step
+# (only E_mag/VE shift -- see the virial computation below). Shown as two
+# labeled metrics rather than one in "Derived scales" so that identity is
+# visible, not asserted.
 M = diag.volume_integral(rho, r, theta)
+M_source_poloidal = M
 R_eq, R_pol = diag.equatorial_polar_radii(H, r, theta)
 
 st.subheader("Toroidal field (D6)")
@@ -101,6 +111,17 @@ t_dyn = units.dynamical_time(M, R_eq)
 v_A = units.alfven_speed(B_mean, rho_mean_est)
 t_alf = units.alfven_time(R_eq, v_A) if v_A > 0 else float("inf")
 alf_over_dyn = t_alf / t_dyn if t_dyn > 0 else float("nan")
+
+dm0, dm1 = st.columns(2)
+dm0.metric("M/M☉ (this export, final configuration)", f"{M / units.M_SUN:.4f}")
+dm1.metric("M/M☉ (source poloidal equilibrium)", f"{M_source_poloidal / units.M_SUN:.4f}")
+st.caption(
+    "Identical by construction, not a coincidence: D6 imposes B_phi on "
+    "the already-converged rho field (below) without re-solving for it, "
+    "so the toroidal imposition changes E_mag and VE but leaves mass set "
+    "entirely by the source poloidal equilibrium. Shown side by side so "
+    "that invariance is visible rather than assumed."
+)
 
 d0, d1, d2, d3, d4 = st.columns(5)
 d0.metric("mean B", units.format_gauss(B_mean))
@@ -212,7 +233,19 @@ if _ve_ok and _tw_ok and _rho_c_ok:
             f.create_dataset("rho", data=rho)
             f.create_dataset("A_phi", data=A_phi)
             f.create_dataset("B_phi", data=Bphi)
+            # M_Msun is computed from the "rho" dataset above -- i.e. it IS
+            # the mass of this exported/final (toroidal-imposed)
+            # configuration, not a stale copy of the source equilibrium's
+            # value. It is also, by construction, numerically identical to
+            # the source poloidal equilibrium's mass (D6 does not modify
+            # rho -- see the comment at M's computation and the Derived
+            # scales section of this page) -- both facts recorded here so
+            # neither has to be re-derived from source_run_hash later.
             f.attrs["M_Msun"] = M / units.M_SUN
+            f.attrs["M_Msun_note"] = ("mass of THIS exported configuration (computed from "
+                                       "the rho dataset in this file); identical to the "
+                                       "source poloidal equilibrium's mass because D6's "
+                                       "toroidal imposition does not modify rho")
             f.attrs["R_eq_cm"] = R_eq
             f.attrs["R_pol_cm"] = R_pol
             f.attrs["rho_c_gcm3"] = rho_c
@@ -242,8 +275,16 @@ if _ve_ok and _tw_ok and _rho_c_ok:
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "git_commit_scf_dashboard": _git_hash(_REPO_ROOT),
             "params": export_params,
-            "derived": {"t_dyn_s": t_dyn, "v_A_cms": v_A, "t_Alfven_s": t_alf,
-                        "t_Alf_over_t_dyn": alf_over_dyn, "VE": VE},
+            "derived": {
+                # mass of THIS export (final, toroidal-imposed configuration) --
+                # identical to M_Msun_source_poloidal because D6 imposes B_phi
+                # on the existing rho without re-solving for it (see
+                # initial_data.h5's M_Msun_note attribute for the same point).
+                "M_Msun": M / units.M_SUN,
+                "M_Msun_source_poloidal": M_source_poloidal / units.M_SUN,
+                "t_dyn_s": t_dyn, "v_A_cms": v_A, "t_Alfven_s": t_alf,
+                "t_Alf_over_t_dyn": alf_over_dyn, "VE": VE,
+            },
             "paths": {"hdf5": str(h5_path), "inputs": str(out_dir / "inputs")},
         }
         (out_dir / "run_manifest.json").write_text(json.dumps(manifest, indent=2, default=float))
