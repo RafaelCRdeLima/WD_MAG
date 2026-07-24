@@ -19,6 +19,7 @@ import units
 import store
 import plots
 import seed
+import eos
 from terms.poloidal import Poloidal
 from terms.rotation import Rotation
 from terms.toroidal_sc import ToroidalSC
@@ -83,6 +84,16 @@ rho_c = st.sidebar.select_slider(
 )
 mu_e = st.sidebar.number_input("mu_e", min_value=1.0, max_value=2.5,
                                 value=_reload["mu_e"] if _reload else 2.0, step=0.1)
+
+_rho_c_neutronization = eos.neutronization_threshold_rho_c(mu_e)
+if rho_c >= _rho_c_neutronization:
+    st.sidebar.warning(
+        f"rho_c >= {_rho_c_neutronization:.2e} g/cm³ — above the inverse "
+        "beta-decay (neutronization) threshold for this mu_e (Boshkayev et "
+        "al. 2013, ApJ 762, 117). The constant-mu_e cold EOS used here no "
+        "longer describes a real white dwarf past this point (composition "
+        "starts neutronizing) — blocks export (Tab 3)."
+    )
 
 R_guess = seed.r_guess(rho_c)
 cache_key = f"{rho_c:.3e}_{mu_e:.2f}"

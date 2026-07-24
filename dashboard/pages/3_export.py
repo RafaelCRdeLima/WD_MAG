@@ -2,7 +2,10 @@
 generates HDF5 + Castro inputs + run_manifest.json.
 
 R3: only writes files, never launches Castro runs.
-R5: export blocked if VE > 1e-3, no option to force it.
+R5: export blocked if VE > 1e-3, T/|W| >= 0.14 (rotating equilibria), or
+rho_c past the inverse beta-decay (neutronization) threshold for the
+loaded mu_e (eos.neutronization_threshold_rho_c) — no option to force any
+of the three.
 """
 
 import json
@@ -25,7 +28,7 @@ import toroidal as tor
 import units
 import store
 import seed
-from eos import sound_speed, x_of_enthalpy
+from eos import sound_speed, x_of_enthalpy, neutronization_threshold_rho_c
 from terms.rotation import Rotation
 
 st.set_page_config(page_title="Export — wd-magnetizada", layout="wide")
@@ -155,11 +158,14 @@ box_params_display = {
 st.table({"parameter": list(box_params_display.keys()),
           "value": list(box_params_display.values())})
 
-# ---------------- export (R5: blocked if VE > 1e-3 or T/|W| >= 0.14) ----------------
+# ---------------- export (R5: blocked if VE > 1e-3, T/|W| >= 0.14, or rho_c
+# past the neutronization threshold) ----------------
 st.divider()
 st.subheader("Export")
 _ve_ok = VE < 1e-3
 _tw_ok = T_over_W < 0.14
+_rho_c_neutronization = neutronization_threshold_rho_c(mu_e)
+_rho_c_ok = rho_c < _rho_c_neutronization
 if not _ve_ok:
     st.error(f"Export disabled: VE = {VE:.3e} >= 1e-3 (plan's V3). "
              f"This equilibrium is not reliable enough to become Castro "
@@ -171,7 +177,13 @@ if rotation is not None:
                  "1973). There is no option to force it.")
     else:
         st.success(f"T/|W| = {T_over_W:.3e} < 0.14 — rotational stability OK.")
-if _ve_ok and _tw_ok:
+if not _rho_c_ok:
+    st.error(f"Export disabled: rho_c = {rho_c:.3e} >= {_rho_c_neutronization:.3e} "
+             "g/cm³, the inverse beta-decay (neutronization) threshold for this "
+             "mu_e (Boshkayev et al. 2013, ApJ 762, 117). The constant-mu_e cold "
+             "EOS used here no longer describes a real white dwarf past this "
+             "point. There is no option to force it.")
+if _ve_ok and _tw_ok and _rho_c_ok:
     st.success(f"VE = {VE:.3e} < 1e-3 — export enabled.")
     if st.button("generate HDF5 + inputs + manifest", type="primary"):
         # source_run_* preserves the parameters of the loaded poloidal

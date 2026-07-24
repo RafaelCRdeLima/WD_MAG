@@ -16,6 +16,7 @@
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
+\usepackage{seqsplit}
 \usepackage{enumitem}
 \usepackage{xcolor}
 
@@ -803,6 +804,68 @@ signature of grid quantization, not physics.
 \code{rotation.energy()}, once via a from-scratch volume integral
 written in the test, not calling any shared code beyond $\Omega(\varpi)$
 --- and the two agree to machine precision ($\mathrm{rel\_diff}=0.00\times10^{0}$).
+
+\subsection{\texorpdfstring{Validity gate: $\rho_c$ and inverse beta decay}{Validity gate: rho_c and inverse beta decay}}
+\label{sec:rho-c-gate}
+
+$\rho_c$ was, until now, the only input with no validity gate --- VE and
+$T/|W|$ already have traffic lights, $\rho_c$ did not, and the slider
+went up to $10^{12}$ with no warning even though matter neutronizes long
+before that density: past the inverse-beta-decay (electron capture)
+threshold, the constant-$\mu_e$ cold EOS used throughout this project
+(\S\ref{sec:eos}) stops describing a real white dwarf --- composition
+changes locally, and the resulting configuration (radius of order tens
+of km at these densities) is not a white dwarf in any recognizable sense
+(see the Das \& Mukhopadhyay 2.58~$M_\odot$/70~km example in
+\code{plano\_wd\_magnetizada.md}).
+
+Threshold densities, from \textbf{Table 2 of Boshkayev, Rueda, Ruffini \&
+Siutsou (2013), ApJ 762, 117} (threshold energies from Audi et al.\ 2003,
+critical density via the RFMT EOS --- verified against the published
+table, not re-derived here):
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Nuclide & $\mu_e = A/Z$ & $\rho_{threshold}$ (g/cm$^3$)\\
+\midrule
+$^4$He & 2.0 & $1.39\times10^{11}$\\
+$^{12}$C & 2.0 & $3.97\times10^{10}$\\
+$^{16}$O & 2.0 & $1.94\times10^{10}$\\
+$^{56}$Fe & $56/26\approx2.154$ & $1.18\times10^{9}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+$\mu_e$ does not uniquely fix composition --- $^4$He, $^{12}$C and
+$^{16}$O all have $\mu_e=2$ exactly but different thresholds, because the
+capture threshold depends on the specific nuclide's binding energy, not
+$\mu_e$ alone. This project has no composition selector beyond $\mu_e$,
+so \code{neutronization\_threshold\_rho\_c(mu\_e)} returns the
+\textbf{conservative} (lowest, $^{16}$O-like) value for $\mu_e=2$ ---
+better to warn too early than too late --- and linearly interpolates
+toward the $^{56}$Fe point for $\mu_e$ up to $56/26$; outside
+$[2.0,\,2.154]$ it returns the nearest tabulated value (flat
+extrapolation, no invented trend).
+
+\arrowto{scf/eos.py :: neutronization\_threshold\_rho\_c()}
+
+Same traffic-light convention as VE/$T/|W|$: warning in Tab 1, blocks
+export in Tab 3 (R5), no override.
+
+\textbf{Practical consequence:} the dashboard's own default
+($\rho_c=10^{12}$, chosen so the field-free case reproduces the
+Chandrasekhar limit within 1\%, V1) is itself \textbf{above} the
+$^{16}$O threshold ($1.94\times10^{10}$) --- that default was always an
+asymptotic numerical convenience (the $M(\rho_c)$ curve for the
+idealized $T=0$ free-electron-gas EOS saturates toward $1.44\,M_\odot$
+only as $\rho_c\to\infty$, ignoring neutronization), never a claim that
+$\rho_c=10^{12}$ is a physically realizable white dwarf.
+\textbf{Physically valid $\rho_c$ for this EOS, standard C/O or He
+composition, is $\lesssim2\times10^{10}$ g/cm$^3$} ($^{16}$O; up to
+$\sim1.4\times10^{11}$ for pure $^4$He) --- V1's high-$\rho_c$ sequence
+is a numerical asymptote check, not a claim about real stars, and any
+run intended for Castro export needs $\rho_c$ inside the physical range.
 
 \clearpage
 \section{Tab 1 --- Equilibrium}

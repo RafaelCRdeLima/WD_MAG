@@ -738,6 +738,56 @@ and V-R6 (below) independently confirms `T`. See
 the test, not calling any shared code beyond `Ω(ϖ)` — and the two agree
 to machine precision (`rel_diff=0.00e+00`).
 
+### 1.12 Validity gate: `ρc` and inverse beta decay
+
+`ρc` was, until now, the only input with no validity gate — VE and `T/|W|`
+already have traffic lights, `ρc` did not, and the slider went up to
+`10¹²` with no warning even though matter neutronizes long before that
+density: past the inverse-beta-decay (electron capture) threshold, the
+constant-`μₑ` cold EOS used throughout this project (§1.1) stops
+describing a real white dwarf — composition changes locally, and the
+resulting configuration (radius of order tens of km at these densities)
+is not a white dwarf in any recognizable sense (see the Das & Mukhopadhyay
+2.58 M☉/70 km example in `plano_wd_magnetizada.md`).
+
+Threshold densities, from **Table 2 of Boshkayev, Rueda, Ruffini &
+Siutsou (2013), ApJ 762, 117** (threshold energies from Audi et al. 2003,
+critical density via the RFMT EOS — verified against the published
+table, not re-derived here):
+
+| Nuclide | `μₑ = A/Z` | `ρ_threshold` (g/cm³) |
+|---|---|---|
+| ⁴He | 2.0 | `1.39×10¹¹` |
+| ¹²C | 2.0 | `3.97×10¹⁰` |
+| ¹⁶O | 2.0 | `1.94×10¹⁰` |
+| ⁵⁶Fe | 56/26 ≈ 2.154 | `1.18×10⁹` |
+
+`μₑ` does not uniquely fix composition — ⁴He, ¹²C and ¹⁶O all have
+`μₑ=2` exactly but different thresholds, because the capture threshold
+depends on the specific nuclide's binding energy, not `μₑ` alone. This
+project has no composition selector beyond `μₑ`, so
+`eos.neutronization_threshold_rho_c(mu_e)` returns the **conservative**
+(lowest, ¹⁶O-like) value for `μₑ=2` — better to warn too early than too
+late — and linearly interpolates toward the ⁵⁶Fe point for `μₑ` up to
+`56/26`; outside `[2.0, 2.154]` it returns the nearest tabulated value
+(flat extrapolation, no invented trend).
+
+→ `scf/eos.py :: neutronization_threshold_rho_c()`. Same traffic-light
+convention as VE/`T/|W|`: warning in Tab 1, blocks export in Tab 3
+(R5), no override.
+
+**Practical consequence:** the dashboard's own default (`ρc=10¹²`,
+chosen so the field-free case reproduces the Chandrasekhar limit within
+1%, V1) is itself **above** the ¹⁶O threshold (`1.94×10¹⁰`) — that
+default was always an asymptotic numerical convenience (the `M(ρc)`
+curve for the idealized T=0 free-electron-gas EOS saturates toward
+`1.44 M☉` only as `ρc→∞`, ignoring neutronization), never a claim that
+`ρc=10¹²` is a physically realizable white dwarf. **Physically valid
+`ρc` for this EOS, standard C/O or He composition, is `≲2×10¹⁰`
+g/cm³** (¹⁶O; up to `~1.4×10¹¹` for pure ⁴He) — V1's high-`ρc` sequence
+is a numerical asymptote check, not a claim about real stars, and any
+run intended for Castro export needs `ρc` inside the physical range.
+
 ---
 
 ## 2. Tab 1 — Equilibrium
