@@ -34,7 +34,13 @@ DEFAULT_RUNS_DIR = REPO_ROOT / "dashboard" / "runs"
 # during development, silently, before this check existed) -- run_exists()
 # now treats a schema mismatch as a cache miss instead of silently
 # returning a run with missing columns.
-SCHEMA_VERSION = 2
+#
+# v2 -> v3: Tab 2 (sweep) grid extended beyond (rho_c, k0) to rotation
+# (rigid/differential) and the self-consistent toroidal field (K, m) --
+# sweep_worker.run_one() now also returns B_tor,max, T, T/|W|, the two
+# Bt/Bp ratios, equatorial mass-loss ratio, and rho_c_valid (item 3's
+# neutronization gate flag). Runs cached under v2 lack every one of these.
+SCHEMA_VERSION = 3
 
 
 def params_hash(params: dict) -> str:

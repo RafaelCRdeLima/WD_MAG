@@ -1008,14 +1008,49 @@ scientific notation (rule R4, \S1.10).
 
 \arrowto{dashboard/pages/2\_sweep.py, dashboard/sweep\_worker.py}
 
-Runs the SCF (\S\ref{sec:loop}) on a $(\rho_c,k_0)$ grid in parallel
-(\code{ProcessPoolExecutor}), with caching by parameter hash
+Runs the SCF (\S\ref{sec:loop}) on a grid of up to two selectable axes in
+parallel (\code{ProcessPoolExecutor}), with caching by parameter hash
 (\code{store.run\_exists()}/\code{store.save\_run()}, \S\ref{sec:aba4}).
 Each grid point is an independent call to \code{scf.hachisu\_scf()}
 followed by the same diagnostics as Tab 1 --- no new physics, just
 orchestration.
 
 \arrowto{dashboard/sweep\_worker.py :: run\_one()} --- the picklable function each grid worker process runs.
+
+\textbf{Selectable axes (extended for rotation/toroidal,
+\code{SCHEMA\_VERSION=3}).} The page carries the same mode selectors as
+Tab 1 (rotation: none/rigid/differential; field: none/poloidal/toroidal
+self-consistent, \S\ref{sec:rotation}). The sweep axes on offer follow
+from those modes: $\rho_c$ is always available; $k_0$ only under
+\code{field=poloidal}; $K$ only under \code{field=toroidal
+(self-consistent)}; $\Omega_c$ only when rotation is on. For
+differential rotation, $A/R_{eq}$ is \textbf{always fixed} to a single
+value (never a sweep axis) --- opening it as a third axis would multiply
+the grid size by the axis resolution for no commensurate gain, given the
+closeout plan's time budget. Every axis not chosen as one of the (at
+most two) swept dimensions gets a single fixed value from the sidebar
+instead of being silently zeroed.
+
+\textbf{Points past the $\rho_c$ validity gate (\S\ref{sec:rho-c-gate})
+are marked, not filtered.} \code{sweep\_worker.run\_one()} returns
+\code{rho\_c\_valid} (a boolean, \code{False} once $\rho_c$ reaches the
+inverse-beta-decay threshold for the run's $\mu_e$) on every converged
+row. Every plot on this page that plots against $\rho_c$ distinguishes
+those points visually (a red $\times$ marker on the priority plot, a
+distinct symbol on the M-R diagram) instead of dropping them ---
+consistent with the rest of the dashboard's rule of showing
+out-of-validity results rather than hiding them silently.
+
+\textbf{Priority plot: $M$ vs $\rho_c$, one curve per $K$.} This is the
+figure meant to go to a collaborator working with the self-consistent
+toroidal branch: mass as a function of central density, one line per
+toroidal-field strength $K$ (including the $K=0$, field-free reference
+curve), with a dashed vertical line at the $\rho_c$ inverse-beta-decay
+threshold for the run's $\mu_e$ (\S\ref{sec:rho-c-gate}). It renders
+first on the page, before any other plot, and only needs $\rho_c$ swept
+with more than one value to be meaningful (it still renders with a
+single $K=0$ curve outside \code{field=toroidal (self-consistent)} mode,
+degrading gracefully to a plain $M$ vs $\rho_c$ plot).
 
 \textbf{What an equilibrium sequence is.} Fixing $\rho_c$ and varying
 $k_0$ (or vice versa) produces a sequence of equilibrium configurations.

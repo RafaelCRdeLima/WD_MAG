@@ -882,11 +882,44 @@ scientific notation (rule R4, see §1.10).
 
 → `dashboard/pages/2_sweep.py`, `dashboard/sweep_worker.py`
 
-Runs the SCF (§1.6) on a `(ρc, k₀)` grid in parallel
+Runs the SCF (§1.6) on a grid of up to two selectable axes in parallel
 (`ProcessPoolExecutor`), with caching by parameter hash
 (`store.run_exists()`/`store.save_run()`, §5). Each grid point is an
 independent call to `scf.hachisu_scf()` followed by the same diagnostics
 as Tab 1 — no new physics, just orchestration.
+
+**Selectable axes (extended for rotation/toroidal, `SCHEMA_VERSION=3`).**
+The page carries the same mode selectors as Tab 1 (rotation:
+none/rigid/differential; field: none/poloidal/toroidal self-consistent,
+§1.11). The sweep axes on offer follow from those modes: `ρc` is always
+available; `k₀` only under `field=poloidal`; `K` only under
+`field=toroidal (self-consistent)`; `Ω_c` only when rotation is on. For
+differential rotation, `A/R_eq` is **always fixed** to a single value
+(never a sweep axis) — opening it as a third axis would multiply the grid
+size by the axis resolution for no commensurate gain, given the closeout
+plan's time budget. Every axis not chosen as one of the (at most two)
+swept dimensions gets a single fixed value from the sidebar instead of
+being silently zeroed.
+
+**Points past the `ρc` validity gate (§1.12) are marked, not filtered.**
+`sweep_worker.run_one()` returns `rho_c_valid` (a boolean, `False` once
+`ρc` reaches the inverse-beta-decay threshold for the run's `μₑ`) on
+every converged row. Every plot on this page that plots against `ρc`
+distinguishes those points visually (a red `×` marker on the priority
+plot, a distinct `symbol` on the M-R diagram) instead of dropping them —
+consistent with the rest of the dashboard's rule of showing
+out-of-validity results rather than hiding them silently.
+
+**Priority plot: M vs `ρc`, one curve per `K`.** This is the figure meant
+to go to a collaborator working with the self-consistent toroidal branch:
+mass as a function of central density, one line per toroidal-field
+strength `K` (including the `K=0`, field-free reference curve), with a
+dashed vertical line at the `ρc` inverse-beta-decay threshold for the
+run's `μₑ` (§1.12). It renders first on the page, before any other plot,
+and only needs `ρc` swept with more than one value to be meaningful (it
+still renders with a single `K=0` curve outside `field=toroidal
+(self-consistent)` mode, degrading gracefully to a plain `M` vs `ρc`
+plot).
 
 → `dashboard/sweep_worker.py :: run_one()` — the picklable function each
 grid worker process runs.
