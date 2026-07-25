@@ -9,6 +9,7 @@ ALWAYS a fixed value, never a sweep axis -- opening it as an axis would
 explode the grid (3 physical axes x mesh resolution is already a lot of
 SCF solves)."""
 
+import io
 import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
@@ -18,6 +19,10 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 import streamlit as st
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from matplotlib.ticker import LogLocator, LogFormatterSciNotation, ScalarFormatter, NullFormatter
 
 _DASHBOARD_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_DASHBOARD_DIR))
@@ -34,6 +39,104 @@ st.title("Tab 2 — Sweep")
 REF_DIR = _DASHBOARD_DIR / "data" / "references"
 
 AXIS_LABELS = {"rho_c": "rho_c (g/cm³)", "k0": "k0", "K": "K (toroidal)", "Omega_c": "Omega_c (rad/s)"}
+
+
+def _log_rho_axis(fig, axis="x"):
+    """Genuine log10 axis for rho_c: major ticks at every power of ten
+    (dtick=1 on a log axis), labels in scientific notation (10^8, 10^9,
+    ...). Plotly's default exponentformat ("B", SI-style byte/currency
+    suffixes) turns these into "100M", "1B", "10B" on the tick labels and
+    "0.2T"/"0.4T"/"0.6T" on heatmap gridlines -- reads as data size or
+    money, not a log-scaled physical quantity, and was never set to
+    "power" explicitly on any chart in this file."""
+    kw = dict(type="log", dtick=1, exponentformat="power", title="rho_c (g/cm³)")
+    (fig.update_xaxes if axis == "x" else fig.update_yaxes)(**kw)
+
+
+def _msun_axis(fig, axis="y"):
+    """M/M_sun tick labels: plain notation, explicit so this axis is
+    never subject to the same SI-suffix default as the rho_c axes on
+    the same figures (M/M_sun values are O(1) here and unlikely to
+    trigger it in practice, but left implicit it's one parameter change
+    away from doing so silently)."""
+    kw = dict(exponentformat="none", title="M/M_sun")
+    (fig.update_xaxes if axis == "x" else fig.update_yaxes)(**kw)
+
+
+def _publication_figure_pdf(df, rho_c_neutronization, mu_e):
+    """Vector-PDF, matplotlib version of the priority plot -- for the
+    collaborator and the paper, not the interactive dashboard. Grouped by
+    E_tor/|W| (the portable form, docs/teoria.md Sec 6.2e), not raw K
+    (means nothing outside this project's specific
+    B_phi=K*rho^m*varpi^(2m-1) ansatz). Astronomy convention: serif
+    fonts, single-column-readable size, no embedded title (the figure
+    caption belongs in the paper's text, not burned into the image)."""
+    rc = {
+        "font.family": "serif",
+        "font.size": 9,
+        "axes.labelsize": 9,
+        "xtick.labelsize": 8,
+        "ytick.labelsize": 8,
+        "legend.fontsize": 7,
+        "mathtext.fontset": "dejavuserif",
+        "axes.linewidth": 0.8,
+        "pdf.fonttype": 42,  # embed as real text, not paths -- editable/searchable in the PDF
+    }
+    with plt.rc_context(rc):
+        fig, ax = plt.subplots(figsize=(3.5, 3.1))
+
+        df = df.copy()
+        df["_ve_group"] = df["E_mag/|W|"].round(2)
+        groups = sorted(df.groupby("_ve_group"), key=lambda kv: kv[0])
+        cmap = plt.get_cmap("viridis")
+        n_nonzero = max(sum(1 for g, _ in groups if g > 0), 1)
+        color_i = 0
+        for group_val, sub in groups:
+            sub = sub.sort_values("rho_c")
+            is_zero = group_val <= 0
+            if is_zero:
+                color, lw, ms, zorder = "black", 1.6, 4.0, 3
+                label = "no field (K=0)"
+            else:
+                color = cmap(0.15 + 0.75 * color_i / max(n_nonzero - 1, 1))
+                lw, ms, zorder = 1.1, 3.0, 2
+                label = rf"$E_{{\rm tor}}/|W| \approx {group_val:.2f}$"
+                color_i += 1
+            ax.plot(sub["rho_c"], sub["M/M_sun"], marker="o", markersize=ms,
+                     linewidth=lw, color=color, zorder=zorder, label=label)
+
+        ax.axvline(rho_c_neutronization, color="firebrick", linestyle="--",
+                    linewidth=1.0, zorder=1)
+        ax.text(rho_c_neutronization * 1.15, 0.96,
+                 rf"inverse $\beta$-decay threshold ($\mu_e={mu_e:g}$)",
+                 transform=ax.get_xaxis_transform(), rotation=90,
+                 va="top", ha="left", fontsize=7, color="firebrick")
+
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_xlabel(r"$\rho_c\ (\mathrm{g\,cm^{-3}})$")
+        ax.set_ylabel(r"$M/M_\odot$")
+        # x spans several decades -- genuine power-of-ten scientific
+        # notation (10^10, 10^11, ...) is the right call here.
+        ax.xaxis.set_major_locator(LogLocator(base=10.0))
+        ax.xaxis.set_major_formatter(LogFormatterSciNotation(base=10.0))
+        # y (M/M_sun) is O(1) and stays within one decade -- log-scaled
+        # SPACING as requested, but "1.4x10^0" reads as over-formatting
+        # for a number that small; plain decimal ticks (still
+        # log-spaced) is what published mass-density figures actually
+        # use for an axis in this range.
+        ax.yaxis.set_major_locator(LogLocator(base=10.0, subs=np.arange(1.0, 10.0)))
+        ax.yaxis.set_major_formatter(ScalarFormatter())
+        ax.yaxis.set_minor_formatter(NullFormatter())
+        ax.tick_params(which="both", direction="in", top=True, right=True)
+        ax.legend(frameon=False, loc="best", handlelength=1.6)
+        fig.tight_layout(pad=0.4)
+
+        buf = io.BytesIO()
+        fig.savefig(buf, format="pdf")
+        plt.close(fig)
+        buf.seek(0)
+        return buf
 
 
 def _axis_grid_ui(axis):
@@ -293,14 +396,23 @@ if "K_tor" in df.columns and df["rho_c"].nunique() > 1:
     fig_priority.add_vline(x=rho_c_neutronization, line_dash="dash", line_color="red",
                             annotation_text="inverse beta-decay threshold "
                                             f"(mu_e={mu_e}, Boshkayev+2013)")
-    fig_priority.update_xaxes(type="log", title="rho_c (g/cm³)")
-    fig_priority.update_yaxes(title="M/M_sun")
+    _log_rho_axis(fig_priority, "x")
+    _msun_axis(fig_priority, "y")
     st.plotly_chart(fig_priority, key="priority_chart")
     st.caption(
         "Red x markers / dashed vertical line: points at or past the inverse "
         "beta-decay (neutronization) threshold for this mu_e -- shown for "
         "context, not physically trustworthy past that line (item 3, "
         "docs/teoria.md §1.12). Not filtered out of the sweep."
+    )
+    _pub_pdf = _publication_figure_pdf(df, rho_c_neutronization, mu_e)
+    st.download_button(
+        "export figure for publication (PDF)", data=_pub_pdf,
+        file_name="M_vs_rhoc_toroidal.pdf", mime="application/pdf",
+        help="Vector PDF, matplotlib (not this interactive Plotly chart): "
+             "log-log, one curve per E_tor/|W| (portable form, not raw K), "
+             "K=0 curve highlighted, labeled neutronization threshold, no "
+             "embedded title -- the figure for the collaborator/paper."
     )
 else:
     st.caption(
@@ -317,6 +429,7 @@ fig_mr = px.scatter(df, x="R_eq (km)", y="M/M_sun", color=_color_col,
                      hover_data={"hash": True, "rho_c": ":.3e", "VE": ":.3e",
                                  "B_pol,max (G)": ":.3e"})
 fig_mr.update_xaxes(title="R_eq (km)")
+_msun_axis(fig_mr, "y")
 fig_mr.add_hline(y=1.44, line_dash="dash", line_color="gray",
                   annotation_text="Chandrasekhar limit (mu_e=2, no field)")
 ref_file = REF_DIR / "bera_bhattacharya_2014.csv"
@@ -334,6 +447,8 @@ fig_m_rhoc = px.scatter(df, x="rho_c", y="M/M_sun", color="E_mag/|W|",
                          color_continuous_scale="Inferno", log_x=True,
                          hover_data={"hash": True, "k0": ":.3e", "VE": ":.3e",
                                      "B_pol,max (G)": ":.3e"})
+_log_rho_axis(fig_m_rhoc, "x")
+_msun_axis(fig_m_rhoc, "y")
 st.plotly_chart(fig_m_rhoc, key="m_rhoc_chart")
 
 st.subheader("M vs rho_c, colored by B_pol,max (G)")
@@ -341,6 +456,8 @@ fig_m_b = px.scatter(df, x="rho_c", y="M/M_sun", color="B_pol,max (G)",
                       color_continuous_scale="Plasma", log_x=True,
                       hover_data={"hash": True, "k0": ":.3e", "VE": ":.3e"})
 fig_m_b.update_layout(coloraxis_colorbar=dict(tickformat=".2e", title="B (G)"))
+_log_rho_axis(fig_m_b, "x")
+_msun_axis(fig_m_b, "y")
 st.plotly_chart(fig_m_b, key="m_b_chart")
 
 if field_mode == "poloidal":
@@ -358,6 +475,8 @@ if field_mode == "poloidal":
                               color_continuous_scale="Viridis", log_x=True,
                               hover_data={"hash": True, "rho_c": ":.3e", "VE": ":.3e",
                                           "B_polo (G)": ":.3e", "B_eq (G)": ":.3e"})
+        fig_dip.update_layout(coloraxis_colorbar=dict(tickformat=".0e", title="rho_c (g/cm³)",
+                                                        exponentformat="power"))
         fig_dip.add_hline(y=2.0, line_dash="dash", line_color="gray",
                            annotation_text="pure dipole (=2)")
         st.plotly_chart(fig_dip, key="dipolarity_chart")
@@ -391,6 +510,15 @@ if len(axes) == 2:
             colorscale="RdBu_r", colorbar=dict(title="log10(VE)")))
         fig_ve.update_xaxes(title=AXIS_LABELS[ax1])
         fig_ve.update_yaxes(title=AXIS_LABELS[ax2])
+        # this heatmap's x/y are the raw pivot coordinate values, plotted
+        # on a LINEAR axis by default -- for rho_c (spanning decades)
+        # that's the same currency/data-size-looking mislabeling as the
+        # scatter plots above (e.g. gridlines at "0.2T/0.4T/0.6T"), not
+        # just a tick-format issue: type="log" was never set here at all.
+        if ax1 == "rho_c":
+            _log_rho_axis(fig_ve, "x")
+        if ax2 == "rho_c":
+            _log_rho_axis(fig_ve, "y")
         st.plotly_chart(fig_ve, key="ve_heatmap")
     else:
         st.caption("grid too small for a 2D heat map")
