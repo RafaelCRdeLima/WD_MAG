@@ -1,0 +1,101 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+# Step 3: dynamical relaxation of the Step-2 seed field. Unlike
+# `inputs` (Step 2's static, max_step=0 IC check), this evolves the
+# star -- gravity must be on (USE_GRAV=TRUE, see GNUmakefile) or the
+# star just flies apart from unbalanced pressure with no restoring
+# force, unrelated to the actual Braithwaite physics being tested.
+#
+# max_step is a bounded first attempt (~200 steps), not the full
+# acceptance-criteria length (>=10 t_Alfven) -- raise once this
+# survives without dt collapse. t_Alfven for this seeded star (E_mag/
+# |W|=0.15, rho_c=1e9 g/cm^3, R_star=2.449e8 cm) estimated at ~0.49 s
+# (t_Alfven/t_dyn ~ 1.7, consistent with the plan's "v_A ~ c_s in a
+# strong field" expectation) -- stop_time below is 15 t_Alfven so
+# max_step, not stop_time, is what bounds this first attempt.
+max_step = 200
+stop_time = 7.366
+
+geometry.is_periodic =  0    0    0
+geometry.coord_sys   =  0
+geometry.prob_lo     = -4.90e8 -4.90e8 -4.90e8
+geometry.prob_hi     =  4.90e8  4.90e8  4.90e8
+amr.n_cell           =  64   64   64
+
+castro.lo_bc       =  2   2   2
+castro.hi_bc       =  2   2   2
+
+# WHICH PHYSICS
+castro.do_hydro = 1
+castro.do_react = 0
+castro.ppm_type = 0
+castro.use_flattening = 0
+
+castro.do_grav = 1
+gravity.gravity_type = MonopoleGrav
+gravity.drdxfac = 2
+
+# TIME STEP CONTROL
+castro.cfl            = 0.5
+castro.init_shrink    = 0.01
+castro.change_max     = 1.1
+
+# DIAGNOSTICS & VERBOSITY
+castro.sum_interval   = 1
+castro.v              = 1
+amr.v                 = 1
+
+# REFINEMENT / REGRIDDING -- no imposed symmetry (full 3D Cartesian,
+# no reflection/quadrant BCs) per the plan's explicit requirement
+amr.max_level       = 0
+amr.ref_ratio       = 2 2 2 2
+amr.regrid_int      = 2
+amr.blocking_factor = 8
+amr.max_grid_size   = 32
+
+# CHECKPOINT / PLOTFILES
+amr.check_file      = chk
+amr.check_int       = 50
+amr.plot_file       = plt
+amr.plot_int        = 10
+amr.derive_plot_vars = density x_velocity y_velocity z_velocity eden Temp pressure B_x B_y B_z
+
+# FLUFF HANDLING -- the central risk of this step (see plan). Analytic
+# pre-check (not guessed): with the Step-2 density floor
+# (rho_c*1e-10=1e-1 g/cm^3) and the ~3% exterior B leakage measured in
+# Step 2, v_A right at/beyond R_star comes out to ~3e11 cm/s -- TEN
+# TIMES the speed of light, i.e. exactly the fluff catastrophe the
+# plan warned about, confirmed before ever running rather than
+# discovered by a crash. Raising castro.small_dens to 1e4 g/cm^3 (and
+# regenerating model.dat with a matching density_floor_fraction=1e-4,
+# so init doesn't abort on rho < small_dens) brings the boundary v_A
+# down to ~3e9 cm/s -- comparable to the interior CFL, not dominant.
+castro.small_dens = 1.0e4
+castro.small_temp = 1.0e3
+
+# density-threshold sponge (Exec/gravity_tests/StarGrav's convention)
+# to actively damp velocity in the low-density exterior on top of the
+# raised floor -- mechanically MHD-compatible (Castro_sponge.cpp is a
+# pure momentum source term, never touches B) but NOT a substitute for
+# the density floor above: the sponge damps velocity, while the CFL
+# constraint in MHD comes from the fast magnetosonic wave speed
+# (Castro's own timestep::estdt<mhd>, built from B and rho directly,
+# confirmed by reading Source/driver/Castro.cpp) -- a velocity-only
+# damper cannot cap a wave speed. Both are needed; neither alone is.
+castro.do_sponge = 1
+castro.sponge_upper_density = 1.0e5
+castro.sponge_lower_density = 1.0e4
+castro.sponge_timescale     = 1.0e-4
+
+# PROBLEM PARAMETERS
+problem.model_name = "model.dat"
+problem.rng_seed = 42
+problem.E_mag_over_W_target = 0.15
+problem.n_modes = 10
+problem.dominant_scale_over_R = 0.3
+problem.mode_scale_band_factor = 3.0
+problem.envelope_transition_frac = 0.2
+problem.surface_density_frac = 1.0e-6
+
+# EOS -- gamma_law, see GNUmakefile/module docstring for why
+eos.eos_gamma = 1.6667e0
+eos.eos_assume_neutral = 1

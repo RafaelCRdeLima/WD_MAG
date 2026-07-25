@@ -1,3 +1,5 @@
 CEXE_headers += seed_field_data.H
 CEXE_headers += seed_field.H
+CEXE_headers += Problem_Derive.H
 CEXE_sources += seed_field_data.cpp
+CEXE_sources += Problem_Derive.cpp

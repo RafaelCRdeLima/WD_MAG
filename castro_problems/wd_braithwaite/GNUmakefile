@@ -11,7 +11,13 @@ USE_MPI    = TRUE
 USE_OMP    = FALSE
 
 USE_MHD    = TRUE
-USE_GRAV   = FALSE
+# Step 3 (evolution): the star must be held together by gravity during
+# relaxation, or it just flies apart from unbalanced pressure -- Step
+# 2's USE_GRAV=FALSE was fine for a static (max_step=0) IC check, but
+# is wrong for any real time evolution. MonopoleGrav (see inputs) is
+# the isolated-star gravity solve, same choice as
+# Exec/gravity_tests/StarGrav.
+USE_GRAV   = TRUE
 
 USE_MODEL_PARSER = TRUE
 NUM_MODELS = 1

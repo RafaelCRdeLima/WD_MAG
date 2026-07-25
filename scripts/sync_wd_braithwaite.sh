@@ -29,12 +29,16 @@ SOURCE_FILES=(
     Make.package
     _prob_params
     inputs
+    inputs.evolve
     problem_initialize.H
     problem_initialize_state_data.H
     problem_initialize_mhd_data.H
     seed_field.H
     seed_field_data.H
     seed_field_data.cpp
+    Problem_Derive.H
+    Problem_Derive.cpp
+    Problem_Derives.H
 )
 
 usage() {
