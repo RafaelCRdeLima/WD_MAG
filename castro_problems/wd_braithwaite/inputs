@@ -63,8 +63,15 @@ problem.n_modes = 10
 problem.dominant_scale_over_R = 0.3
 problem.mode_scale_band_factor = 3.0
 problem.envelope_transition_frac = 0.2
+# MUST be set above whatever density_floor_fraction model.dat was
+# regenerated with (see scf/castro_model_writer.py), or
+# problem_initialize.H now errors loudly instead of silently using the
+# domain edge as R_star (see inputs.evolve's longer note on this same
+# bug, first found in Step 3). 1e-6 matches this file's original
+# density_floor_fraction=1e-10; regenerate model.dat with that floor
+# before rerunning this static-IC config if it was last written for
+# Step 3 (floor 1e-4).
 problem.surface_density_frac = 1.0e-6
 
-# EOS -- gamma_law, see GNUmakefile/module docstring for why
-eos.eos_gamma = 1.6667e0
-eos.eos_assume_neutral = 1
+# EOS -- ztwd (matches the SCF's own EOS), see GNUmakefile for why.
+# No runtime eos.* params -- ztwd has none (see EOS/ztwd/_parameters).

@@ -30,9 +30,12 @@ SOURCE_FILES=(
     _prob_params
     inputs
     inputs.evolve
+    inputs.control_nofield
+    mu2.net
     problem_initialize.H
     problem_initialize_state_data.H
     problem_initialize_mhd_data.H
+    problem_source.H
     seed_field.H
     seed_field_data.H
     seed_field_data.cpp

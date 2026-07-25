@@ -1,0 +1,84 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+# CONTROL TEST -- not part of the Braithwaite plan itself.
+#
+# Round 1 (gamma_law EOS): this control collapsed just as fast as the
+# magnetized runs (rho_c 2.2x initial by step 5, t=0.04s, no field at
+# all) -- confirming the collapse was an EOS mismatch, not a magnetic
+# effect: the star was built in hydrostatic equilibrium under ztwd
+# (scf/eos.py) but evolved under gamma_law, so it was never in
+# equilibrium under the physics actually governing its evolution.
+#
+# Round 2 (this version, ztwd EOS -- see GNUmakefile): same star, same
+# gravity, now the SAME EOS it was built with. E_mag_over_W_target=0
+# (exactly zero field, via seed_field::calibrate_and_diagnose()'s
+# A_amplitude_scale = sqrt(0/E_mag_raw) = 0) and damping OFF, to see
+# the raw hydrostatic response with nothing else going on. If this
+# holds rho_c stable, the EOS was the whole story for Round 1; the
+# actual Braithwaite runs still need re-testing since the field's own
+# imbalance (Step 2 IC not in magnetohydrostatic equilibrium) is a
+# separate, real question.
+max_step = 400
+stop_time = 7.366
+
+geometry.is_periodic =  0    0    0
+geometry.coord_sys   =  0
+geometry.prob_lo     = -4.90e8 -4.90e8 -4.90e8
+geometry.prob_hi     =  4.90e8  4.90e8  4.90e8
+amr.n_cell           =  64   64   64
+
+castro.lo_bc       =  2   2   2
+castro.hi_bc       =  2   2   2
+
+castro.do_hydro = 1
+castro.do_react = 0
+castro.ppm_type = 0
+castro.use_flattening = 0
+
+castro.do_grav = 1
+gravity.gravity_type = MonopoleGrav
+gravity.drdxfac = 2
+
+castro.cfl            = 0.5
+castro.init_shrink    = 0.01
+castro.change_max     = 1.1
+
+castro.sum_interval   = 1
+castro.v              = 1
+amr.v                 = 1
+
+amr.max_level       = 0
+amr.ref_ratio       = 2 2 2 2
+amr.regrid_int      = 2
+amr.blocking_factor = 8
+amr.max_grid_size   = 32
+
+amr.check_file      = chk
+amr.check_int       = -1
+amr.plot_file       = plt
+amr.plot_int        = 20
+amr.derive_plot_vars = density x_velocity y_velocity z_velocity eden Temp pressure B_x B_y B_z
+
+castro.small_dens = 1.0e4
+castro.small_temp = 1.0e3
+
+castro.do_sponge = 1
+castro.sponge_upper_density = 1.0e5
+castro.sponge_lower_density = 1.0e4
+castro.sponge_timescale     = 1.0e-4
+
+# damping OFF -- want the raw response
+castro.add_ext_src = 0
+
+problem.model_name = "model.dat"
+problem.rng_seed = 42
+problem.E_mag_over_W_target = 0.0
+problem.n_modes = 10
+problem.dominant_scale_over_R = 0.3
+problem.mode_scale_band_factor = 3.0
+problem.envelope_transition_frac = 0.2
+problem.surface_density_frac = 2.0e-4
+problem.damping_timescale_in_tdyn = 0.2
+problem.damping_end_time_in_tdyn = 5.0
+problem.damping_ramp_in_tdyn = 1.0
+
+# EOS -- ztwd, no runtime eos.* params (see EOS/ztwd/_parameters)

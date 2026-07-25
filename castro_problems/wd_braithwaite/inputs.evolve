@@ -5,14 +5,25 @@
 # star just flies apart from unbalanced pressure with no restoring
 # force, unrelated to the actual Braithwaite physics being tested.
 #
-# max_step is a bounded first attempt (~200 steps), not the full
-# acceptance-criteria length (>=10 t_Alfven) -- raise once this
-# survives without dt collapse. t_Alfven for this seeded star (E_mag/
-# |W|=0.15, rho_c=1e9 g/cm^3, R_star=2.449e8 cm) estimated at ~0.49 s
-# (t_Alfven/t_dyn ~ 1.7, consistent with the plan's "v_A ~ c_s in a
-# strong field" expectation) -- stop_time below is 15 t_Alfven so
-# max_step, not stop_time, is what bounds this first attempt.
-max_step = 200
+# Attempt 2: global velocity damping during the initial accommodation
+# phase (see problem_source.H, docs/teoria.md Sec 6.4). Attempt 1
+# (no damping) showed dt does NOT collapse from the fluff -- the
+# original central risk -- but rho_c climbed +40% and was still
+# accelerating at t=0.021s (69 steps), unlike the temperature transient
+# which visibly peaked and decayed. Diagnosis: the Step 2 IC was never
+# in magnetohydrostatic equilibrium (built against gas pressure +
+# gravity only), so releasing the seed field cold left nothing to
+# absorb the transient. Damping is active for the first
+# damping_end_time_in_tdyn * t_dyn (default 5 t_dyn, ramped off over
+# the preceding 1 t_dyn) -- t_dyn itself is computed from the real
+# star (problem_initialize.H), printed at startup.
+#
+# max_step here is a generous safety cap for a development run at
+# n_cell=64 (kept modest deliberately -- the qualitative Braithwaite
+# signal doesn't need Step 5's resolution study yet), not a target to
+# reach: watch for rho_c stabilizing (the success criterion) and stop
+# manually once it does or clearly doesn't.
+max_step = 5000
 stop_time = 7.366
 
 geometry.is_periodic =  0    0    0
@@ -86,6 +97,12 @@ castro.sponge_upper_density = 1.0e5
 castro.sponge_lower_density = 1.0e4
 castro.sponge_timescale     = 1.0e-4
 
+# GLOBAL damping during accommodation (problem_source.H) -- unlike the
+# sponge above (exterior only, density-threshold gated), this applies
+# to every cell, gated purely on time. Requires add_ext_src=1 or
+# problem_source() is never called (Source/problems/Castro_problem_source.cpp).
+castro.add_ext_src = 1
+
 # PROBLEM PARAMETERS
 problem.model_name = "model.dat"
 problem.rng_seed = 42
@@ -94,8 +111,21 @@ problem.n_modes = 10
 problem.dominant_scale_over_R = 0.3
 problem.mode_scale_band_factor = 3.0
 problem.envelope_transition_frac = 0.2
-problem.surface_density_frac = 1.0e-6
+# MUST be set above the model file's own density_floor_fraction (1e-4
+# for this run's model.dat, regenerated with a raised floor to support
+# castro.small_dens=1e4 -- see the FLUFF HANDLING note above) or the
+# surface-detection loop in problem_initialize.H never finds a point
+# below threshold and silently falls back to the last model row (the
+# domain edge, not the true stellar surface) -- exactly the bug the
+# first two evolve attempts had (R_star off by +7.6%, ~2.63e8 instead
+# of ~2.39e8 cm, feeding a too-large confinement radius and a
+# slightly-too-large |W| from double-counting a floored "fluff" shell
+# as stellar mass). 2e-4 sits just above the floor, catching the real
+# declining profile before it flattens.
+problem.surface_density_frac = 2.0e-4
+problem.damping_timescale_in_tdyn = 0.2
+problem.damping_end_time_in_tdyn = 5.0
+problem.damping_ramp_in_tdyn = 1.0
 
-# EOS -- gamma_law, see GNUmakefile/module docstring for why
-eos.eos_gamma = 1.6667e0
-eos.eos_assume_neutral = 1
+# EOS -- ztwd (matches the SCF's own EOS), see GNUmakefile for why.
+# No runtime eos.* params -- ztwd has none (see EOS/ztwd/_parameters).

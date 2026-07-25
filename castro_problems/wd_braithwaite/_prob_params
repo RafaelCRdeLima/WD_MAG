@@ -16,6 +16,20 @@ envelope_transition_frac          real           0.2_rt         y
 
 surface_density_frac              real           1.0e-6_rt      y
 
+# --- Step 3: global velocity damping during the initial accommodation
+# phase (docs/teoria.md Sec 6.4) -- the IC is not in magnetohydrostatic
+# equilibrium (built against gas pressure + gravity only), so the raw
+# transient must be damped everywhere, not just in the sponge's
+# exterior region, while the star settles. Windows given in units of
+# t_dyn (computed from the actual background star, not guessed) --
+# requires castro.add_ext_src=1 in inputs or problem_source.H never runs.
+
+damping_timescale_in_tdyn         real           0.2_rt         y
+
+damping_end_time_in_tdyn          real           5.0_rt         y
+
+damping_ramp_in_tdyn              real           1.0_rt         y
+
 # --- computed at problem_initialize() time, not meant to be set from
 # the inputs file (in namelist = n, matching how wdmerger's
 # central_density_P/mass_P are computed then overwritten) ---
@@ -31,3 +45,11 @@ diag_max_divB_h_over_B            real           0.0_rt         n
 diag_E_mag_over_W_achieved        real           0.0_rt         n
 
 diag_Bmax_outside_over_inside     real           0.0_rt         n
+
+t_dyn_s                            real           0.0_rt         n
+
+damping_rate                       real           0.0_rt         n
+
+damping_end_time_s                 real           0.0_rt         n
+
+damping_ramp_start_s               real           0.0_rt         n

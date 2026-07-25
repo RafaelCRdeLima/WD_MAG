@@ -25,17 +25,29 @@ NUM_MODELS = 1
 # define the location of the CASTRO top directory
 CASTRO_HOME  ?= ../../..
 
-# This sets the EOS directory in $(MICROPHYSICS_HOME)/EOS -- gamma_law,
-# not helmholtz: Step 2 only needs a background density profile to
-# confine the seed field into (see problem_initialize.H), not a
-# physically accurate degenerate-matter EOS inside Castro. See
-# scf/castro_model_writer.py's module docstring for why the model
-# file's temperature/pressure columns are placeholders.
-EOS_DIR     := gamma_law
+# This sets the EOS directory in $(MICROPHYSICS_HOME)/EOS -- ztwd
+# (zero-temperature white dwarf: Chandrasekhar 1935 degenerate-electron
+# P(rho), Hachisu 1986 enthalpy), the SAME formula scf/eos.py uses to
+# build the background star. Originally this was gamma_law (a
+# placeholder, since Step 2 only needed a density profile to confine
+# the seed field into, not accurate thermodynamics) -- that choice
+# caused a real bug found in Step 3: the star was built in hydrostatic
+# equilibrium under ztwd but evolved under gamma_law, so it was never
+# in equilibrium under the EOS actually governing its evolution and
+# collapsed from t=0 (confirmed with a field-free E_mag=0 control run,
+# which collapsed identically -- see docs/teoria.md Sec 6.4/6.5).
+# ztwd ignores temperature entirely for eos_input_rt (P depends only on
+# rho and mu_e), which also makes model.dat's placeholder temperature
+# column physically inert rather than merely approximate.
+EOS_DIR     := ztwd
 
-# This sets the network directory in $(MICROPHYSICS_HOME)/networks
+# This sets the network directory in $(MICROPHYSICS_HOME)/networks --
+# mu2.net (in this directory, not Microphysics/networks/general_null/)
+# is a single species "X" with aion=4, zion=2, giving mu_e=2.0 to match
+# scf/eos.py's default. Species name kept as "X" so model.dat's column
+# header doesn't need to change, only its composition.
 NETWORK_DIR := general_null
-NETWORK_INPUTS = gammalaw.net
+NETWORK_INPUTS = mu2.net
 
 PROBLEM_DIR ?= ./
 
