@@ -68,7 +68,7 @@ amr.check_file      = chk
 amr.check_int       = 50
 amr.plot_file       = plt
 amr.plot_int        = 10
-amr.derive_plot_vars = density x_velocity y_velocity z_velocity eden Temp pressure B_x B_y B_z
+amr.derive_plot_vars = density x_velocity y_velocity z_velocity eden Temp pressure B_x B_y B_z Div_B emag_density etor_density
 
 # FLUFF HANDLING -- the central risk of this step (see plan). Analytic
 # pre-check (not guessed): with the Step-2 density floor

@@ -36,6 +36,7 @@ SOURCE_FILES=(
     problem_initialize_state_data.H
     problem_initialize_mhd_data.H
     problem_source.H
+    problem_restart.H
     seed_field.H
     seed_field_data.H
     seed_field_data.cpp
