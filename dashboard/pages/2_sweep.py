@@ -375,20 +375,16 @@ if "K_tor" in df.columns and df["rho_c"].nunique() > 1:
     else:
         group_col = "K_tor"
 
-    # K by itself doesn't say anything about the field -- neither does
-    # E_tor/|W| alone, since that's a fraction of |W|, not a field
-    # strength in gauss. B_tor,max is what answers "how strong a field,
-    # in what units", so it has to be readable directly off this figure,
-    # not just in a separate scalars table. Markers are colored by
-    # B_tor,max (continuous); the K=0 (field-free) curve is excluded from
-    # that color scale's range -- B_tor,max=0 there exactly, and including
-    # it would compress the color range used by every field-carrying
-    # curve for no reason.
+    # Radically simplified after the first version overloaded this chart
+    # (three competing color systems: line color per curve, marker color
+    # by B_tor,max, red-x for invalid points -- none of them readable
+    # together). One color per curve (line AND its own markers), one
+    # short legend line each, no colorbar. B_tor,max only appears where
+    # it answers the actual question -- the M=2 crossing annotation below
+    # -- not smeared across every point of every curve; the rest of
+    # B_tor,max's variation is in the separate plot after this one.
     _has_b = "B_tor,max (G)" in df.columns
-    _nonzero_b = df.loc[df["K_tor"] > 0, "B_tor,max (G)"] if _has_b else pd.Series(dtype=float)
-    _b_cmin, _b_cmax = (float(_nonzero_b.min()), float(_nonzero_b.max())) if len(_nonzero_b) else (0.0, 1.0)
     _line_palette = px.colors.qualitative.Dark24
-    _shown_colorbar = False
 
     for gi, (group_val, sub) in enumerate(df.sort_values("rho_c").groupby(group_col)):
         sub = sub.sort_values("rho_c")
@@ -397,47 +393,27 @@ if "K_tor" in df.columns and df["rho_c"].nunique() > 1:
         K_val = sub["K_tor"].iloc[0]
         e_tor_w_mean = sub["E_mag/|W|"].mean()
         is_zero = K_val <= 0
-
-        b_range_str = ""
-        if _has_b and not is_zero:
-            b_lo, b_hi = sub["B_tor,max (G)"].min(), sub["B_tor,max (G)"].max()
-            b_range_str = (f", B_tor,max≈{b_lo:.1e} G" if b_lo == b_hi
-                            else f", B_tor,max: {b_lo:.1e}–{b_hi:.1e} G")
-
-        if _group_by_ve:
-            label = (f"E_tor/|W|≈{group_val:.2f}{b_range_str}" if group_val > 0
-                      else "no toroidal field (K=0)")
-        else:
-            label = (f"K={K_val:.2e} (E_tor/|W|≈{e_tor_w_mean:.3f}{b_range_str})" if K_val > 0
-                      else "K=0 (no toroidal field)")
-
         line_color = "black" if is_zero else _line_palette[gi % len(_line_palette)]
-        if is_zero or not _has_b:
-            marker = dict(size=8, color=line_color)
-        else:
-            marker = dict(size=9, color=sub["B_tor,max (G)"], colorscale="Plasma",
-                           cmin=_b_cmin, cmax=_b_cmax, showscale=not _shown_colorbar,
-                           colorbar=(dict(title="B_tor,max (G)", tickformat=".0e",
-                                          exponentformat="power")
-                                     if not _shown_colorbar else None),
-                           line=dict(width=1.2, color=line_color))
-            _shown_colorbar = True
+
+        label = ("no field (K=0)" if is_zero
+                  else f"E_tor/|W|≈{group_val:.2f}" if _group_by_ve
+                  else f"E_tor/|W|≈{e_tor_w_mean:.2f}")
 
         fig_priority.add_trace(go.Scatter(
             x=sub["rho_c"], y=sub["M/M_sun"], mode="lines+markers",
-            name=label, line=dict(width=2, color=line_color), marker=marker))
+            name=label, line=dict(width=2, color=line_color),
+            marker=dict(size=7, color=line_color)))
         if len(sub_invalid) > 0:
             fig_priority.add_trace(go.Scatter(
                 x=sub_invalid["rho_c"], y=sub_invalid["M/M_sun"], mode="markers",
                 marker=dict(symbol="x", size=10, color="red"),
-                name=f"{label} (rho_c >= neutronization threshold)",
+                name=f"{label} (past neutronization threshold)",
                 showlegend=bool(group_val == df[group_col].iloc[0])))
 
-        # The central question this whole branch exists to answer: what
-        # order of B_tor, at what rho_c, gives 2 Msun. Answering it
-        # requires reading two numbers off two different curves at two
-        # different rho_c today -- mark the M=2 crossing directly, with
-        # both numbers attached, so it doesn't.
+        # The central question this branch exists to answer -- what B_tor,
+        # at what rho_c, gives 2 Msun -- gets exactly one marker and one
+        # annotation per curve, right where the answer is, not spread
+        # across the legend or every point.
         if _has_b and len(sub) >= 2:
             rho_arr = sub["rho_c"].to_numpy()
             M_arr = sub["M/M_sun"].to_numpy()
@@ -459,34 +435,29 @@ if "K_tor" in df.columns and df["rho_c"].nunique() > 1:
                     x=[rho_cross], y=[2.0], mode="markers", showlegend=False,
                     marker=dict(symbol="star", size=15, color=line_color,
                                 line=dict(width=1.5, color="black")),
-                    hovertemplate=(f"M=2 Msun here<br>rho_c≈{rho_cross:.3e} g/cm³"
+                    hovertemplate=(f"M=2 Msun<br>rho_c≈{rho_cross:.3e} g/cm³"
                                     f"<br>B_tor,max≈{B_cross:.3e} G<extra></extra>")))
                 fig_priority.add_annotation(
                     x=rho_cross, y=2.0, xref="x", yref="y",
-                    text=f"ρc≈{rho_cross:.2e}<br>B_tor,max≈{B_cross:.2e} G",
+                    text=f"ρc≈{rho_cross:.2e}, B_tor,max≈{B_cross:.2e} G",
                     showarrow=True, arrowhead=2, arrowcolor=line_color,
-                    ax=30, ay=-35 - 25 * (gi % 3), font=dict(size=10, color=line_color),
+                    ax=30, ay=-35, font=dict(size=10, color=line_color),
                     bgcolor="white", opacity=0.9)
 
     fig_priority.add_vline(x=rho_c_neutronization, line_dash="dash", line_color="red",
                             annotation_text="inverse beta-decay threshold "
                                             f"(mu_e={mu_e}, Boshkayev+2013)")
-    fig_priority.add_hline(y=2.0, line_dash="dot", line_color="gray", line_width=1,
-                            annotation_text="M = 2 M_sun", annotation_position="bottom right")
     _log_rho_axis(fig_priority, "x")
     _msun_axis(fig_priority, "y")
     st.plotly_chart(fig_priority, key="priority_chart")
     st.caption(
         "Red x markers / dashed vertical line: points at or past the inverse "
-        "beta-decay (neutronization) threshold for this mu_e -- shown for "
-        "context, not physically trustworthy past that line (item 3, "
-        "docs/teoria.md §1.12). Not filtered out of the sweep. Marker color "
-        "is B_tor,max (G) at that point -- not constant along a curve, "
-        "since the same K gives a different field strength at different "
-        "rho_c (docs/teoria.md §6.2e). Star markers + annotations: where "
-        "each curve crosses M = 2 M_sun, linearly interpolated between the "
-        "two bracketing grid points (in log10(rho_c) for rho_c, in "
-        "log10(B) for B_tor,max)."
+        "beta-decay (neutronization) threshold -- shown for context, not "
+        "physically trustworthy past that line. Star + annotation: where a "
+        "curve crosses M = 2 M_sun, with (rho_c, B_tor,max) at that specific "
+        "point (linearly interpolated in log10 between the two bracketing "
+        "grid points). B_tor,max along the rest of each curve is in the "
+        "separate plot below, not stacked into this one."
     )
     _pub_pdf = _publication_figure_pdf(df, rho_c_neutronization, mu_e)
     st.download_button(
@@ -497,6 +468,34 @@ if "K_tor" in df.columns and df["rho_c"].nunique() > 1:
              "K=0 curve highlighted, labeled neutronization threshold, no "
              "embedded title -- the figure for the collaborator/paper."
     )
+
+    if _has_b:
+        st.subheader("B_tor,max vs rho_c")
+        st.caption(
+            "The rest of B_tor,max's variation along each curve, kept out "
+            "of the priority plot above so that chart stays readable. "
+            "Same curves, same colors, same grouping (K=0 has B_tor,max=0 "
+            "identically and is omitted)."
+        )
+        fig_b = go.Figure()
+        for gi, (group_val, sub) in enumerate(df.sort_values("rho_c").groupby(group_col)):
+            sub = sub.sort_values("rho_c")
+            K_val = sub["K_tor"].iloc[0]
+            if K_val <= 0:
+                continue
+            e_tor_w_mean = sub["E_mag/|W|"].mean()
+            label = f"E_tor/|W|≈{group_val:.2f}" if _group_by_ve else f"E_tor/|W|≈{e_tor_w_mean:.2f}"
+            line_color = _line_palette[gi % len(_line_palette)]
+            fig_b.add_trace(go.Scatter(
+                x=sub["rho_c"], y=sub["B_tor,max (G)"], mode="lines+markers",
+                name=label, line=dict(width=2, color=line_color),
+                marker=dict(size=7, color=line_color)))
+        fig_b.add_vline(x=rho_c_neutronization, line_dash="dash", line_color="red",
+                         annotation_text="inverse beta-decay threshold "
+                                         f"(mu_e={mu_e}, Boshkayev+2013)")
+        _log_rho_axis(fig_b, "x")
+        fig_b.update_yaxes(type="log", exponentformat="power", title="B_tor,max (G)")
+        st.plotly_chart(fig_b, key="btor_chart")
 else:
     st.caption(
         "Needs rho_c swept with more than one value to be meaningful "
