@@ -75,6 +75,7 @@ problem.E_mag_over_W_target = 0.0
 problem.n_modes = 10
 problem.dominant_scale_over_R = 0.3
 problem.mode_scale_band_factor = 3.0
+problem.field_cutoff_frac = 0.8
 problem.envelope_transition_frac = 0.2
 problem.surface_density_frac = 2.0e-4
 problem.damping_timescale_in_tdyn = 0.2

@@ -14,6 +14,16 @@ mode_scale_band_factor            real           3.0_rt         y
 
 envelope_transition_frac          real           0.2_rt         y
 
+# Field confinement radius = field_cutoff_frac * R_star, NOT R_star
+# itself -- leaves a field-free buffer shell from here out to the real
+# surface. Was implicitly 1.0 (envelope tapered all the way to R_star)
+# until a real crash (negative density, subcycle exhaustion at
+# r/R_star=0.92-0.97) traced to the envelope decaying far slower than
+# the star's actual density near the surface, sustaining a broad
+# v_A~1e9 cm/s shell. See seed_field.H::envelope() and docs/teoria.md
+# Sec 6.5/6.6.
+field_cutoff_frac                 real           0.8_rt         y
+
 surface_density_frac              real           1.0e-6_rt      y
 
 # --- Step 3: global velocity damping during the initial accommodation

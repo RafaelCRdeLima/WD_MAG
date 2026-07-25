@@ -99,25 +99,39 @@ inline void compute_background_star_and_damping()
                     << " s], ramping off from " << problem::damping_ramp_start_s << " s\n";
 }
 
-// Smoothstep taper: 1 inside (1-transition_frac)*R_star, smoothly to 0
-// at R_star, identically 0 outside. Confinement radius (R_star) comes
-// from the real SCF background star (Step 1); the taper SHAPE is a
-// clean analytic smoothstep rather than the model's own (placeholder-
-// EOS) density profile -- documented choice, not hidden: Step 2 cares
-// about a real, physically-set confinement radius, not exactly
-// reproducing rho(r) inside Castro's different EOS.
+// Smoothstep taper: 1 inside (1-transition_frac)*R_cutoff, smoothly to
+// 0 at R_cutoff, identically 0 outside -- including out to the real
+// stellar surface R_star, since R_cutoff = field_cutoff_frac * R_star
+// with field_cutoff_frac < 1 (default 0.8). This leaves a field-free
+// buffer shell between R_cutoff and R_star.
+//
+// Originally this tapered all the way out to R_star itself
+// (field_cutoff_frac would have been 1.0). That version put a run of
+// the actual evolution into a subcycle-exhausted crash (negative
+// density, castro.max_subcycles exceeded) at r/R_star = 0.92-0.97 --
+// diagnosed from the INITIAL data (this function, not the evolved
+// state) before touching anything: at r/R_star=0.95 the real stellar
+// density (scf/castro_model_writer.py's model.dat) had already fallen
+// to ~0.07% of rho_c, but the old envelope was still at ~15% of its
+// plateau value there -- the envelope decayed far slower than the
+// real density, sustaining a broad v_A~1e9 cm/s shell instead of a
+// narrow one right at the surface. See docs/teoria.md Sec 6.5/6.6 for
+// the full comparison
+// (rho_real(r) vs. small_dens vs. v_A(r), both before and after this
+// fix, confirmed by recomputing v_A(r) from initial data alone before
+// ever relaunching Castro).
 AMREX_GPU_HOST_DEVICE AMREX_INLINE
-amrex::Real envelope(amrex::Real r, amrex::Real R_star, amrex::Real transition_frac)
+amrex::Real envelope(amrex::Real r, amrex::Real R_cutoff, amrex::Real transition_frac)
 {
     using namespace amrex;
-    if (r >= R_star) {
+    if (r >= R_cutoff) {
         return 0.0_rt;
     }
-    Real r_taper_start = R_star * (1.0_rt - transition_frac);
+    Real r_taper_start = R_cutoff * (1.0_rt - transition_frac);
     if (transition_frac <= 0.0_rt || r <= r_taper_start) {
         return 1.0_rt;
     }
-    Real x = (r - r_taper_start) / (R_star - r_taper_start);
+    Real x = (r - r_taper_start) / (R_cutoff - r_taper_start);
     return 1.0_rt - (3.0_rt * x * x - 2.0_rt * x * x * x);
 }
 
@@ -150,8 +164,9 @@ AMREX_GPU_HOST_DEVICE AMREX_INLINE
 amrex::Real A_component(int comp, amrex::Real x, amrex::Real y, amrex::Real z)
 {
     amrex::Real r = std::sqrt(x * x + y * y + z * z);
+    amrex::Real R_cutoff = problem::field_cutoff_frac * problem::R_star_cm;
     return problem::A_amplitude_scale
-         * envelope(r, problem::R_star_cm, problem::envelope_transition_frac)
+         * envelope(r, R_cutoff, problem::envelope_transition_frac)
          * mode_sum(comp, x, y, z);
 }
 
