@@ -13,6 +13,9 @@ Use the sidebar menu to navigate between tabs:
 - **Sweep** — parameter grid, M-R diagram
 - **Export** — generates initial data (HDF5) and Castro `inputs`
 - **Runs** — run history, comparison, references
+- **Braithwaite** — stability via dynamical relaxation of a random field
+  (Castro, 3D) — orchestration only; most of it is disabled pending the
+  Castro build (Phase 0)
 
 All physics comes from `scf.*` (`eos`, `poisson`, `gradshafranov`, `scf`,
 `diagnostics`, `toroidal`) — this dashboard only explores, persists, and

@@ -205,3 +205,73 @@ def mark_reference(run_hash: str, is_reference: bool = True, runs_dir=None):
     df = pd.read_csv(index_path)
     df.loc[df["hash"] == run_hash, "reference"] = is_reference
     df.to_csv(index_path, index=False)
+
+
+# ============================================================================
+# Braithwaite tab (Tab 5) -- seed CONFIGURATION persistence only.
+#
+# This is deliberately a separate store from the run cache above: a saved
+# seed config is not a converged SCF run (no scalars, no fields) and isn't
+# subject to the same staleness risk SCHEMA_VERSION guards against for
+# run_exists() -- there is nothing here yet for a stale cache HIT to
+# silently paper over, because nothing consumes this config yet (the
+# generator is Castro problem-setup code that doesn't exist until Phase 0
+# unblocks it, see docs/teoria.md and the Braithwaite plan). Kept as its
+# own counter rather than folded into SCHEMA_VERSION above so the two
+# don't drift for unrelated reasons; bump BRAITHWAITE_SCHEMA_VERSION the
+# same way (new field added/removed) once the generator exists and this
+# config actually gets consumed by something with its own cache to
+# invalidate.
+BRAITHWAITE_SCHEMA_VERSION = 1
+DEFAULT_BRAITHWAITE_DIR = REPO_ROOT / "dashboard" / "braithwaite_configs"
+
+
+def _braithwaite_dir(configs_dir=None) -> Path:
+    d = Path(configs_dir) if configs_dir else DEFAULT_BRAITHWAITE_DIR
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def save_braithwaite_seed_config(params: dict, configs_dir=None) -> str:
+    """Persists a random-field-seed CONFIGURATION (Step 2 of the plan) --
+    not the seed itself, which needs the generator that lives in Castro's
+    problem setup / scf/, not here (R1/R3: this module only persists what
+    was already computed elsewhere, never decides physics). `params` must
+    include an explicit `rng_seed` -- required, not defaulted, because an
+    unrecorded seed makes the eventual run unreproducible."""
+    if "rng_seed" not in params:
+        raise ValueError("rng_seed is required and must be explicit -- "
+                          "an unrecorded seed makes the run unreproducible")
+    h = params_hash(params)
+    cfg_dir = _braithwaite_dir(configs_dir)
+    manifest = {
+        "hash": h,
+        "schema_version": BRAITHWAITE_SCHEMA_VERSION,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "git_commit": git_commit_hash(),
+        "git_dirty": git_dirty(),
+        "params": params,
+        "status": "config_only",  # the only status until the Step 2 generator exists
+    }
+    with open(cfg_dir / f"{h}.json", "w") as f:
+        json.dump(manifest, f, indent=2, sort_keys=True, default=float)
+    return h
+
+
+def load_braithwaite_seed_configs(configs_dir=None) -> pd.DataFrame:
+    """All saved seed configs, newest first. Empty DataFrame if none yet."""
+    cfg_dir = _braithwaite_dir(configs_dir)
+    rows = []
+    for f in sorted(cfg_dir.glob("*.json")):
+        try:
+            with open(f) as fh:
+                manifest = json.load(fh)
+        except (FileNotFoundError, json.JSONDecodeError):
+            continue
+        row = {"hash": manifest["hash"], "timestamp": manifest["timestamp"],
+               "git_commit": manifest["git_commit"], "status": manifest["status"]}
+        row.update({f"param_{k}": v for k, v in manifest["params"].items()})
+        rows.append(row)
+    if not rows:
+        return pd.DataFrame()
+    return pd.DataFrame(rows).sort_values("timestamp", ascending=False).reset_index(drop=True)
