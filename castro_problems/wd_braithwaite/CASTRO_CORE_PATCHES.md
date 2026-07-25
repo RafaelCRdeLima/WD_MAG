@@ -33,3 +33,42 @@ uses `ztwd`, which is presumably why this was never hit before.
 
 See `docs/teoria.md` Sec 6.5 for the full context (the EOS mismatch
 investigation this patch was needed for).
+
+## `Div_B` derive registration -- ghost-cell gap at box boundaries
+
+**Symptom:** `Div_B` (Castro's own built-in derived plotfile variable)
+shows astronomical, physically nonsensical extrema (up to ~1e17 in one
+run, ~1e76 in another under `-np 4`) that appear, grow, and sometimes
+partially subside across a run -- looked exactly like a broken CT
+(constrained transport) scheme, enough to kill a run that (per the
+investigation below) was actually fine.
+
+**Root cause, confirmed with `tools/finterior.cpp`** (mirrored here,
+build with `cd external/amrex/Tools/Plotfile && make programs=finterior`,
+not covered by `sync_wd_braithwaite.sh` since it lives outside
+`Exec/science/wd_braithwaite/`): `derive_lst.add("Div_B", ...,
+ca_derdivb, the_same_box)` in `Source/driver/Castro_setup.cpp` requests
+no extra ghost cells for the derive computation, but `ca_derdivb`
+(`Source/driver/Derive.cpp`) reads `dat(i+1,j,k)` / `(i,j+1,k)` /
+`(i,j,k+1)` -- one cell beyond the box's valid region. At the true
+domain boundary and at every internal box-to-box boundary (this
+project's grids: `max_grid_size=32` on a 64^3 domain -> 8 boxes), that
+read can land in unfilled ghost data, producing an extremum that is
+essentially reading uninitialized/stale memory as a `Real`.
+
+Confirmed directly: masking out the 2 cells nearest any box boundary
+(`finterior.cpp`, margin=2) on the SAME plotfiles that showed ~1e17
+gives max|Div_B| ~1e-10 (absolute, essentially float64 noise) in the
+interior, at every single time sampled across a full run -- the actual
+CT-evolved field is divergence-free to machine precision throughout;
+only the box-boundary cells in the derived diagnostic are wrong. Not
+fixed upstream (would require either growing the derive's requested box
+by 1, `grow_box_by_one`, matching how "magvort" is registered a few
+lines below it in the same file, or ensuring the source MultiFab's
+ghost cells are filled before the derive runs) -- for now, always read
+`Div_B` through `finterior.cpp` (or equivalent box-boundary masking),
+never raw `fextrema`, when using it as a correctness check.
+
+See `docs/teoria.md` Sec 6.6 for the full investigation (including how
+this was distinguished from the global-damping and AMR-regrid
+hypotheses that were tested and ruled out along the way).
