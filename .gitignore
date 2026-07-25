@@ -1,6 +1,15 @@
 amrex/
 castro/
 microphysics/
+
+# The Braithwaite Castro problem (Exec/science/wd_braithwaite/) is tracked
+# via a versioned MIRROR at castro_problems/wd_braithwaite/, synced with
+# scripts/sync_wd_braithwaite.sh -- NOT via a .gitignore negation. Tested
+# directly (scratch repo) and confirmed: git's own docs are right that "it
+# is not possible to re-include a file if a parent directory of that file
+# is excluded" -- no chain of "!" negations under an ignored castro/ can
+# resurrect anything inside it. The mirror sidesteps the limitation
+# entirely by living at a path castro/ never matches.
 scf/.venv/
 scf/__pycache__/
 scf/tests/__pycache__/

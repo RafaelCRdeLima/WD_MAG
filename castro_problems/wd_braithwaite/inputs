@@ -1,0 +1,70 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+# Step 2 acceptance test: static initial condition only (max_step = 0).
+# See seed_field.H::calibrate_and_diagnose() for the printed diagnostics.
+max_step = 0
+stop_time = 0.0
+
+# PROBLEM SIZE & GEOMETRY -- domain half-width = 2 * R_star of the
+# source background star (hash 10f640f50a30, rho_c=1e9 g/cm^3,
+# R_star=2.449e8 cm -- a more typical WD radius than the earlier
+# near-Chandrasekhar test star)
+geometry.is_periodic =  0    0    0
+geometry.coord_sys   =  0            # 0 => cart
+geometry.prob_lo     = -4.90e8 -4.90e8 -4.90e8
+geometry.prob_hi     =  4.90e8  4.90e8  4.90e8
+amr.n_cell           =  64   64   64
+
+castro.lo_bc       =  2   2   2
+castro.hi_bc       =  2   2   2
+
+# WHICH PHYSICS
+castro.do_hydro = 1
+castro.do_react = 0
+castro.ppm_type = 0
+
+castro.use_flattening = 0
+
+# TIME STEP CONTROL
+castro.cfl            = 0.5
+castro.init_shrink    = 0.01
+castro.change_max     = 1.1
+
+# DIAGNOSTICS & VERBOSITY
+castro.sum_interval   = 1
+castro.v              = 1
+amr.v                 = 1
+
+# REFINEMENT / REGRIDDING
+amr.max_level       = 0
+amr.ref_ratio       = 2 2 2 2
+amr.regrid_int      = 2
+amr.blocking_factor = 8
+amr.max_grid_size   = 32
+
+# CHECKPOINT / PLOTFILES
+amr.check_file      = chk
+amr.check_int       = -1
+amr.plot_file       = plt
+amr.plot_int        = 1
+amr.derive_plot_vars = density x_velocity y_velocity z_velocity eden Temp pressure B_x B_y B_z
+
+# must be strictly below the model writer's density floor
+# (rho_c * 1e-10 = 1e-1 g/cm^3 for this background star -- see
+# scf/castro_model_writer.py's density_floor_fraction), or Castro's
+# init-time sanity check aborts on the floored exterior points.
+castro.small_dens = 1.0e-2
+castro.small_temp = 1.0e3
+
+# PROBLEM PARAMETERS
+problem.model_name = "model.dat"
+problem.rng_seed = 42
+problem.E_mag_over_W_target = 0.15
+problem.n_modes = 10
+problem.dominant_scale_over_R = 0.3
+problem.mode_scale_band_factor = 3.0
+problem.envelope_transition_frac = 0.2
+problem.surface_density_frac = 1.0e-6
+
+# EOS -- gamma_law, see GNUmakefile/module docstring for why
+eos.eos_gamma = 1.6667e0
+eos.eos_assume_neutral = 1

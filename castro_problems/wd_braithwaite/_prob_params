@@ -1,0 +1,33 @@
+# name                          data type      default        in namelist?
+
+model_name                       string         ""             y
+
+rng_seed                         integer        42             y
+
+E_mag_over_W_target               real           0.15_rt        y
+
+n_modes                           integer        10             y
+
+dominant_scale_over_R             real           0.3_rt         y
+
+mode_scale_band_factor            real           3.0_rt         y
+
+envelope_transition_frac          real           0.2_rt         y
+
+surface_density_frac              real           1.0e-6_rt      y
+
+# --- computed at problem_initialize() time, not meant to be set from
+# the inputs file (in namelist = n, matching how wdmerger's
+# central_density_P/mass_P are computed then overwritten) ---
+
+A_amplitude_scale                 real           1.0_rt         n
+
+R_star_cm                         real           0.0_rt         n
+
+W_abs_erg                         real           0.0_rt         n
+
+diag_max_divB_h_over_B            real           0.0_rt         n
+
+diag_E_mag_over_W_achieved        real           0.0_rt         n
+
+diag_Bmax_outside_over_inside     real           0.0_rt         n
