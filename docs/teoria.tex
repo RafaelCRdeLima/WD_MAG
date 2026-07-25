@@ -1605,6 +1605,107 @@ Reported as measured, not adjusted to match.
   virial balance.
 \end{itemize}
 
+\subsection[Braithwaite (Castro): Phase 0/Step 2, and a 4pi bug]{Braithwaite (Castro): Phase 0/Step 2 verified, and a \texorpdfstring{$4\pi$}{4pi} bug caught by cross-checking the SCF}
+\label{sec:braithwaite}
+
+\S6.2f above flags what \S\ref{sec:results-priority}'s toroidal branch
+structurally cannot answer: no stability check, and a purely toroidal
+field is exactly the configuration subject to the Tayler $m=1$
+instability. \code{hachisu\_scf} cannot build a genuine
+\emph{self-consistent mixed} poloidal+toroidal field either (D6/project
+scope: \code{poloidal} and \code{toroidal} terms are mutually exclusive
+in one solve) --- so stability of a mixed field cannot be investigated
+in the 2D SCF at all, by construction, not as a gap that more SCF work
+would close. The project's answer is the Braithwaite method (Braithwaite
+\& Nordlund 2006, \S\ref{sec:refs}): relax a \textbf{random} seed field
+dynamically in Castro (3D, full MHD) and measure which mixed
+configuration survives, rather than imposing a chosen $Bt/Bp$ and
+testing it. This is orchestrated by the dashboard's Tab 5
+(``Braithwaite''); the physics lives in Castro, per R1 --- nothing here
+is reimplemented in \code{dashboard/}.
+
+\textbf{Phase 0 (Castro build, \code{USE\_MHD=TRUE}) --- verified, not
+assumed.} Built against the project's actual submodule pins
+(AMReX/Microphysics \code{26.07}) and run against Castro's own CI
+recipe for the Orszag-Tang MHD test
+(\code{.github/workflows/mhd-compare.yml}: \code{inputs.test},
+\code{max\_step=10}, \code{amr.plot\_files\_output=1}). \code{fextrema}
+on the resulting \code{plt00010} diffed against
+\code{ci-benchmarks/OrszagTang-3d.out} --- \textbf{empty diff, exit code
+0}, every field (density, momenta, \code{rho\_E}, \code{rho\_e},
+\code{Temp}, pressure, $B_x$/$B_y$/$B_z$) identical to the printed
+precision. The MHD solver is numerically correct in this build.
+
+\textbf{Step 2 (random seed-field generator) --- implemented and
+verified against a real background star}, not just built. Lives at
+\code{castro/Exec/science/wd\_braithwaite/} (gitignored --- mirrored at
+\code{castro\_problems/wd\_braithwaite/} via
+\code{scripts/sync\_wd\_braithwaite.sh}, since \code{castro/}'s
+directory-level \code{.gitignore} entry cannot be selectively negated
+--- confirmed directly in an isolated scratch repo that git's own
+documented limitation applies here: ``it is not possible to re-include
+a file if a parent directory of that file is excluded''). Multi-scale
+random vector potential $A$, generated once (seeded RNG, recorded) as a
+fixed set of Fourier-like modes spanning a real log-uniform wavenumber
+band (not \code{n\_modes} copies of one scale), with a smoothstep
+envelope confining it inside the background star's radius. Critically,
+\textbf{the envelope multiplies $A$, and only $A$, before any
+derivative is taken} --- $B$ is always the discrete curl of the
+already-windowed potential (generalizing
+\code{Exec/mhd\_tests/LoopAdvection}'s edge-centered $A_z$-only 2D
+pattern to full 3D $A_x,A_y,A_z$), because multiplying a $B$ field by a
+confinement window \emph{after} curling it would reintroduce a
+divergence the discrete-curl construction is specifically designed to
+avoid.
+
+Verified end to end against a real saved run ($\rho_c=10^9$ g/cm$^3$,
+$M=1.35\,M_\odot$, field-free, non-rotating): built, ran
+(\code{max\_step=0}, static IC only --- no fluff/sponge handling
+attempted at this step), and its printed diagnostics:
+
+\begin{center}
+\begin{tabular}{@{}p{4.6cm}p{3.0cm}p{6.6cm}@{}}
+\toprule
+Quantity & Value & Note\\
+\midrule
+$E_{mag}/|W|$ requested vs.\ achieved & $0.15$ vs.\ $0.15$ & Amplitude calibration rescales $A$ (not $B$) --- curl is linear, so this preserves $\nabla\cdot B=0$ exactly; rescaling $B$ after the fact would not\\
+$\max|\nabla\cdot B|\cdot h/|B|$ & $2.2\times10^{-11}$--$2.1\times10^{-10}$ & Proved algebraically exact by construction (the $A_z$ cross-terms in the discrete curl of neighboring faces cancel identically); the measured residual is \code{cos()} large-argument rounding, not a construction error --- orders of magnitude below what an envelope-after-curl bug would produce ($O(1)$, not $O(10^{-10})$)\\
+$\max|B|_{\text{outside}}/\max|B|_{\text{inside}}$ & $3.0\%$ ($128^3$ sample) $\to$ $1.6\%$ ($256^3$ sample) & Halves when the diagnostic sampling resolution doubles --- a finite-difference stencil-width artifact at the taper boundary, shrinking with resolution as expected, not a real confinement failure\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{notebox}{The \texorpdfstring{$4\pi$}{4pi} bug, and how it was caught}
+Castro's $|W|$ is computed from the 1D model profile via the standard
+shell-integration identity $|W|=4\pi G\int M(r)\rho(r)\,r\,dr$
+(\code{problem\_initialize.H}) --- independent of Castro's own
+self-gravity module (\code{USE\_GRAV=FALSE}; not needed for a
+static-IC check). The first version dropped the $4\pi$ factor. Caught
+only because the result was cross-checked against the SCF's own
+\code{diag.gravitational\_energy()} (genuine 2D Poisson solve) for the
+exact same saved run --- $2.2578\times10^{51}$ erg (Castro; pre-fix
+would have read $1.947\times10^{51}$ erg, off by almost exactly
+$4\pi\approx12.57$) vs.\ $2.2569\times10^{51}$ erg (SCF), agreeing to 4
+significant figures after the fix. Undetected, this would have silently
+propagated into every $E_{mag}/|W|$ calibration downstream --- the
+target energy is directly proportional to $|W|$, so a $4\pi$-low $|W|$
+means a $4\pi$-low seed field for the same \emph{requested} ratio, with
+no symptom anywhere in the diagnostics above (they are all
+self-consistent ratios computed from the \emph{same} wrong $|W|$, so
+they'd have looked just as clean).
+
+\textbf{The lesson --- same family as the Green's function bug
+(\S\ref{sec:gs}) and the magnetic virial sign correction
+(\S\ref{sec:rotation}):} a geometric/normalization factor error in a new
+code path does not announce itself; internally self-consistent
+diagnostics computed from the same wrong constant will still look
+clean. Any $|W|$ (or, generally, any energy/virial-type integral)
+computed via a newly-written path must be cross-checked against the
+SCF's own independently-derived value for the same physical
+configuration \emph{before} anything is calibrated against it --- not
+treated as presumably correct because it compiled and ran.
+\end{notebox}
+
 \section{Known limitations}
 \label{sec:limitacoes}
 

@@ -1418,6 +1418,93 @@ not adjusted to match.
 
 ---
 
+### 6.3 Braithwaite (Castro): Phase 0/Step 2 verified, and a `4π` bug caught by cross-checking the SCF
+
+§6.2f above flags what §6's toroidal branch structurally cannot answer:
+no stability check, and a purely toroidal field is exactly the
+configuration subject to the Tayler `m=1` instability. `hachisu_scf`
+cannot build a genuine *self-consistent mixed* poloidal+toroidal field
+either (D6/project scope: `poloidal` and `toroidal` terms are mutually
+exclusive in one solve) — so stability of a mixed field cannot be
+investigated in the 2D SCF at all, by construction, not as a gap that
+more SCF work would close. The project's answer is the Braithwaite
+method (Braithwaite & Nordlund 2006, §9): relax a **random** seed field
+dynamically in Castro (3D, full MHD) and measure which mixed
+configuration survives, rather than imposing a chosen `Bt/Bp` and
+testing it. This is orchestrated by the dashboard's Tab 5
+("Braithwaite"); the physics lives in Castro, per R1 — nothing here
+is reimplemented in `dashboard/`.
+
+**Phase 0 (Castro build, `USE_MHD=TRUE`) — verified, not assumed.** Built
+against the project's actual submodule pins (AMReX/Microphysics `26.07`)
+and run against Castro's own CI recipe for the Orszag-Tang MHD test
+(`.github/workflows/mhd-compare.yml`: `inputs.test`, `max_step=10`,
+`amr.plot_files_output=1`). `fextrema` on the resulting `plt00010`
+diffed against `ci-benchmarks/OrszagTang-3d.out` — **empty diff, exit
+code 0**, every field (density, momenta, `rho_E`, `rho_e`, `Temp`,
+pressure, `B_x`/`B_y`/`B_z`) identical to the printed precision. The MHD
+solver is numerically correct in this build.
+
+**Step 2 (random seed-field generator) — implemented and verified
+against a real background star**, not just built. Lives at
+`castro/Exec/science/wd_braithwaite/` (gitignored — mirrored at
+`castro_problems/wd_braithwaite/` via `scripts/sync_wd_braithwaite.sh`,
+since `castro/`'s directory-level `.gitignore` entry cannot be
+selectively negated — confirmed directly in an isolated scratch repo
+that git's own documented limitation applies here: "it is not possible
+to re-include a file if a parent directory of that file is excluded").
+Multi-scale random vector potential `A`, generated once (seeded RNG,
+recorded) as a fixed set of Fourier-like modes spanning a real
+log-uniform wavenumber band (not `n_modes` copies of one scale), with a
+smoothstep envelope confining it inside the background star's radius.
+Critically, **the envelope multiplies `A`, and only `A`, before any
+derivative is taken** — `B` is always the discrete curl of the already-
+windowed potential (generalizing `Exec/mhd_tests/LoopAdvection`'s
+edge-centered `A_z`-only 2D pattern to full 3D `A_x,A_y,A_z`), because
+multiplying a `B` field by a confinement window *after* curling it
+would reintroduce a divergence the discrete-curl construction is
+specifically designed to avoid.
+
+Verified end to end against a real saved run (`ρc=10⁹ g/cm³`,
+`M=1.35 M☉`, field-free, non-rotating): built, ran (`max_step=0`,
+static IC only — no fluff/sponge handling attempted at this step, see
+§6.4 below), and its printed diagnostics:
+
+| Quantity | Value | Note |
+|---|---|---|
+| `E_mag/|W|` requested vs. achieved | `0.15` vs. `0.15` | Amplitude calibration rescales `A` (not `B`) — curl is linear, so this preserves `∇·B=0` exactly; rescaling `B` after the fact would not |
+| `max|∇·B|·h/|B|` | `2.2×10⁻¹¹`–`2.1×10⁻¹⁰` | Proved algebraically exact by construction (the `A_z` cross-terms in the discrete curl of neighboring faces cancel identically); the measured residual is `cos()` large-argument rounding, not a construction error — orders of magnitude below what an envelope-after-curl bug would produce (`O(1)`, not `O(10⁻¹⁰)`) |
+| `max|B|`_outside `/` `max|B|`_inside | `3.0%` (`128³` sample) → `1.6%` (`256³` sample) | Halves when the diagnostic sampling resolution doubles — a finite-difference stencil-width artifact at the taper boundary, shrinking with resolution as expected, not a real confinement failure |
+
+**The `4π` bug, and how it was caught.** Castro's `|W|` is computed from
+the 1D model profile via the standard shell-integration identity
+`|W| = 4πG ∫ M(r) ρ(r) r dr` (`problem_initialize.H`) — independent of
+Castro's own self-gravity module (`USE_GRAV=FALSE`; not needed for a
+static-IC check). The first version dropped the `4π` factor. Caught
+only because the result was cross-checked against the SCF's own
+`diag.gravitational_energy()` (genuine 2D Poisson solve) for the exact
+same saved run — `2.2578×10⁵¹` (Castro, pre-fix would have read
+`1.947×10⁵¹` erg, off by almost exactly `4π≈12.57`) vs. `2.2569×10⁵¹`
+erg (SCF), agreeing to 4 significant figures after the fix. Undetected,
+this would have silently propagated into every `E_mag/|W|` calibration
+downstream — the target energy is directly proportional to `|W|`, so a
+`4π`-low `|W|` means a `4π`-low seed field for the same *requested*
+ratio, with no symptom anywhere in the diagnostics printed above (they
+are all self-consistent ratios computed from the *same* wrong `|W|`,
+so they'd have looked just as clean).
+
+**The lesson — same family as the Green's function bug (§6.2c) and the
+magnetic virial sign correction (§1.11):** a geometric/normalization
+factor error in a new code path does not announce itself; internally
+self-consistent diagnostics computed from the same wrong constant will
+still look clean. Any `|W|` (or, generally, any energy/virial-type
+integral) computed via a newly-written path must be cross-checked
+against the SCF's own independently-derived value for the same physical
+configuration *before* anything is calibrated against it — not treated
+as presumably correct because it compiled and ran.
+
+---
+
 ## 7. Known limitations
 
 Measured numbers, not vague descriptions — all in the
