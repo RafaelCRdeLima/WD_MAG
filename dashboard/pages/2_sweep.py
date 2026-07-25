@@ -496,6 +496,63 @@ if "K_tor" in df.columns and df["rho_c"].nunique() > 1:
         _log_rho_axis(fig_b, "x")
         fig_b.update_yaxes(type="log", exponentformat="power", title="B_tor,max (G)")
         st.plotly_chart(fig_b, key="btor_chart")
+
+    if _has_b:
+        st.subheader("M vs B_tor,max, one curve per rho_c")
+        st.caption(
+            "Transposed from the priority plot: for each rho_c, what "
+            "B_tor,max crosses M = 2 M_sun. Grouped by rho_c always, "
+            "independent of the K/E_tor|W| toggle above (that toggle only "
+            "affects which curves the other charts draw). Marker color is "
+            "VE at that point (green < 1e-3, red >= 1e-3), not curve "
+            "identity -- the connecting line color is the curve (rho_c), "
+            "so the certified crossing can be told apart from the "
+            "uncertified one on the same figure."
+        )
+        fig_bm = go.Figure()
+        for gi, rho_c_val in enumerate(sorted(df["rho_c"].unique())):
+            sub = df[(df["rho_c"] == rho_c_val) & (df["K_tor"] > 0)].sort_values("B_tor,max (G)")
+            if len(sub) == 0:
+                continue
+            line_color = _line_palette[gi % len(_line_palette)]
+            marker_colors = np.where(sub["VE"] < 1e-3, "#2ca02c", "#d62728")
+            fig_bm.add_trace(go.Scatter(
+                x=sub["B_tor,max (G)"], y=sub["M/M_sun"], mode="lines+markers",
+                name=f"rho_c={rho_c_val:.2e}", line=dict(width=2, color=line_color),
+                marker=dict(size=9, color=marker_colors, line=dict(width=1, color=line_color)),
+                customdata=sub["VE"], hovertemplate=(
+                    "B_tor,max=%{x:.3e} G<br>M=%{y:.4f} Msun<br>VE=%{customdata:.2e}<extra></extra>")))
+
+            if len(sub) >= 2:
+                B_arr = sub["B_tor,max (G)"].to_numpy()
+                M_arr = sub["M/M_sun"].to_numpy()
+                sign_change = np.where(np.diff(np.sign(M_arr - 2.0)) != 0)[0]
+                for ci in sign_change:
+                    m0, m1 = M_arr[ci], M_arr[ci + 1]
+                    if m1 == m0:
+                        continue
+                    frac = (2.0 - m0) / (m1 - m0)
+                    b0, b1 = B_arr[ci], B_arr[ci + 1]
+                    B_cross = (10 ** (np.log10(b0) + frac * (np.log10(b1) - np.log10(b0)))
+                               if b0 > 0 and b1 > 0 else b0 + frac * (b1 - b0))
+                    fig_bm.add_trace(go.Scatter(
+                        x=[B_cross], y=[2.0], mode="markers", showlegend=False,
+                        marker=dict(symbol="star", size=15, color=line_color,
+                                    line=dict(width=1.5, color="black")),
+                        hovertemplate=(f"rho_c={rho_c_val:.2e}<br>M=2 Msun here"
+                                        f"<br>B_tor,max≈{B_cross:.3e} G<extra></extra>")))
+                    fig_bm.add_annotation(
+                        x=B_cross, y=2.0, xref="x", yref="y",
+                        text=f"B_tor,max≈{B_cross:.2e} G",
+                        showarrow=True, arrowhead=2, arrowcolor=line_color,
+                        ax=30, ay=-35, font=dict(size=10, color=line_color),
+                        bgcolor="white", opacity=0.9)
+
+        fig_bm.add_hline(y=2.0, line_dash="dot", line_color="gray", line_width=1,
+                          annotation_text="M = 2 M_sun", annotation_position="bottom right")
+        fig_bm.update_xaxes(type="log", exponentformat="power", title="B_tor,max (G)")
+        _msun_axis(fig_bm, "y")
+        st.plotly_chart(fig_bm, key="b_m_chart")
 else:
     st.caption(
         "Needs rho_c swept with more than one value to be meaningful "
