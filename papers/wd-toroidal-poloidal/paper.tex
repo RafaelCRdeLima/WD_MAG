@@ -231,6 +231,140 @@ evolved field, and its dependence on the initial random seed
 at fixed $E_{\mathrm{mag}}/|W|$) is examined empirically rather than
 assumed.
 
+%-------------------------------------------------------------------
+
+\section{Results}
+\label{sec:results}
+
+This section reports the results obtained so far with the procedure of
+Sect.~\ref{sec:braithwaite}, together with the numerical checks that
+establish the interval in which they are meaningful. All relaxations
+share the same non-rotating, initially field-free background star
+($\rho_c \simeq 10^9$\,g\,cm$^{-3}$, $\mu_e = 2$), built by the SCF
+solver of Sect.~\ref{sec:field-eq} to a virial error of
+$1.1\times10^{-4}$ and mapped onto a $64^3$ Cartesian grid, with one
+seed reproduced at $128^3$ as a resolution cross-check.
+
+\subsection{The measurement window}
+\label{sec:window}
+
+The MHD path of the code used here is not well-balanced: a star
+initialized in exact hydrostatic equilibrium does not remain exactly so
+on the discrete grid, and its central density drifts slowly away from
+the value it was constructed with. Waiting for the background star to
+settle is therefore not an available strategy, and the field
+diagnostics are instead measured inside a \emph{validity window} in
+time, bounded below by the relaxation of the seed field itself and
+above by the onset of structural drift of the star.
+
+The lower bound is set at $t/t_{\mathrm{dyn}} = 0.4$, by which time the
+measured toroidal fraction has left its initial transient and entered a
+quasi-steady band. The upper bound is the first sample at which the
+central density leaves a $\pm2\%$ band around its own $t=0$ value. For
+the background star used here this gives a window
+$t/t_{\mathrm{dyn}} \in [0.4, 1.13]$, and all measurements reported
+below fall inside it ($t/t_{\mathrm{dyn}} = 0.79$--$1.13$).
+
+Two independent checks support this choice. First, the same
+construction at $128^3$ never leaves the tighter $\pm1\%$ band over the
+entire baseline tested, $t/t_{\mathrm{dyn}} = 0.4$--$1.45$: the window
+is conservative rather than marginal, and becomes more so with
+resolution. Second, plotting the toroidal fraction against the central
+density rather than against time separates the two regimes cleanly --
+inside the window the two quantities are essentially uncorrelated,
+whereas past the upper bound they become strongly correlated
+($r \simeq 0.96$--$1.00$). Beyond the window the measured ratio is
+slaved to the drifting stellar structure and no longer reflects the
+dynamics of the field, which is precisely what the upper bound is
+constructed to exclude.
+
+\subsection{Divergence control}
+\label{sec:divb}
+
+The constrained-transport scheme is expected to preserve
+$\nabla\!\cdot\!\mathbf{B} = 0$ to machine precision, and this is
+verified on every measurement rather than assumed. The divergence must
+be evaluated on the interior of each grid patch: computed as a derived
+quantity without an extra ghost-cell layer, it reads one cell beyond
+the valid region and returns meaningless values at patch and domain
+boundaries, which we found to mimic a catastrophic growth of
+$|\nabla\!\cdot\!\mathbf{B}|$ that the field itself does not exhibit.
+Masking the two cells nearest any boundary, the maximum relative
+interior divergence stays in the range
+$5.3\times10^{-10}$--$8.5\times10^{-10}$ at $64^3$ and reaches
+$2.5\times10^{-9}$ at $128^3$. The mild increase with resolution is
+consistent with a finer grid resolving smaller-scale field structure at
+a fixed precision floor, not with a growing constraint violation.
+
+\subsection{The relaxed field is poloidal-dominated}
+\label{sec:seedstudy}
+
+Thirty relaxations were run from independent realizations of the random
+seed field described in Sect.~\ref{sec:braithwaite}, all calibrated to
+the same initial field strength $E_{\mathrm{mag}}/|W| = 0.15$: three
+batches of ten distinct seeds at $64^3$, plus one seed repeated at
+$128^3$. Table~\ref{tab:seeds} summarizes the measured toroidal
+fractions.
+
+\begin{table}
+\caption{Toroidal fraction of the relaxed field, measured inside the
+validity window of Sect.~\ref{sec:window}.}
+\label{tab:seeds}
+\centering
+\begin{tabular}{l c c}
+\hline\hline
+Batch & $n$ & $E_{\mathrm{tor}}/E_{\mathrm{mag}}$ \\
+\hline
+A ($64^3$)              & 10 & 0.317--0.370 \\
+B ($64^3$)              & 10 & 0.276--0.402 \\
+C ($64^3$)              & 10 & 0.280--0.388 \\
+Cross-check ($128^3$)   &  1 & 0.305 \\
+\hline
+All                     & 30 & 0.276--0.402 \\
+\hline
+\end{tabular}
+\end{table}
+
+Every one of the thirty measurements is poloidal-dominated,
+$E_{\mathrm{tor}}/E_{\mathrm{mag}} < 0.5$, with no exception in any
+batch or at either resolution, and the combined band is narrow,
+$[0.276, 0.402]$. Batch~A was run against a background star built
+before a refinement of the initial-condition sampling and batches~B
+and~C against the corrected one; the two constructions give the same
+band, so the result does not depend on that detail of the mapping.
+The resolution cross-check is consistent with the $64^3$ ensemble: the
+same seed gives $0.324$ at $64^3$ and $0.305$ at $128^3$, a shift small
+compared to the seed-to-seed spread.
+
+That the relaxed configuration is mixed and poloidal-dominated is the
+central result, and it is obtained without imposing any
+poloidal-to-toroidal ratio: the ratio is an outcome of the dynamical
+relaxation, measured on the evolved field. Both purely poloidal and
+purely toroidal fields are unstable to non-axisymmetric perturbations
+\citep{tayler1973,markey1973}, and the surviving configurations are
+neither -- consistent with the picture of \citet{braithwaite2004} and
+\citet{braithwaite2006}, in which a stable stellar field must contain
+both components. We emphasize that this is a statement about the
+configuration reached within the validity window and sustained there,
+not about an asymptotic equilibrium: with the star itself drifting on a
+longer timescale (Sect.~\ref{sec:window}), the present calculation
+cannot follow the field to arbitrarily late times.
+
+The spread within the band is a property of the individual seed, not
+sampling noise. Re-running seeds over a baseline four times longer than
+the measurement window preserves their rank ordering: had the spread
+been different realizations sampled at different phases of a common
+oscillation, extending the baseline would have scrambled that ordering.
+For this reason we report the ensemble as a band and as the per-seed
+values, and deliberately not as a mean with an error bar. What sets a
+given seed's value remains open. The natural candidate -- the net
+magnetic helicity of the initial random field, a quantity conserved
+under ideal MHD and the standard explanation for the endpoint of this
+kind of relaxation -- was tested directly and does not survive: a
+suggestive correlation at $n=4$ ($r \simeq -0.84$) collapsed to
+$r \simeq -0.33$, unstable under leave-one-out resampling, once the
+full batch of ten was included.
+
 \begin{acknowledgements}
 TBD.
 \end{acknowledgements}

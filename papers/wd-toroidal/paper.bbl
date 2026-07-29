@@ -1,0 +1,21 @@
+\begin{thebibliography}{5}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+
+\bibitem[{{Boshkayev} {et~al.}(2013){Boshkayev}, {Rueda}, {Ruffini}, \&
+  {Siutsou}}]{boshkayev2013}
+{Boshkayev}, K., {Rueda}, J.~A., {Ruffini}, R., \& {Siutsou}, I. 2013, ApJ,
+  762, 117
+
+\bibitem[{{Chandrasekhar}(1935)}]{chandrasekhar1935}
+{Chandrasekhar}, S. 1935, MNRAS, 95, 207
+
+\bibitem[{{Hachisu}(1986)}]{hachisu1986}
+{Hachisu}, I. 1986, ApJS, 61, 479
+
+\bibitem[{{Markey} \& {Tayler}(1973)}]{markey1973}
+{Markey}, P. \& {Tayler}, R.~J. 1973, MNRAS, 163, 77
+
+\bibitem[{{Tayler}(1973)}]{tayler1973}
+{Tayler}, R.~J. 1973, MNRAS, 161, 365
+
+\end{thebibliography}

@@ -1,0 +1,443 @@
+% paper.tex -- draft, A&A LaTeX class (aa.cls v7.0, EDP Sciences)
+% Purely toroidal branch: theory, self-consistent-field method, and results.
+% TODO: author list, affiliations, figures.
+
+\documentclass{aa}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{txfonts}
+\usepackage{natbib}
+
+\begin{document}
+
+   \title{Super-Chandrasekhar white dwarfs supported by a purely
+          toroidal magnetic field}
+
+   \subtitle{Draft}
+
+   \author{TBD\inst{1}
+          }
+
+   \institute{Affiliation TBD\\
+              \email{tbd@example.org}
+             }
+
+   \date{Draft \today}
+
+   \abstract
+   % context
+   {A white dwarf mass appreciably above the Chandrasekhar limit is
+    usually attributed to rotation. A strong internal magnetic field is
+    the other candidate, and the purely toroidal configuration is the
+    one for which the equilibrium problem remains tractable without a
+    Grad-Shafranov solve.}
+   % aims
+   {We quantify how much equilibrium mass a purely toroidal field adds
+    to a cold, non-rotating white dwarf, and how that mass gain depends
+    on the central density, within the density range in which the cold
+    degenerate equation of state can still be claimed to apply.}
+   % methods
+   {The field is prescribed as $B_\varphi = K\rho^m\varpi^{2m-1}$,
+    the form for which the Lorentz force derives from a potential and
+    the barotropic structure equations close. The resulting
+    magneto-hydrostatic equilibria are computed with a self-consistent
+    field iteration in which the density inversion becomes an implicit,
+    per-point root find, and are certified with the virial error and
+    with an explicit test that the configuration fits inside its
+    computational domain.}
+   % results
+   {The dimensionless field strength $E_{\mathrm{mag}}/|W|$ is predicted
+    analytically to be independent of central density and radius, and is
+    measured to vary by $0.9\%$ across two and a half decades in
+    $\rho_c$. A field with $E_{\mathrm{tor}}/|W| \simeq 0.18$ raises the
+    equilibrium mass by $\simeq 47\%$, essentially independent of
+    central density, giving $M > 2\,M_\odot$ inside the density range
+    allowed by the inverse-beta-decay threshold, with a maximum interior
+    field of $2$--$3\times10^{14}$\,G. Adding rigid rotation on top of
+    such a field shortens, rather than extends, the range of angular
+    velocity over which the sequence remains virially certified.}
+   % conclusions
+   {A purely toroidal field is sufficient, on its own, to reach
+    $2\,M_\odot$ at physically admissible central densities. It is,
+    however, the configuration most exposed to the Tayler $m=1$
+    instability, which the axisymmetric formulation used here cannot
+    test, and it produces no exterior field and hence no dipole for
+    magnetic braking to act on.}
+
+   \keywords{white dwarfs -- stars: magnetic field -- magnetohydrodynamics (MHD) -- methods: numerical}
+
+   \maketitle
+
+%-------------------------------------------------------------------
+
+\section{Introduction}
+
+TBD.
+
+%-------------------------------------------------------------------
+
+\section{Equation of state}
+\label{sec:eos}
+
+The background stellar structure throughout this work is that of a
+fully degenerate, zero-temperature electron gas
+\citep[ztwd;][]{chandrasekhar1935}. Pressure and density are both
+parametrized by the normalized Fermi momentum $x \equiv p_F/(m_e c)$,
+
+\begin{align}
+P(x) &= A \left[ x(2x^2-3)\sqrt{x^2+1} + 3\sinh^{-1}x \right], \\
+\rho(x) &= B\,x^3,
+\end{align}
+
+\noindent where $A$ is a fixed combination of fundamental constants
+($m_e$, $c$, $\hbar$) and $B$ depends on the composition only through
+the mean molecular weight per electron $\mu_e = 1/Y_e$, with $Y_e$ the
+number of electrons per baryon. This is a purely mechanical equation of
+state: at fixed composition, pressure depends on density alone, with no
+temperature dependence. Consequently, once the configuration is
+restricted to be non-rotating and field-free, the entire stellar
+structure (mass, radius, density profile) is determined by exactly two
+physical parameters: the central density $\rho_c$ and $\mu_e$.
+
+The specific enthalpy has a closed form,
+\begin{equation}
+H(x) = \frac{8A}{B}\left[\sqrt{1+x^2} - 1\right],
+\label{eq:enthalpy}
+\end{equation}
+which is what makes the self-consistent field (SCF) iteration of
+Sect.~\ref{sec:scf} tractable: in the field-free case the density is
+recovered directly from the local enthalpy via the inverse relation
+$x(H) = \sqrt{(1+HB/8A)^2 - 1}$, with $H \le 0$ mapped to $\rho = 0$
+(the stellar surface). Section~\ref{sec:implicit} describes how this
+step changes once a toroidal field is present.
+
+Near the surface ($x \ll 1$) the equation of state reduces to
+$\rho \propto H^{3/2}$, an effective polytropic index $n=3/2$; in the
+relativistic core ($x \gg 1$) it approaches $\rho \propto H^3$,
+$n=3$ -- the marginal polytropic index at which the equilibrium mass
+becomes independent of central density, the origin of the
+Chandrasekhar mass limit.
+
+At sufficiently high density, inverse beta decay (electron capture)
+changes the composition locally and the constant-$\mu_e$ cold equation
+of state above ceases to describe a real white dwarf. We adopt the
+tabulated threshold densities of \citet{boshkayev2013} for this
+validity limit. This gate is not a formality here: it is what
+distinguishes a mass gain that can be claimed for a white dwarf from
+one obtained at a central density where the assumed microphysics no
+longer holds, and every configuration quoted as a result in
+Sect.~\ref{sec:results} lies below the threshold for the assumed
+composition.
+
+%-------------------------------------------------------------------
+
+\section{A purely toroidal field}
+\label{sec:toroidal}
+
+\subsection{The field law}
+
+For a barotropic star the magnetic force must derive from a potential
+if hydrostatic balance is to close in the form of a Bernoulli integral.
+For an axisymmetric, purely azimuthal field
+$\mathbf{B} = B_\varphi(\varpi,z)\,\hat{\mathbf{e}}_\varphi$, where
+$\varpi$ is the cylindrical radius, this restricts $B_\varphi$ to the
+one-parameter family
+\begin{equation}
+B_\varphi = K \rho^m \varpi^{2m-1}, \qquad m \ge 1,
+\label{eq:fieldlaw}
+\end{equation}
+with $K$ setting the field amplitude and $m$ its concentration towards
+the dense inner regions. The corresponding Lorentz force, obtained from
+the divergence of the Maxwell stress tensor, is
+$\mathbf{f}_L/\rho = -\nabla M_{\mathrm{tor}}$ with
+\begin{equation}
+M_{\mathrm{tor}}(s) = \frac{m K^2}{4\pi(2m-1)}\, s^{\,2m-1},
+\qquad s \equiv \rho\varpi^2 ,
+\label{eq:mtor}
+\end{equation}
+which we verified symbolically for $m = 1, 3/2, 2, 3$ (the residual of
+the force balance vanishes identically). Hydrostatic equilibrium then
+reduces to the algebraic Bernoulli integral
+\begin{equation}
+H + \Phi + M_{\mathrm{tor}}(\rho\varpi^2) = C ,
+\label{eq:bernoulli}
+\end{equation}
+with $\Phi$ the gravitational potential, solved together with the
+Poisson equation for $\Phi$ and with the equation of state of
+Sect.~\ref{sec:eos}.
+
+Two features of Eq.~\ref{eq:fieldlaw} are worth making explicit,
+because they set both the appeal and the limits of this branch. First,
+$B_\varphi$ is an \emph{algebraic} function of the local density: no
+flux function, no Grad-Shafranov operator, and no Green's function are
+involved in obtaining the field, in contrast with the poloidal case.
+Second, and for the same reason, the field vanishes wherever the
+density does. A purely toroidal field is strictly confined to the
+stellar interior; there is no exterior field and no dipole moment, a
+point we return to in Sect.~\ref{sec:limitations}.
+
+\subsection{The implicit density inversion}
+\label{sec:implicit}
+
+Because $M_{\mathrm{tor}}$ depends on $\rho$ -- the very quantity being
+solved for -- the density update of the SCF iteration is no longer a
+direct inversion of the equation of state. At each grid point one must
+instead solve
+\begin{equation}
+H(\rho) + M_{\mathrm{tor}}(\rho\varpi^2) = C - \Phi
+\end{equation}
+for $\rho$. The left-hand side is monotonically increasing in $\rho$
+(both $H$ and $M_{\mathrm{tor}}$ are), so the root is unique and safely
+bracketed, and we obtain it with a standard bracketing root finder. This
+is a change in the structure of the algorithm, not in its physics, and
+it is the only place where the toroidal branch is more expensive than
+the field-free one.
+
+\subsection{Virial diagnostic}
+\label{sec:virial}
+
+Every configuration is certified with the scalar virial identity, which
+for a static magnetized star reads
+\begin{equation}
+W + 3\Pi + \mathcal{M} = 0, \qquad
+\mathrm{VE} \equiv \frac{|W + 3\Pi + \mathcal{M}|}{|W|} ,
+\label{eq:ve}
+\end{equation}
+with $W$ the gravitational energy, $\Pi = \int P\,dV$, and
+$\mathcal{M} = \int B_\varphi^2/8\pi\,dV$ the magnetic energy. For the
+field law of Eq.~\ref{eq:fieldlaw} the magnetic contribution satisfies
+\begin{equation}
+\int \rho\, \nabla M_{\mathrm{tor}}\!\cdot\mathbf{r}\; dV
+ \;=\; -\int \frac{B_\varphi^2}{8\pi}\, dV ,
+\end{equation}
+the sign following from $M_{\mathrm{tor}}$ entering
+Eq.~\ref{eq:bernoulli} with a positive sign, combined with the
+convention-free Maxwell-stress identity
+$\int \mathbf{r}\cdot\mathbf{f}_L\,dV = +\int B^2/8\pi\,dV$, valid for
+any purely toroidal field. We confirmed this numerically: the residual
+of Eq.~\ref{eq:ve} falls monotonically, $2.27\% \rightarrow 1.00\%
+\rightarrow 0.36\% \rightarrow 0.14\%$, as the radial mesh is refined
+from $n_r = 65$ to $n_r = 257$. We take $\mathrm{VE} < 10^{-3}$ as the
+acceptance threshold throughout, and quote it for every configuration
+reported below.
+
+%-------------------------------------------------------------------
+
+\section{Numerical method}
+\label{sec:scf}
+
+Equilibria are obtained with the self-consistent field scheme of
+\citet{hachisu1986}, in which the density field, the gravitational
+potential and the Bernoulli constant are updated in turn until the
+density field stops changing. The gravitational potential is obtained
+from a Legendre (multipole) expansion of the Poisson Green's function,
+truncated at $l_{\max}$; the magnetic term enters only through
+Eq.~\ref{eq:mtor} and the implicit inversion of
+Sect.~\ref{sec:implicit}. Three numerical issues proved to matter
+quantitatively for this branch, and we record them because each one, on
+its own, is capable of producing a wrong physical conclusion.
+
+\paragraph{Domain size.} A toroidal field makes the star \emph{prolate}
+($R_{\mathrm{pol}} > R_{\mathrm{eq}}$), the opposite of the oblate
+deformation produced by rotation, and the deformation grows with $K$.
+A computational domain sized from a field-free radius estimate is
+therefore progressively too small as $K$ increases, and the "surface"
+the solver finds is the edge of the domain rather than a physical
+radius. We monitor this directly through
+$f_{\mathrm{pol}} \equiv R_{\mathrm{pol}}/r_{\max}$ and accept only
+configurations with $f_{\mathrm{pol}} \lesssim 0.2$; a value of $1.0$
+means the star does not fit in its box at all. This is not a
+conservative margin added for safety -- an earlier pass of this work
+concluded that $2\,M_\odot$ was \emph{not} reachable, a conclusion
+produced entirely by domain overflow at every point of the sequence
+with the strongest field, and reversed once the domain was enlarged.
+Domain size and mesh resolution must be varied one at a time: enlarging
+the domain at fixed $\Delta r$ drops VE from $1.43\times10^{-2}$ to
+$2.49\times10^{-4}$ and then leaves $M$ and VE unchanged to four
+significant figures under a further enlargement, whereas refining the
+mesh inside a domain that is too small does not improve VE at all.
+
+\paragraph{Continuation in $K$.} Direct solves at $K \ge 5\times10^{-3}$
+do not converge at any domain size we tried. These configurations are
+reachable only by continuation: stepping $K$ upward in small increments
+from the field-free solution and warm-starting each step from the
+previous one.
+
+\paragraph{The multipole expansion.} Forming the radial Green's
+function as separate powers $r'^{\,l+2}$ and $r^{-(l+1)}$ before
+dividing overflows double precision outright at $l = 48$ for stellar
+radii, and silently loses precision even at $l_{\max} = 16$, where the
+two factors are separated by some $270$ orders of magnitude before a
+division intended to cancel most of that scale. Rewriting the radial
+integrals as a recursion that only ever forms the ratios
+$(r_{i-1}/r_i)^{l+1} \le 1$ and $(r_i/r_{i+1})^{l} \le 1$ -- the same
+integral, with no absolute power of $r$ ever formed -- removes the
+problem. With this in place, the truncation itself is not a limitation
+for the configurations considered here: stepping
+$l_{\max} = 16 \rightarrow 32 \rightarrow 48$ moves VE by less than
+$10\%$.
+
+%-------------------------------------------------------------------
+
+\section{Results}
+\label{sec:results}
+
+\subsection{An invariance predicted before it was measured}
+\label{sec:scaling}
+
+For $m=1$ the field law is $B_\varphi = K\rho\varpi$, and the
+dimensionless field strength can be estimated without solving anything.
+With $E_{\mathrm{mag}} \sim K^2\rho^2R^5/8\pi$ and
+$|W| \sim GM^2/R \sim G\rho^2R^5$, the density and radius cancel:
+\begin{equation}
+\frac{E_{\mathrm{mag}}}{|W|} \;\sim\; \frac{K^2}{8\pi G} ,
+\label{eq:scaling}
+\end{equation}
+independent of both $\rho_c$ and $R$, up to a shape factor of order
+unity that drifts slowly along the sequence as the effective polytropic
+index slides from $3/2$ towards $3$. Equation~\ref{eq:scaling} predicts
+that the fractional mass gain produced by a given $K$ should be
+essentially the same at any central density -- and, for
+$K = 3\times10^{-3}$, that it should be of order $50\%$.
+
+Table~\ref{tab:masses} shows the measured values at three central
+densities spanning two and a half decades. The prediction was made
+before these runs and is confirmed by them: $E_{\mathrm{tor}}/|W|$
+varies by $0.9\%$ over the full range, and the fractional mass gain by
+less than three percentage points.
+
+\begin{table}
+\caption{Equilibrium mass with and without a purely toroidal field
+($m=1$, $K = 3\times10^{-3}$, no rotation), at three central densities.
+All points are certified at $f_{\mathrm{pol}} \simeq 0.09$--$0.16$ and
+reached by continuation from $K=0$.}
+\label{tab:masses}
+\centering
+\begin{tabular}{l c c c c c}
+\hline\hline
+$\rho_c$ & $M(K=0)$ & $M(K)$ & gain & $E_{\mathrm{tor}}/|W|$ & VE \\
+(g\,cm$^{-3}$) & ($M_\odot$) & ($M_\odot$) & & & \\
+\hline
+$1.0\times10^{10}$ & 1.4108 & 2.0722 & $+46.9\%$ & 0.1809 & $4.0\times10^{-4}$ \\
+$1.5\times10^{10}$ & 1.4159 & 2.0874 & $+47.4\%$ & 0.1805 & $3.9\times10^{-4}$ \\
+$1.0\times10^{12}$ & 1.4323 & 2.1426 & $+49.6\%$ & 0.1790 & $2.7\times10^{-4}$ \\
+\hline
+\end{tabular}
+\tablefoot{The $\rho_c = 10^{12}$\,g\,cm$^{-3}$ row is given for
+reference only: it lies above the inverse-beta-decay threshold
+(Sect.~\ref{sec:eos}) and is not a physically admissible white dwarf.}
+\end{table}
+
+\subsection{The mass gain}
+
+The result is best stated in terms of $E_{\mathrm{tor}}/|W|$ rather
+than $K$, since $K$ carries the units and the arbitrariness of the
+ansatz of Eq.~\ref{eq:fieldlaw} and means nothing outside it, whereas
+the energy ratio transfers to any other field configuration: a toroidal
+field with $E_{\mathrm{tor}}/|W| \simeq 0.18$ raises the equilibrium
+mass by $\simeq 47\%$, essentially independent of central density,
+which puts $M > 2\,M_\odot$ inside the density range the
+inverse-beta-decay threshold allows. The two admissible rows of
+Table~\ref{tab:masses} both exceed $2\,M_\odot$ while remaining below
+the neutronization threshold for $\mu_e = 2$; the mass gain does not
+have to be bought by pushing $\rho_c$ into a regime the equation of
+state cannot describe.
+
+In physical units, the corresponding interior fields at those two
+points are
+\begin{equation*}
+B_{\varphi,\max} = 1.95\times10^{14}\ \mathrm{G} \quad\text{and}\quad
+2.56\times10^{14}\ \mathrm{G},
+\end{equation*}
+with volume-weighted means of $7.9\times10^{12}$ and
+$9.9\times10^{12}$\,G respectively. These are the field strengths that
+come out of the calculation, with no tuning towards any target value.
+
+\subsection{Rotation does not extend the sequence}
+\label{sec:rotation}
+
+Since a toroidal field elongates the star and rotation flattens it, a
+natural expectation is that combining the two should push the
+mass-shedding limit to higher angular velocity than rotation alone. We
+tested this directly, running the same continuation in the central
+angular velocity $\Omega_c$ twice on an identical mesh and at identical
+$\rho_c$, once field-free and once with a moderate toroidal field
+($K = 3\times10^{-3}$, $E_{\mathrm{tor}}/|W| \simeq 0.18$ at
+$\Omega_c = 0$).
+
+The expectation fails. With the field present, the equatorial mass-loss
+ratio and the virial error degrade \emph{together} and smoothly between
+$\Omega_c = 15$ and $20$\,rad\,s$^{-1}$: the mass-loss ratio crosses
+unity, and VE crosses the $10^{-3}$ acceptance threshold at essentially
+the same $\Omega_c$ and then climbs monotonically to $0.16$ by
+$\Omega_c = 32$\,rad\,s$^{-1}$. The practical limit is therefore
+$\Omega_c \simeq 17$--$18$\,rad\,s$^{-1}$, about a third lower than the
+$\simeq 26$\,rad\,s$^{-1}$ reached in the field-free case. The
+simultaneous, progressive failure of two independent diagnostics is the
+signature of a genuine loss of virial balance rather than of the
+solver jumping to a spurious branch. The $+47\%$ of
+Table~\ref{tab:masses} should therefore be read as a static ceiling for
+the toroidal branch on its own, not as a floor to which rotational
+support can simply be added.
+
+%-------------------------------------------------------------------
+
+\section{Limitations}
+\label{sec:limitations}
+
+Three limitations bound what the results above can be taken to mean,
+and none of them is incidental to the method.
+
+\paragraph{No stability test.} These are two-dimensional axisymmetric
+equilibria, certified to satisfy hydrostatic and virial balance. A
+purely toroidal field is precisely the configuration subject to the
+Tayler $m=1$ instability \citep{tayler1973,markey1973}, which is
+non-axisymmetric and therefore invisible to this formulation by
+construction. Nothing here tests whether the configurations of
+Table~\ref{tab:masses} survive a non-axisymmetric perturbation, and the
+expectation from stability theory is that, in this pure form, they do
+not. A companion investigation addresses this by relaxing a random
+seed field dynamically in three-dimensional MHD and measuring which
+mixed poloidal-toroidal configuration survives, rather than imposing
+one.
+
+\paragraph{No exterior field.} By Eq.~\ref{eq:fieldlaw} the field
+vanishes with the density, so it is confined to the stellar interior
+and the exterior solution is field-free. There is no surface dipole,
+and hence nothing for magnetic braking to act on -- which makes this
+branch, on its own, unable to represent the rotational evolution of a
+magnetized white dwarf, however well it represents its equilibrium
+structure.
+
+\paragraph{An unresolved corner of parameter space.} At
+$K = 5\times10^{-3}$ mesh refinement does not converge cleanly: VE
+falls from $8.2\times10^{-3}$ to $9.6\times10^{-4}$ and then rises
+again to $3.7\times10^{-3}$ at the finest mesh tested, a
+non-monotonicity that survives the Green's-function fix of
+Sect.~\ref{sec:scf} and that we have not been able to attribute either
+to a genuine sensitivity near a marginal equilibrium or to a further
+numerical effect. We flag it as open rather than resolve it in either
+direction. It does not affect $K = 3\times10^{-3}$, the value carrying
+the results of Sect.~\ref{sec:results}, which converges monotonically
+under mesh refinement ($1.5\times10^{-2} \rightarrow 1.7\times10^{-3}
+\rightarrow 2.7\times10^{-4}$) and is unchanged to four significant
+figures under domain enlargement.
+
+%-------------------------------------------------------------------
+
+\section{Conclusions}
+
+TBD.
+
+\begin{acknowledgements}
+TBD.
+\end{acknowledgements}
+
+%-------------------------------------------------------------------
+
+\bibliographystyle{aa}
+\bibliography{paper}
+
+\end{document}

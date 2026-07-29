@@ -31,3 +31,11 @@ docs/*.toc
 # Castro crash dumps -- regenerated on every failed run, never useful in history
 Backtrace.*
 **/.pytest_cache/
+
+# LaTeX build artifacts (papers/ is built with latexmk)
+papers/**/*.aux
+papers/**/*.log
+papers/**/*.out
+papers/**/*.fls
+papers/**/*.fdb_latexmk
+papers/**/*.blg
