@@ -264,8 +264,110 @@ def fig_rotation():
     plt.close(fig)
 
 
+# ----------------------------------------------------------------------
+# Fig. 4 -- meridional cut of the M = 2 Msun configuration
+# Fields cached by solve_cut.py; see that file for the solve itself.
+# ----------------------------------------------------------------------
+
+CUT = HERE / "cut_rhoc1e9.npz"
+
+
+def fig_meridional_cut():
+    import json
+
+    import numpy as np
+    from matplotlib.colors import LinearSegmentedColormap
+    from matplotlib.patches import Rectangle
+
+    if not CUT.exists():
+        print(f"skipping meridional cut: run solve_cut.py first ({CUT.name})")
+        return
+    data = np.load(CUT)
+    s = json.loads(str(data["scalars"]))
+    r, theta = data["r"], data["theta"]
+    rho, bphi = data["rho"], np.abs(data["Bphi"])
+
+    R8 = 1e8            # plot in units of 10^8 cm
+    x = (r[:, None] * np.sin(theta)[None, :]) / R8
+    z = (r[:, None] * np.cos(theta)[None, :]) / R8
+    inside = rho > 0.0
+
+    # One quantity, one sequential ramp: one hue, monotone in lightness, so
+    # it survives a grayscale print and keeps its order either way.
+    cmap = LinearSegmentedColormap.from_list(
+        "bphi", ["#f4f8fe", "#cde2fb", "#9ec5f4", "#5598e7", "#256abf",
+                 "#184f95", "#0d366b"])
+    cmap.set_bad("#ffffff")
+
+    # The field is confined to the core of an envelope it inflated to more
+    # than twice the field-free radius, so one frame cannot show both its
+    # confinement and its structure: (a) is the whole star, (b) the box.
+    zoom = 0.58 * s["R_eq_cm"] / R8
+    full = 1.02 * 1.35 * max(s["R_eq_cm"], s["R_pol_cm"]) / R8
+
+    fig, (axl, axr) = plt.subplots(
+        1, 2, figsize=(COL_IN, COL_IN * 0.66),
+        gridspec_kw=dict(wspace=0.34),
+    )
+
+    b_plot = np.ma.masked_where(~inside, bphi / 1e13)
+    vmax = float(b_plot.max())
+
+    for sign in (+1, -1):
+        for ax in (axl, axr):
+            mesh = ax.pcolormesh(sign * x, z, b_plot, cmap=cmap, vmin=0.0,
+                                 vmax=vmax, shading="gouraud",
+                                 rasterized=True, zorder=1)
+            ax.contour(sign * x, z, rho / s["rho_c"], levels=[0.1, 0.5],
+                       colors="white", linewidths=0.35, alpha=0.55,
+                       zorder=2)
+            ax.contour(sign * x, z, inside.astype(float), levels=[0.5],
+                       colors="#0b0b0b", linewidths=0.7, zorder=3)
+
+    axl.add_patch(Rectangle((-zoom, -zoom), 2 * zoom, 2 * zoom, fill=False,
+                            edgecolor="#eb6834", linewidth=0.7, zorder=4))
+    for spine in axr.spines.values():
+        spine.set_color("#eb6834")
+        spine.set_linewidth(0.7)
+
+    # B_phi is azimuthal: in this plane it comes out of the page on one
+    # side of the axis and goes into it on the other. Marked at the field
+    # maximum, which for m = 1 sits in a torus, not at the centre.
+    i, j = np.unravel_index(np.argmax(np.where(inside, bphi, 0.0)),
+                            bphi.shape)
+    xm, zm = x[i, j], z[i, j]
+    for sign, marker in ((+1, r"$\odot$"), (-1, r"$\otimes$")):
+        axr.plot([sign * xm], [zm], marker=marker, markersize=6.5,
+                 color="white", markeredgewidth=0, zorder=5)
+
+    for ax, lim in ((axl, full), (axr, zoom)):
+        ax.axvline(0.0, color="#0b0b0b", linewidth=0.4,
+                   linestyle=(0, (1, 3)), zorder=4)
+        ax.set_aspect("equal")
+        ax.set_xlim(-lim, lim)
+        ax.set_ylim(-lim, lim)
+        ax.set_xlabel(r"$\varpi$  ($10^8$ cm)", labelpad=1.5)
+        ax.tick_params(top=False, right=False, pad=1.5, labelsize=6.5)
+    axl.set_ylabel(r"$z$  ($10^8$ cm)", labelpad=1.0)
+    axr.set_xticks([-2, 0, 2])
+    axr.set_yticks([-2, 0, 2])
+
+    axl.set_title("(a) whole star", fontsize=7, pad=3, color=C_MUTED)
+    axr.set_title("(b) core", fontsize=7, pad=3, color="#eb6834")
+
+    cb = fig.colorbar(mesh, ax=(axl, axr), orientation="horizontal",
+                      fraction=0.055, pad=0.20, aspect=42)
+    cb.set_label(r"$|B_\varphi|$  ($10^{13}$ G)", fontsize=7.5, labelpad=1.5)
+    cb.outline.set_linewidth(0.5)
+    cb.ax.tick_params(labelsize=6.5, width=0.5, length=2, pad=1.5)
+
+    fig.savefig(HERE / "meridional_cut.pdf")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     fig_mass_vs_field()
     fig_mass_vs_rhoc()
     fig_rotation()
+    fig_meridional_cut()
     print("wrote", *(p.name for p in sorted(HERE.glob("*.pdf"))))
