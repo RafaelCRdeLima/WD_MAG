@@ -1,0 +1,61 @@
+{
+  "reference_no_rotation": {
+    "rho_c": 10000000000.0,
+    "mu_e": 2.0,
+    "K_tor": 0.003,
+    "m_tor": 1.0,
+    "P_spin_s": null,
+    "Omega_c_rad_s": 0.0,
+    "rigid": true,
+    "M_Msun": 2.0788630516624376,
+    "R_eq_km": 2670.654328425666,
+    "R_pol_km": 2863.3555869100096,
+    "VE": 4.3135858828722236e-05,
+    "T_over_W": 0.0,
+    "E_tor_over_W": 0.1811952097399063,
+    "B_tor_max_G": 195101713480958.16,
+    "mass_loss_ratio": 0.0,
+    "frac_pol": 0.12382798069464847,
+    "frac_eq": 0.11549446884424493,
+    "v_eq_equator_cm_s": 0.0,
+    "Nr": 1971,
+    "Ntheta": 129,
+    "iterations": 20,
+    "gates_passed": [
+      "VE < 1e-3",
+      "frac_pol <= 0.2",
+      "T/|W| < 0.14",
+      "mass-loss ratio < 1"
+    ]
+  },
+  "rotating": {
+    "rho_c": 10000000000.0,
+    "mu_e": 2.0,
+    "K_tor": 0.003,
+    "m_tor": 1.0,
+    "P_spin_s": 25.0,
+    "Omega_c_rad_s": 0.25132741228718347,
+    "rigid": true,
+    "M_Msun": 2.0795563129169286,
+    "R_eq_km": 2677.079796331546,
+    "R_pol_km": 2862.7317695360757,
+    "VE": 4.29554672212802e-05,
+    "T_over_W": 9.930514562916916e-05,
+    "E_tor_over_W": 0.18118698574755265,
+    "B_tor_max_G": 195102639875879.75,
+    "mass_loss_ratio": 0.0046824617092906355,
+    "frac_pol": 0.12380100323991333,
+    "frac_eq": 0.115772343069661,
+    "v_eq_equator_cm_s": 67282353.76983076,
+    "Nr": 1971,
+    "Ntheta": 129,
+    "iterations": 20,
+    "gates_passed": [
+      "VE < 1e-3",
+      "frac_pol <= 0.2",
+      "T/|W| < 0.14",
+      "mass-loss ratio < 1"
+    ]
+  },
+  "delta_M_fraction": 0.00033348096399933276
+}

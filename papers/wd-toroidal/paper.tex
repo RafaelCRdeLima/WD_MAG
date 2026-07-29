@@ -57,7 +57,11 @@
     allowed by the inverse-beta-decay threshold, with a maximum interior
     field of $2$--$3\times10^{14}$\,G. Adding rigid rotation on top of
     such a field shortens, rather than extends, the range of angular
-    velocity over which the sequence remains virially certified.}
+    velocity over which the sequence remains virially certified; and at a
+    spin period of $25$\,s, at the fast end of observed white dwarf
+    rotation, rotation is dynamically negligible for these
+    configurations, contributing $T/|W| \simeq 10^{-4}$ and $0.03\%$ of
+    the mass.}
    % conclusions
    {A purely toroidal field is sufficient, on its own, to reach
     $2\,M_\odot$ at physically admissible central densities. It is,
@@ -493,6 +497,71 @@ $\Omega_c = 26.5$\,rad\,s$^{-1}$, where the solver jumps to a spurious
 branch, is omitted.}
 \label{fig:rotation}
 \end{figure}
+
+\subsection{A rapidly rotating configuration}
+\label{sec:fastrotator}
+
+Section~\ref{sec:rotation} is a statement about the end of the rotating
+sequence, at angular velocities of tens of rad\,s$^{-1}$. It says nothing
+about whether a \emph{realistic} white dwarf rotation rate is compatible
+with the field, which is the case that matters observationally, so we
+computed one such configuration explicitly.
+
+We take a spin period of $P = 25$\,s, at the fast end of what is observed
+for white dwarfs, and impose it as rigid rotation
+($\Omega_c = 0.251$\,rad\,s$^{-1}$) on the $\rho_c = 10^{10}$\,g\,cm$^{-3}$,
+$K = 3\times10^{-3}$ configuration. Table~\ref{tab:rotating} reports it
+against a non-rotating reference solved through the identical numerical
+path, so that the difference between the two columns is the rotation term
+and nothing else. Both satisfy every acceptance gate we apply to a
+rotating configuration: $\mathrm{VE} < 10^{-3}$,
+$f_{\mathrm{pol}} \le 0.2$, $T/|W| < 0.14$ (the secular
+non-axisymmetric threshold of \citealt{ostriker1973}), and an equatorial
+mass-loss ratio below unity.
+
+\begin{table}
+\caption{One certified rotating configuration
+($\rho_c = 10^{10}$\,g\,cm$^{-3}$, $K = 3\times10^{-3}$, $m=1$, rigid
+rotation), against a non-rotating reference computed through the same
+path.}
+\label{tab:rotating}
+\centering
+\begin{tabular}{l c c}
+\hline\hline
+ & no rotation & $P = 25$\,s \\
+\hline
+$M$ ($M_\odot$)                 & 2.0789 & 2.0796 \\
+$R_{\mathrm{eq}}$ (km)          & 2671   & 2677 \\
+$R_{\mathrm{pol}}$ (km)         & 2863   & 2863 \\
+$R_{\mathrm{pol}}/R_{\mathrm{eq}}$ & 1.072 & 1.069 \\
+$E_{\mathrm{tor}}/|W|$          & 0.1812 & 0.1812 \\
+$T/|W|$                         & 0      & $9.9\times10^{-5}$ \\
+mass-loss ratio                 & 0      & 0.005 \\
+VE                              & $4.3\times10^{-5}$ & $4.3\times10^{-5}$ \\
+\hline
+\end{tabular}
+\end{table}
+
+Rotation at this rate is dynamically negligible for such a
+configuration. It contributes $T/|W| \simeq 10^{-4}$ and raises the mass
+by $0.03\%$, against the $47\%$ contributed by the field, even though the
+equatorial velocity is $673$\,km\,s$^{-1}$ and the equatorial mass-loss
+ratio is still only $0.005$ -- three orders of magnitude below breakup.
+The deformation stays field-dominated: the star remains prolate, and
+rotation reduces $R_{\mathrm{pol}}/R_{\mathrm{eq}}$ only from $1.072$ to
+$1.069$, nowhere near flipping it to the oblate shape rotation alone
+would produce. The toroidal field strength is unchanged to four
+significant figures.
+
+The two rotation results are therefore consistent, and together they
+bound the question from both ends: a realistic fast white dwarf rotation
+sits far below the regime where Sect.~\ref{sec:rotation} found the
+combination degrading, and it also adds essentially nothing to the mass.
+For this branch, the mass is carried by the field and not by the spin.
+The non-rotating column above sits $0.3\%$ above the corresponding row of
+Table~\ref{tab:masses}, computed on a coarser angular mesh; the two agree
+to within that mesh difference, and the delta quoted here is taken
+against the same-path reference rather than across tables.
 
 %-------------------------------------------------------------------
 

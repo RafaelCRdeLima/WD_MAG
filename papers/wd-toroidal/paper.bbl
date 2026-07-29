@@ -1,4 +1,4 @@
-\begin{thebibliography}{5}
+\begin{thebibliography}{6}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 
 \bibitem[{{Boshkayev} {et~al.}(2013){Boshkayev}, {Rueda}, {Ruffini}, \&
@@ -14,6 +14,9 @@
 
 \bibitem[{{Markey} \& {Tayler}(1973)}]{markey1973}
 {Markey}, P. \& {Tayler}, R.~J. 1973, MNRAS, 163, 77
+
+\bibitem[{{Ostriker} \& {Bodenheimer}(1973)}]{ostriker1973}
+{Ostriker}, J.~P. \& {Bodenheimer}, P. 1973, ApJ, 180, 171
 
 \bibitem[{{Tayler}(1973)}]{tayler1973}
 {Tayler}, R.~J. 1973, MNRAS, 161, 365
