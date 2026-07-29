@@ -278,8 +278,139 @@ def fig_paired():
     plt.close(fig)
 
 
+# ----------------------------------------------------------------------
+# Figs. 4 and 5 -- the spatial structure of one relaxed field
+# Slices and isosurfaces cached by extract_fields.py.
+# ----------------------------------------------------------------------
+
+FIELDS3D = HERE / "fields3d.npz"
+PANELS = [("Bmag", r"$|\mathbf{B}|$"),
+          ("Bt", r"$|B_{\rm t}|$  (toroidal)"),
+          ("Bp", r"$|B_{\rm p}|$  (poloidal)")]
+
+# Two-column A&A figure.
+WIDE_IN = 180.0 / 25.4
+
+
+def _load3d():
+    if not FIELDS3D.exists():
+        print(f"skipping field figures: run extract_fields.py first "
+              f"({FIELDS3D.name})")
+        return None, None
+    d = np.load(FIELDS3D)
+    return d, json.loads(str(d["meta"]))
+
+
+def fig_slices():
+    from matplotlib.colors import LinearSegmentedColormap, LogNorm
+
+    d, meta = _load3d()
+    if d is None:
+        return
+
+    ext = np.asarray(d["extent_cm"]) / 1e8
+    rho = np.asarray(d["slice_density"]).T
+    inside = rho > meta["rho_peak"] * meta["rho_floor_frac"]
+
+    # One sequential ramp, one hue, monotone in lightness, and one shared
+    # range across the three panels -- the panels are the same quantity
+    # measured three ways, so a per-panel autoscale would erase exactly
+    # the comparison the figure exists to make.
+    cmap = LinearSegmentedColormap.from_list(
+        "b", ["#f4f8fe", "#cde2fb", "#9ec5f4", "#5598e7", "#256abf",
+              "#184f95", "#0d366b"])
+    cmap.set_bad("#ffffff")
+    total = np.asarray(d["slice_Bmag"]).T
+    vmax = float(np.percentile(total[inside], 99.5))
+    vmin = vmax / 3e2
+
+    fig, axes = plt.subplots(1, 3, figsize=(WIDE_IN, WIDE_IN * 0.40))
+    for ax, (key, title) in zip(axes, PANELS):
+        arr = np.ma.masked_less_equal(np.asarray(d[f"slice_{key}"]).T, 0.0)
+        mesh = ax.imshow(arr, origin="lower", extent=ext, cmap=cmap,
+                         norm=LogNorm(vmin=vmin, vmax=vmax),
+                         interpolation="bilinear", rasterized=True,
+                         zorder=1)
+        ax.contour(np.linspace(ext[0], ext[1], rho.shape[1]),
+                   np.linspace(ext[2], ext[3], rho.shape[0]),
+                   inside.astype(float), levels=[0.5], colors="#0b0b0b",
+                   linewidths=0.7, zorder=3)
+        ax.set_title(title, fontsize=8, pad=3)
+        ax.set_xlabel(r"$x$  ($10^8$ cm)", labelpad=1.5)
+        ax.set_aspect("equal")
+        ax.tick_params(labelsize=6.5, pad=1.5)
+        for s in ax.spines.values():
+            s.set_color(C_MUTED)
+    axes[0].set_ylabel(r"$z$  ($10^8$ cm)", labelpad=1.0)
+    for ax in axes[1:]:
+        ax.set_yticklabels([])
+
+    cb = fig.colorbar(mesh, ax=axes, fraction=0.020, pad=0.015)
+    cb.set_label("field strength (G)", fontsize=7.5, labelpad=2)
+    cb.outline.set_linewidth(0.5)
+    cb.ax.tick_params(labelsize=6.5, width=0.5, length=2, pad=1.5)
+
+    fig.savefig(HERE / "slices.pdf")
+    plt.close(fig)
+
+
+def fig_isosurfaces():
+    from matplotlib.colors import LightSource
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+    d, meta = _load3d()
+    if d is None:
+        return
+
+    star = np.asarray(d["tri_star"]) / 1e8
+    lim = 1.02 * np.abs(star).max()
+    ls = LightSource(azdeg=225, altdeg=40)
+
+    fig, axes = plt.subplots(1, 3, figsize=(WIDE_IN, WIDE_IN * 0.34),
+                             subplot_kw=dict(projection="3d"))
+    fig.subplots_adjust(left=0.01, right=0.99, bottom=0.02, top=0.97,
+                        wspace=0.02)
+    for ax, (key, title) in zip(axes, PANELS):
+        tri = np.asarray(d[f"tri_{key}"]) / 1e8
+
+        ax.add_collection3d(Poly3DCollection(
+            star, facecolor="#d9d7cc", edgecolor="none", alpha=0.13,
+            zorder=1))
+        ax.add_collection3d(Poly3DCollection(
+            tri, facecolors="#2a78d6", linewidths=0, alpha=0.92,
+            shade=True, lightsource=ls, zorder=2))
+
+        ax.set_title(title, fontsize=8, pad=-2)
+        ax.set_xlim(-lim, lim)
+        ax.set_ylim(-lim, lim)
+        ax.set_zlim(-lim, lim)
+        ax.set_box_aspect((1, 1, 1))
+        ax.view_init(elev=18, azim=-56)
+        ax.tick_params(labelsize=5.5, pad=-3)
+        for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
+            axis.pane.set_facecolor("white")
+            axis.pane.set_edgecolor(C_GRID)
+            axis.line.set_color(C_MUTED)
+            axis._axinfo["grid"]["color"] = C_GRID
+            axis._axinfo["grid"]["linewidth"] = 0.3
+        ax.set_xticks([-2, 0, 2])
+        ax.set_yticks([-2, 0, 2])
+        ax.set_zticks([-2, 0, 2])
+    axes[0].set_xlabel(r"$x$ ($10^8$ cm)", fontsize=6.5, labelpad=-8)
+    axes[0].set_ylabel(r"$y$", fontsize=6.5, labelpad=-8)
+    axes[0].set_zlabel(r"$z$", fontsize=6.5, labelpad=-8)
+
+    print(f"  isosurface level {meta['iso_gauss']:.3e} G "
+          f"(quote this in the caption)")
+
+    fig.savefig(HERE / "isosurfaces.pdf")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     fig_window()
     fig_relaxation()
     fig_paired()
+    fig_slices()
+    fig_isosurfaces()
     print("wrote", *(p.name for p in sorted(HERE.glob("*.pdf"))))

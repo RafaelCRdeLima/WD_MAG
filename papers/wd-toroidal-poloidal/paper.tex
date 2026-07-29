@@ -484,6 +484,74 @@ not.}
 \label{fig:paired}
 \end{figure}
 
+\subsection{The spatial structure of a relaxed field}
+\label{sec:structure}
+
+The diagnostics above are volume integrals. Figures~\ref{fig:slices}
+and~\ref{fig:iso} show what the field they integrate over actually looks
+like, for seed 20 at $t/t_{\mathrm{dyn}} = 0.83$ -- a plotfile inside the
+validity window, from the realization whose toroidal fraction ($0.338$)
+is the closest in the batch to the ensemble mean, so the figure is
+representative rather than selected.
+
+In the meridional cut (Fig.~\ref{fig:slices}) the field fills the star
+rather than concentrating in a core or a shell, reaching
+$1.9\times10^{13}$\,G at its peak, and it is structured on scales well
+below the stellar radius -- the seed was multi-scale and the relaxation
+has not organized it into a single large-scale structure on the
+timescale accessible here. The total and poloidal panels are nearly
+indistinguishable, which is what a toroidal fraction of $1/3$ looks like
+pointwise. The toroidal panel vanishes along the vertical axis: that is
+geometric, since $B_\varphi \to 0$ as $\varpi \to 0$ by construction, and
+it is also a visual reminder of a caveat that applies to every toroidal
+fraction quoted in this paper -- the background star is non-rotating and
+the seed field is random, so the $z$ axis about which the decomposition
+is taken is a bookkeeping choice, not a dynamically preferred direction.
+For a statistically isotropic field any axis gives one third, which is
+the same fact reported from the other side in Sect.~\ref{sec:noselection}.
+
+\begin{figure*}
+\centering
+\includegraphics[width=\textwidth]{figures/slices.pdf}
+\caption{Meridional cut ($y=0$) through the relaxed field of seed 20 at
+$t/t_{\mathrm{dyn}} = 0.83$: total field strength, and its toroidal and
+poloidal parts, on a common logarithmic color scale. The contour is the
+stellar surface (density at $10^{-3}$ of peak). The toroidal component
+vanishes on the axis, where $\varpi \to 0$.}
+\label{fig:slices}
+\end{figure*}
+
+Figure~\ref{fig:iso} makes the comparison quantitative in three
+dimensions, by drawing the isosurface of each field at one common level,
+$5.96\times10^{12}$\,G, so that the enclosed volumes can be compared
+directly. That level is the $90$th percentile of $|\mathbf{B}|$ inside
+the star, so the total field exceeds it in $10.0\%$ of the stellar volume
+by construction; the poloidal part exceeds it in $5.9\%$ and the toroidal
+part in $2.1\%$, a volume ratio of $2.8$. The difference in topology is
+as clear as the difference in volume: the strong-poloidal region is one
+connected structure spanning much of the star, while the strong-toroidal
+region is a handful of disconnected fragments.
+
+One caveat on reading these panels, which the integrated numbers hide.
+Poloidal dominance is a statement about volume-integrated energy, not a
+pointwise one: the median $|B_{\mathrm{p}}|/|B_{\mathrm{t}}|$ inside the
+star is $1.65$, but $|B_{\mathrm{t}}|$ exceeds $|B_{\mathrm{p}}|$ in
+$32\%$ of the stellar volume. The field is locally toroidal-dominated
+over a third of the star while remaining poloidal-dominated overall.
+
+\begin{figure*}
+\centering
+\includegraphics[width=\textwidth]{figures/isosurfaces.pdf}
+\caption{Isosurfaces of the same three fields as
+Fig.~\ref{fig:slices}, all at the same level,
+$5.96\times10^{12}$\,G (the $90$th percentile of $|\mathbf{B}|$ inside
+the star), so that the enclosed volumes are directly comparable. The
+translucent envelope is the stellar surface. The strong-poloidal region
+is a single connected structure; the strong-toroidal region is
+fragmented.}
+\label{fig:iso}
+\end{figure*}
+
 \begin{acknowledgements}
 TBD.
 \end{acknowledgements}
