@@ -39,3 +39,4 @@ papers/**/*.out
 papers/**/*.fls
 papers/**/*.fdb_latexmk
 papers/**/*.blg
+papers/**/*.synctex.gz

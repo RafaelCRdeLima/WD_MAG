@@ -302,11 +302,32 @@ that the fractional mass gain produced by a given $K$ should be
 essentially the same at any central density -- and, for
 $K = 3\times10^{-3}$, that it should be of order $50\%$.
 
-Table~\ref{tab:masses} shows the measured values at three central
-densities spanning two and a half decades. The prediction was made
-before these runs and is confirmed by them: $E_{\mathrm{tor}}/|W|$
-varies by $0.9\%$ over the full range, and the fractional mass gain by
-less than three percentage points.
+Table~\ref{tab:masses} and Fig.~\ref{fig:rhoc} show the measured values
+at three central densities spanning two and a half decades. The
+prediction was made before these runs and is confirmed by them:
+$E_{\mathrm{tor}}/|W|$ varies by $0.9\%$ over the full range, and the
+fractional mass gain by less than three percentage points. The lower
+panel of Fig.~\ref{fig:rhoc} makes the point in the form
+Eq.~\ref{eq:scaling} predicts it: the dimensionless field strength is
+flat in $\rho_c$, and the two mass sequences in the upper panel are
+therefore two nearly parallel curves separated by a constant factor,
+rather than converging or diverging with density.
+
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth]{figures/mass_vs_rhoc.pdf}
+\caption{Equilibrium mass with and without a purely toroidal field
+($m=1$, $K = 3\times10^{-3}$, no rotation) as a function of central
+density (upper panel), and the dimensionless field strength of the
+magnetized sequence (lower panel). The shaded region lies above the
+inverse-beta-decay threshold for $\mu_e = 2$
+($1.94\times10^{10}$\,g\,cm$^{-3}$, the conservative $^{16}$O value of
+\citealt{boshkayev2013}), where the cold constant-$\mu_e$ equation of
+state no longer describes a white dwarf; the $\rho_c = 10^{12}$
+configuration is shown for reference only. The band in the lower panel
+is the mean of the three measurements $\pm 1\%$.}
+\label{fig:rhoc}
+\end{figure}
 
 \begin{table}
 \caption{Equilibrium mass with and without a purely toroidal field
@@ -345,6 +366,31 @@ the neutronization threshold for $\mu_e = 2$; the mass gain does not
 have to be bought by pushing $\rho_c$ into a regime the equation of
 state cannot describe.
 
+Figure~\ref{fig:seq} shows how that mass is reached, along a continuous
+sequence computed at a lower central density, $\rho_c = 10^9$\,g\,cm$^{-3}$,
+where every configuration is comfortably inside the validity range of
+the equation of state. The sequence is flat at first -- a field of
+$10^{13}$\,G costs the star almost nothing -- and then steepens sharply,
+crossing $2\,M_\odot$ at $B_{\varphi,\max} = 4.3\times10^{13}$\,G with
+$\mathrm{VE} = 6.9\times10^{-4}$, still certified. Certification is
+lost shortly afterwards, at $K = 4\times10^{-3}$: the last point of the
+sequence is plotted open and is not a result. Note that
+$B_{\varphi,\max}$ itself saturates along the sequence while the mass
+does not, because the star expands as the field grows; it is the
+integrated $E_{\mathrm{tor}}/|W|$, not the peak field, that tracks the
+mass gain.
+
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth]{figures/mass_vs_field.pdf}
+\caption{Equilibrium mass along the toroidal sequence at
+$\rho_c = 10^9$\,g\,cm$^{-3}$ ($m=1$, no rotation), obtained by
+continuation from the field-free configuration. Filled symbols are
+certified ($\mathrm{VE} < 10^{-3}$); the star marks the interpolated
+$2\,M_\odot$ crossing.}
+\label{fig:seq}
+\end{figure}
+
 In physical units, the corresponding interior fields at those two
 points are
 \begin{equation*}
@@ -367,7 +413,8 @@ $\rho_c$, once field-free and once with a moderate toroidal field
 ($K = 3\times10^{-3}$, $E_{\mathrm{tor}}/|W| \simeq 0.18$ at
 $\Omega_c = 0$).
 
-The expectation fails. With the field present, the equatorial mass-loss
+The expectation fails (Fig.~\ref{fig:rotation}). With the field present,
+the equatorial mass-loss
 ratio and the virial error degrade \emph{together} and smoothly between
 $\Omega_c = 15$ and $20$\,rad\,s$^{-1}$: the mass-loss ratio crosses
 unity, and VE crosses the $10^{-3}$ acceptance threshold at essentially
@@ -381,6 +428,22 @@ solver jumping to a spurious branch. The $+47\%$ of
 Table~\ref{tab:masses} should therefore be read as a static ceiling for
 the toroidal branch on its own, not as a floor to which rotational
 support can simply be added.
+
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth]{figures/rotation_termination.pdf}
+\caption{Termination of the rotating sequence with and without a
+toroidal field, at $\rho_c = 10^{12}$\,g\,cm$^{-3}$ on an identical
+mesh. Upper panel: equatorial mass-loss ratio, which reaches unity at
+breakup and is unphysical beyond it. Lower panel: virial error, with
+the $10^{-3}$ acceptance threshold. With the field present both
+diagnostics fail together in the shaded interval,
+$\Omega_c \simeq 17$--$18$\,rad\,s$^{-1}$, well before the field-free
+sequence shows any sign of terminating. The field-free point at
+$\Omega_c = 26.5$\,rad\,s$^{-1}$, where the solver jumps to a spurious
+branch, is omitted.}
+\label{fig:rotation}
+\end{figure}
 
 %-------------------------------------------------------------------
 
