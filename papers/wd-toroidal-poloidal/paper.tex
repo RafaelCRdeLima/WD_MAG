@@ -278,6 +278,42 @@ slaved to the drifting stellar structure and no longer reflects the
 dynamics of the field, which is precisely what the upper bound is
 constructed to exclude.
 
+The lower panel of Fig.~\ref{fig:window} shows why waiting is not an
+option: followed out to $t/t_{\mathrm{dyn}} = 16$, the field-free star
+does not converge to any value but wanders, from $-5\%$ near
+$t/t_{\mathrm{dyn}} = 5$ back through zero and up to $+8\%$ by the end
+of the run. There is no late-time plateau to wait for.
+
+The upper panel, however, carries a caveat that we consider the most
+important limitation of the measurements below, and it is visible in the
+same figure. The window was calibrated on a \emph{field-free} evolution.
+The seeded runs it is then applied to drift several times faster: at
+$t/t_{\mathrm{dyn}} = 1.13$, where the field-free star has moved by
+$-2\%$ by construction, the three extended seeded runs have moved by
+$-8\%$ to $-10\%$. The comparison is not an artifact of the damping
+schedule -- at these times both the field-free and the seeded runs are
+still inside their fully damped phase, before any ramp-off begins -- so
+the difference is attributable to the presence of the field. What it is
+\emph{not} possible to say from these runs is how much of that extra
+motion is the star's physical response to magnetic pressure in its core
+and how much is faster numerical drift. Either way, the operational
+consequence is the same and we state it plainly: the $\pm2\%$ criterion
+bounds the structural change of the calibration run, not of the runs
+being measured.
+
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth]{figures/window.pdf}
+\caption{Central density relative to its initial value. Upper panel: the
+field-free calibration run (thick) and the three extended seeded runs
+(thin), with the $\pm1\%$ and $\pm2\%$ bands, the crossings
+$X_{1\%} = 0.573$ and $X_{2\%} = 1.128$ that define the upper bound, and
+the resulting window shaded. The seeded runs leave the $\pm2\%$ band
+well before the window closes. Lower panel: the same field-free run over
+its full baseline -- the drift never settles.}
+\label{fig:window}
+\end{figure}
+
 \subsection{Divergence control}
 \label{sec:divb}
 
@@ -336,19 +372,17 @@ The resolution cross-check is consistent with the $64^3$ ensemble: the
 same seed gives $0.324$ at $64^3$ and $0.305$ at $128^3$, a shift small
 compared to the seed-to-seed spread.
 
-That the relaxed configuration is mixed and poloidal-dominated is the
-central result, and it is obtained without imposing any
-poloidal-to-toroidal ratio: the ratio is an outcome of the dynamical
-relaxation, measured on the evolved field. Both purely poloidal and
-purely toroidal fields are unstable to non-axisymmetric perturbations
-\citep{tayler1973,markey1973}, and the surviving configurations are
-neither -- consistent with the picture of \citet{braithwaite2004} and
-\citet{braithwaite2006}, in which a stable stellar field must contain
-both components. We emphasize that this is a statement about the
-configuration reached within the validity window and sustained there,
-not about an asymptotic equilibrium: with the star itself drifting on a
-longer timescale (Sect.~\ref{sec:window}), the present calculation
-cannot follow the field to arbitrarily late times.
+The relaxed configuration is thus mixed and poloidal-dominated, and no
+poloidal-to-toroidal ratio was imposed to make it so. Both purely
+poloidal and purely toroidal fields are unstable to non-axisymmetric
+perturbations \citep{tayler1973,markey1973}, and the surviving
+configurations are neither -- consistent with the picture of
+\citet{braithwaite2004} and \citet{braithwaite2006}, in which a stable
+stellar field must contain both components. We emphasize that this is a
+statement about the configuration reached within the validity window and
+sustained there, not about an asymptotic equilibrium: with the star
+itself drifting on a longer timescale (Sect.~\ref{sec:window}), the
+present calculation cannot follow the field to arbitrarily late times.
 
 The spread within the band is a property of the individual seed, not
 sampling noise. Re-running seeds over a baseline four times longer than
@@ -364,6 +398,91 @@ kind of relaxation -- was tested directly and does not survive: a
 suggestive correlation at $n=4$ ($r \simeq -0.84$) collapsed to
 $r \simeq -0.33$, unstable under leave-one-out resampling, once the
 full batch of ten was included.
+
+\subsection{What the relaxation changes, and what it does not}
+\label{sec:evolution}
+
+The measurements above are single values, taken inside the window. The
+plotfiles of one full batch of ten seeds survived, which lets us follow
+both the ratio and the field energy through the relaxation rather than
+sampling them once (Fig.~\ref{fig:relaxation}), and the two behave
+completely differently.
+
+The toroidal fraction stays inside a narrow band, $0.26$--$0.41$, for the
+whole evolution. It is not merely poloidal-dominated at the measurement
+time: it never approaches $0.5$ at any point in any run, including
+$t = 0$. Individual seeds move within the band, in both directions, and
+settle to their own level well before the window opens.
+
+The magnetic energy, in contrast, falls by roughly an order of magnitude
+over the same interval, from $E_{\mathrm{mag}}/|W| = 0.021$--$0.040$ at
+$t = 0$ to $0.0018$--$0.0051$ by $t/t_{\mathrm{dyn}} \simeq 1.2$. That
+decay is resolution-limited, which we can show with the one seed run at
+both resolutions: measured at essentially the same time, seed 42 retains
+$E_{\mathrm{mag}}/|W| = 0.0135$ at $128^3$ against $0.0042$ at $64^3$, a
+factor $3.2$, while its toroidal fraction changes by only $6\%$
+($0.305$ against $0.324$). The energy left in the field at a given time
+is therefore a property of the grid as much as of the physics, and we do
+not report it as a measurement of anything; the ratio is the quantity
+that survives the resolution change, which is why it is the only one we
+quote. A convergence study of the decay rate itself would need more than
+the single $128^3$ run available here.
+
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth]{figures/relaxation.pdf}
+\caption{Evolution of the ten seeds of one batch at $64^3$, with the
+validity window shaded. Upper panel: toroidal fraction, which stays
+within a narrow band well below $0.5$ throughout, with the isotropic
+value $1/3$ marked. Lower panel: magnetic energy, which falls by about
+an order of magnitude, and the same seed measured at both resolutions --
+the $128^3$ run retains $3.2$ times more field energy at the same time,
+so this decay is resolution-limited.}
+\label{fig:relaxation}
+\end{figure}
+
+\subsection{The toroidal fraction does not move from its seeded value}
+\label{sec:noselection}
+
+There is a further consequence of having the full time series, and it
+bounds the interpretation of the whole ensemble. A statistically
+isotropic random field puts, on average, one third of its energy into
+the azimuthal component by symmetry alone. The seed fields are
+constructed to be random and multi-scale, and they duly start there: for
+the batch of ten, the toroidal fraction at $t=0$ averages $0.342$, with
+a seed-to-seed scatter of $0.039$. The in-window values average
+$0.336$, with a scatter of $0.039$.
+
+Figure~\ref{fig:paired} pairs the two per seed. Individual seeds move by
+up to $\pm0.065$, in both directions, but the paired change across the
+batch is $-0.006 \pm 0.012$, indistinguishable from zero at $n=10$, and
+both ensemble means sit on the isotropic value. Within the window
+accessible here, the relaxation does not drive the toroidal fraction
+anywhere: it leaves it, on average, where the random seed put it.
+
+This does not weaken the statement that the surviving configuration is
+mixed and poloidal-dominated -- that is measured, at every time, in every
+run. It does mean these calculations do not demonstrate the stronger
+claim they might be read as supporting, namely that the relaxation
+\emph{selects} a preferred poloidal-to-toroidal ratio. Demonstrating
+selection requires showing that the field is driven to a ratio it did not
+start at, and that is exactly what the accessible window is too short to
+show: with the energy still falling by an order of magnitude per
+dynamical time and only two to three plotfiles per run falling inside the
+window, the ensemble mean has neither the time nor the sampling to move.
+Extending the baseline requires closing the well-balancing gap of
+Sect.~\ref{sec:window} first, not running the present setup for longer.
+
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth]{figures/paired.pdf}
+\caption{Toroidal fraction at $t=0$ and averaged inside the validity
+window, paired per seed, for the batch of ten. Blue lines increase, gray
+lines decrease; heavy bars are the ensemble means, and the dashed line is
+the isotropic value $1/3$. Individual seeds move; the ensemble mean does
+not.}
+\label{fig:paired}
+\end{figure}
 
 \begin{acknowledgements}
 TBD.
