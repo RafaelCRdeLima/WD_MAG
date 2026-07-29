@@ -1,0 +1,52 @@
+\begin{thebibliography}{13}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+
+\bibitem[{{Almgren} {et~al.}(2010){Almgren}, {Beckner}, {Bell}, {Day},
+  {Howell}, {Joggerst}, {Lijewski}, {Nonaka}, {Singer}, \& {Zingale}}]{castro}
+{Almgren}, A.~S., {Beckner}, V.~E., {Bell}, J.~B., {et~al.} 2010, ApJ, 715,
+  1221
+
+\bibitem[{{Boshkayev} {et~al.}(2013){Boshkayev}, {Rueda}, {Ruffini}, \&
+  {Siutsou}}]{boshkayev2013}
+{Boshkayev}, K., {Rueda}, J.~A., {Ruffini}, R., \& {Siutsou}, I. 2013, ApJ,
+  762, 117
+
+\bibitem[{{Braithwaite} \& {Nordlund}(2006)}]{braithwaite2006}
+{Braithwaite}, J. \& {Nordlund}, {\AA}. 2006, A\&A, 450, 1077
+
+\bibitem[{{Braithwaite} \& {Spruit}(2004)}]{braithwaite2004}
+{Braithwaite}, J. \& {Spruit}, H.~C. 2004, Nature, 431, 819
+
+\bibitem[{{Chandrasekhar}(1935)}]{chandrasekhar1935}
+{Chandrasekhar}, S. 1935, MNRAS, 95, 207
+
+\bibitem[{{Colella}(1990)}]{ctu}
+{Colella}, P. 1990, Journal of Computational Physics, 87, 171
+
+\bibitem[{{Colella} \& {Woodward}(1984)}]{ppm}
+{Colella}, P. \& {Woodward}, P.~R. 1984, Journal of Computational Physics, 54,
+  174
+
+\bibitem[{{Grad} \& {Rubin}(1958)}]{grad1958}
+{Grad}, H. \& {Rubin}, H. 1958, Proceedings of the 2nd UN Conf. on the Peaceful
+  Uses of Atomic Energy, 31, 190
+
+\bibitem[{{Hachisu}(1986)}]{hachisu1986}
+{Hachisu}, I. 1986, ApJS, 61, 479
+
+\bibitem[{{Markey} \& {Tayler}(1973)}]{markey1973}
+{Markey}, P. \& {Tayler}, R.~J. 1973, MNRAS, 163, 77
+
+\bibitem[{{Shafranov}(1966)}]{shafranov1966}
+{Shafranov}, V.~D. 1966, Reviews of Plasma Physics, 2, 103
+
+\bibitem[{{Tayler}(1973)}]{tayler1973}
+{Tayler}, R.~J. 1973, MNRAS, 161, 365
+
+\bibitem[{Zhang {et~al.}(2019)Zhang, Almgren, Beckner, Bell, Blaschke, Chan,
+  Day, Friesen, Gott, Graves, Katz, Myers, Nguyen, Nonaka, Rosso, Williams, \&
+  Zingale}]{AMReX}
+Zhang, W., Almgren, A., Beckner, V., {et~al.} 2019, Journal of Open Source
+  Software, 4, 1370
+
+\end{thebibliography}

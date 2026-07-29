@@ -1,0 +1,243 @@
+% paper.tex -- draft, A&A LaTeX class (aa.cls v7.0, EDP Sciences)
+% Structure only: Equation of State, Field Equations, Castro, Braithwaite method.
+% TODO: title, author list, affiliations, abstract, results/discussion sections.
+
+\documentclass{aa}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{txfonts}
+\usepackage{natbib}
+
+\begin{document}
+
+   \title{Magnetized white dwarfs with mixed poloidal-toroidal fields}
+
+   \subtitle{Draft -- structure and core physics only}
+
+   \author{TBD\inst{1}
+          }
+
+   \institute{Affiliation TBD\\
+              \email{tbd@example.org}
+             }
+
+   \date{Draft \today}
+
+   \abstract
+   % context
+   {TBD.}
+   % aims
+   {TBD.}
+   % methods
+   {TBD.}
+   % results
+   {TBD.}
+   % conclusions
+   {}
+
+   \keywords{white dwarfs -- stars: magnetic field -- magnetohydrodynamics (MHD) -- methods: numerical}
+
+   \maketitle
+
+%-------------------------------------------------------------------
+
+\section{Introduction}
+
+TBD.
+
+%-------------------------------------------------------------------
+
+\section{Equation of state}
+\label{sec:eos}
+
+The background stellar structure throughout this work is that of a
+fully degenerate, zero-temperature electron gas
+\citep[ztwd;][]{chandrasekhar1935}. Pressure and density are both
+parametrized by the normalized Fermi momentum $x \equiv p_F/(m_e c)$,
+
+\begin{align}
+P(x) &= A \left[ x(2x^2-3)\sqrt{x^2+1} + 3\sinh^{-1}x \right], \\
+\rho(x) &= B\,x^3,
+\end{align}
+
+\noindent where $A$ is a fixed combination of fundamental constants
+($m_e$, $c$, $\hbar$) and $B$ depends on the composition only through
+the mean molecular weight per electron $\mu_e = 1/Y_e$, with $Y_e$ the
+number of electrons per baryon. This is a purely mechanical equation of
+state: at fixed composition, pressure depends on density alone, with no
+temperature dependence. Consequently, once the configuration is
+restricted to be non-rotating and field-free, the entire stellar
+structure (mass, radius, density profile) is determined by exactly two
+physical parameters: the central density $\rho_c$ and $\mu_e$.
+
+The specific enthalpy has a closed form,
+\begin{equation}
+H(x) = \frac{8A}{B}\left[\sqrt{1+x^2} - 1\right],
+\end{equation}
+which is what makes the self-consistent field (SCF) iteration of
+Sect.~\ref{sec:field-eq} tractable: at each iteration the density is
+recovered directly from the local enthalpy via the inverse relation
+$x(H) = \sqrt{(1+HB/8A)^2 - 1}$, with $H \le 0$ mapped to $\rho = 0$
+(the stellar surface).
+
+Near the surface ($x \ll 1$) the equation of state reduces to
+$\rho \propto H^{3/2}$, an effective polytropic index $n=3/2$; in the
+relativistic core ($x \gg 1$) it approaches $\rho \propto H^3$,
+$n=3$ -- the marginal polytropic index at which the equilibrium mass
+becomes independent of central density, the origin of the
+Chandrasekhar mass limit.
+
+At sufficiently high density, inverse beta decay (electron capture)
+changes the composition locally and the constant-$\mu_e$ cold equation
+of state above ceases to describe a real white dwarf. We adopt the
+tabulated threshold densities of \citet{boshkayev2013} for this
+validity limit; all central densities discussed below are kept below
+this threshold for the assumed composition.
+
+%-------------------------------------------------------------------
+
+\section{Field equations}
+\label{sec:field-eq}
+
+Axisymmetric magnetohydrostatic equilibria with a poloidal field are
+governed by the Grad-Shafranov equation \citep{grad1958,shafranov1966}
+for the poloidal flux function $u(\varpi,z) = \varpi A_\varphi$, where
+$\varpi$ is the cylindrical radius and $A_\varphi$ the azimuthal
+component of the vector potential. The poloidal field components follow
+from $u$ as
+\begin{equation}
+B_\varpi = -\frac{1}{\varpi}\frac{\partial u}{\partial z}, \qquad
+B_z = \frac{1}{\varpi}\frac{\partial u}{\partial \varpi},
+\end{equation}
+and the equilibrium (force balance combined with the Poisson equation
+for self-gravity) reduces to a single elliptic equation for $u$ sourced
+by the current distribution and, self-consistently, by $u$ itself
+through the poloidal current function $M(u)$.
+
+Following the SCF approach of \citet{hachisu1986}, extended to
+magnetized configurations, the poloidal current function is taken as
+linear in the flux, $M(u) = k_0\,u$, so that the Bernoulli integral
+governing hydrostatic balance reads
+\begin{equation}
+H + \Phi - M(u) = C,
+\label{eq:bernoulli}
+\end{equation}
+with $\Phi$ the gravitational potential and $C$ a constant fixed by the
+boundary condition at the stellar surface. Equation~\ref{eq:bernoulli}
+and the Grad-Shafranov equation are solved iteratively together with
+the Poisson equation for $\Phi$, alternating between an update of the
+density field (from the equation of state, Sect.~\ref{sec:eos}) and an
+update of the flux function $u$, until convergence.
+
+A toroidal field confined within the last closed poloidal field line
+($u > u_c$) is added through a toroidal current function $\beta(u)$,
+parametrized as $\beta(u) = \zeta\,(u-u_c)^{m+1}$ with $m\ge1$, giving
+$B_\varphi = \beta(u)/\varpi$ inside the closed-field region and zero
+outside. A purely toroidal, non-mixed branch is also considered
+separately, with $B_\varphi = K\rho^m\varpi^{2m-1}$ derived directly
+from the Lorentz force (Maxwell stress tensor) rather than from a flux
+function; this branch requires no Grad-Shafranov solve, at the cost of
+being unable to represent a poloidal component. A genuinely
+self-consistent \emph{mixed} poloidal-toroidal equilibrium -- both
+components simultaneously present and mutually consistent within the
+same SCF solve -- is outside the scope of the axisymmetric formulation
+used here; Sect.~\ref{sec:braithwaite} describes how mixed
+configurations are instead obtained dynamically.
+
+Purely toroidal and purely poloidal equilibria are each subject to a
+non-axisymmetric instability of azimuthal wavenumber $m=1$
+\citep{tayler1973,markey1973}, which the axisymmetric formulation of
+this section cannot, by construction, test for.
+
+%-------------------------------------------------------------------
+
+\section{Castro}
+\label{sec:castro}
+
+Dynamical (as opposed to SCF-equilibrium) evolution is carried out with
+Castro \citep{castro}, a massively parallel, block-structured
+adaptive-mesh-refinement (AMR) code for compressible astrophysical
+flows, built on the AMReX framework \citep{AMReX}. The hydrodynamics
+solver uses an unsplit corner-transport-upwind scheme \citep{ctu} with
+piecewise-parabolic reconstruction \citep{ppm}; self-gravity is
+included for isolated (non-periodic) configurations, and a
+constrained-transport magnetohydrodynamics (MHD) solver extends the
+same integrator to evolve a magnetic field while preserving
+$\nabla\!\cdot\!\mathbf{B}=0$ to machine precision by construction.
+Castro accepts an arbitrary equation of state and reaction network
+through the StarKiller Microphysics interface; for this work the
+network is reduced to a single inert species reproducing the assumed
+$\mu_e$, and the equation of state is the same zero-temperature
+degenerate electron gas of Sect.~\ref{sec:eos}, so that a star built in
+hydrostatic equilibrium by the SCF solver is evolved under the
+identical thermodynamic relation it was constructed with.
+
+Self-gravity for an isolated spherical mass distribution is obtained
+from Castro's monopole gravity solver, which integrates the enclosed
+mass along radial shells. Initial conditions are supplied to Castro as
+a one-dimensional radial density (and composition) profile, sampled
+onto the three-dimensional Cartesian AMR grid; the sampling itself
+(cell-volume averaging versus point sampling, and the alignment of the
+grid relative to the stellar center) has a measurable effect on how
+closely the discretized initial condition reproduces the target central
+density, which we account for when initializing a background star for
+dynamical evolution.
+
+%-------------------------------------------------------------------
+
+\section{The Braithwaite method}
+\label{sec:braithwaite}
+
+As noted in Sect.~\ref{sec:field-eq}, the axisymmetric SCF formulation
+cannot produce a genuinely self-consistent mixed poloidal-toroidal
+equilibrium, nor can it test the stability of any equilibrium against
+non-axisymmetric perturbations -- a serious limitation given that both
+purely poloidal and purely toroidal fields are themselves
+non-axisymmetrically unstable \citep{tayler1973,markey1973}. The
+resolution adopted here follows \citet{braithwaite2004} and
+\citet{braithwaite2006}: rather than constructing a mixed field and
+separately testing its stability, a \emph{random}, multi-scale magnetic
+field is seeded within an otherwise field-free, non-rotating background
+star (Sect.~\ref{sec:eos}) and allowed to relax dynamically under full
+three-dimensional, ideal MHD in Castro (Sect.~\ref{sec:castro}). Because
+the evolution is a genuine dynamical calculation and not an imposed
+equilibrium, any configuration that survives the relaxation is, by
+construction, stable to the perturbations sampled by the initial random
+field -- including non-axisymmetric ones the Grad-Shafranov formulation
+cannot represent at all.
+
+The random seed field is constructed as a vector potential $\mathbf{A}$
+-- a superposition of Fourier-like modes spanning a band of length
+scales, with random amplitude, phase, and direction for each mode --
+multiplied by a smooth radial envelope that confines the field within
+the stellar volume before the magnetic field itself is formed as the
+discrete curl, $\mathbf{B} = \nabla\times\mathbf{A}$. Windowing the
+potential rather than the field is required for
+$\nabla\!\cdot\!\mathbf{B}=0$ to be preserved exactly: multiplying an
+already-divergence-free $\mathbf{B}$ by a confinement window after the
+curl has been taken would reintroduce a spurious divergence, whereas
+curling an already-windowed potential does not. The total seed field
+energy is calibrated, prior to relaxation, to a chosen fraction of the
+star's gravitational binding energy, $E_{\mathrm{mag}}/|W|$.
+
+Once released, the field is left free to evolve under the full MHD
+equations; no particular final poloidal-to-toroidal ratio is imposed.
+The relaxed configuration's toroidal fraction,
+$E_{\mathrm{tor}}/E_{\mathrm{mag}}$, is measured directly from the
+evolved field, and its dependence on the initial random seed
+(reproducibility across independent realizations of the random field,
+at fixed $E_{\mathrm{mag}}/|W|$) is examined empirically rather than
+assumed.
+
+\begin{acknowledgements}
+TBD.
+\end{acknowledgements}
+
+%-------------------------------------------------------------------
+
+\bibliographystyle{aa}
+\bibliography{paper}
+
+\end{document}
