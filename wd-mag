@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Launches the wd-magnetizada dashboard (Streamlit) using the scf/.venv
+# environment. Run from anywhere: ./wd-mag (if cwd is the repo root) or
+# the full path to this script.
+set -euo pipefail
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec "$HERE/scf/.venv/bin/streamlit" run "$HERE/dashboard/app.py" "$@"

@@ -27,3 +27,7 @@ docs/*.aux
 docs/*.log
 docs/*.out
 docs/*.toc
+
+# Castro crash dumps -- regenerated on every failed run, never useful in history
+Backtrace.*
+**/.pytest_cache/
