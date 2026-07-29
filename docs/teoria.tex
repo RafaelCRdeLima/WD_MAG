@@ -1620,9 +1620,11 @@ would close. The project's answer is the Braithwaite method (Braithwaite
 \& Nordlund 2006, \S\ref{sec:refs}): relax a \textbf{random} seed field
 dynamically in Castro (3D, full MHD) and measure which mixed
 configuration survives, rather than imposing a chosen $Bt/Bp$ and
-testing it. This is orchestrated by the dashboard's Tab 5
-(``Braithwaite''); the physics lives in Castro, per R1 --- nothing here
-is reimplemented in \code{dashboard/}.
+testing it. This was originally orchestrated by the dashboard's
+Streamlit ``Tab 5,'' since replaced by a standalone desktop app
+(\S\ref{sec:desktop-app}); the physics lives in Castro, per R1 ---
+nothing here is reimplemented in \code{dashboard/} or in the app
+itself.
 
 \textbf{Phase 0 (Castro build, \code{USE\_MHD=TRUE}) --- verified, not
 assumed.} Built against the project's actual submodule pins
@@ -1706,6 +1708,585 @@ configuration \emph{before} anything is calibrated against it --- not
 treated as presumably correct because it compiled and ran.
 \end{notebox}
 
+\subsection{Step 3, first pass: a custom damping term, and the EOS mismatch that actually caused the collapse}
+\label{sec:damping-eos}
+
+The Braithwaite method's Step 3 (evolve the seeded field dynamically and
+let the star reach its own equilibrium --- \S\ref{sec:braithwaite})
+needs the \emph{background star itself} to survive being handed to
+Castro before any field physics can be trusted. The first attempts to
+get there chased two different hypotheses, in order.
+
+\textbf{Hypothesis 1: the star needs damping.} A domain-wide velocity
+damping source term was added, distinct from and in addition to
+Castro's built-in exterior sponge:
+\[
+\begin{aligned}
+\text{damping\_rate} &= 1 / (\text{damping\_timescale\_in\_tdyn} \cdot t_{dyn})\\
+S_r &= -\text{damping\_rate}\cdot\text{ramp}(t)\cdot(\rho u,\rho v,\rho w)\\
+S_{rE} &= \mathbf{u}\cdot S_r \qquad \text{(kinetic-energy consistent)}\\
+\text{ramp}(t) &= 0.5\,(1+\cos(\pi x)),\quad
+  x = \frac{t - t_{\text{ramp start}}}{t_{\text{damp end}} - t_{\text{ramp start}}}
+\end{aligned}
+\]
+$\to$ \code{problem\_source.H:22-65} (\code{castro\_problems/wd\_braithwaite/},
+mirrored live at \code{castro/Exec/science/wd\_braithwaite/}), applied
+to every cell in the domain, not just an exterior layer --- modeled
+explicitly on \code{Castro\_sponge.cpp}'s own energy-consistent
+treatment. Defaults: \code{damping\_timescale\_in\_tdyn=0.2},
+\code{damping\_ramp\_in\_tdyn=1.0}, \code{damping\_end\_time\_in\_tdyn=5.0}
+(\code{\_prob\_params:37-41}). This is a different mechanism from
+Castro's built-in sponge (\code{castro.do\_sponge=1},
+\code{sponge\_upper\_density=1e5}, \code{sponge\_lower\_density=1e4},
+\code{sponge\_timescale=1e-4}, \code{inputs.evolve:95-98}), which is
+exterior/density-gated only; the custom term is time-gated and acts on
+the whole domain, star interior included.
+
+Without it, $\rho_c$ climbed monotonically with no sign of turning over
+(documented in the header comment of \code{inputs.evolve} /
+\code{inputs.weakfield\_test} / \code{inputs.singlebox\_test}: ``+40\%,
+still accelerating at t=0.021s, 69 steps'' --- the raw log behind that
+specific run has since been overwritten by later reuse of the same
+filename, so it is reported here as a documented observation, not
+independently re-derived from a surviving log).
+
+\textbf{Hypothesis 2, and the actual cause: EOS mismatch.} The
+background star is built in hydrostatic equilibrium under the
+\code{ztwd} EOS (\S\ref{sec:eos}) by the SCF solver, but the first
+version of Step 3 evolved it in Castro under \code{gamma\_law} --- a
+different EOS entirely. The decisive control run made this unambiguous:
+with the field completely off (\code{E\_mag\_over\_W\_target=0}) and
+\code{gamma\_law} still in use, $\rho_c$ collapsed \textbf{exactly as
+fast as the magnetized runs} --- $2.2\times$ the initial value by step
+5, $t=0.04$s (\code{inputs.control\_nofield:8-10}) --- proving the
+collapse was never a magnetic effect. Fixed by pointing Castro at the
+same EOS the star was built under: \code{EOS\_DIR := ztwd}
+(\code{GNUmakefile}, both mirrors).
+
+EOS matching alone did not fully solve the problem, though: a longer
+zero-field control with \code{ztwd} and damping active still shows
+$\rho_c$ growing, $9.635\times10^8\to1.415\times10^9$ ($+46.8\%$) over
+$t=0\to1.038$s (\code{max\_step=4000}, \code{stop\_time=2.8};
+\code{run\_control\_long\_test.log}). That residual growth --- real,
+present even with the right EOS and damping on --- is what
+\S\ref{sec:wellbalancing}'s well-balancing investigation traces to its
+actual root cause. Damping is kept in the production inputs as a
+numerical aid, not because it (or the EOS fix) resolves the underlying
+issue: $\rho_c$ never settles under any IC/damping combination tried,
+because Castro's MHD reconstruction has no well-balancing
+(\code{braithwaite\_app/main.py:13-14}; \S\ref{sec:wellbalancing}).
+
+\subsection{The \texorpdfstring{\code{Div\_B}}{Div\_B} ``blowup'': a ghost-cell diagnostic artifact, not a broken CT scheme}
+\label{sec:divb-artifact}
+
+Early evolution runs showed $\max|\nabla\cdot B|$ growing to physically
+absurd values --- $\sim6\times10^5$ at $t=0$ $\to$ $4.29\times10^{13}$
+by $t/t_{dyn}\approx1.8$ $\to$ $4.68\times10^{17}$ by
+$t/t_{dyn}\approx3.5$, before dropping back to $\sim10^6$--$10^8$ by
+$t/t_{dyn}\approx7$ (\code{inputs.noamort\_test:3-5},
+\code{inputs.noregrid\_test:3-5}) --- which would mean Castro's
+constrained-transport (CT) scheme was failing to keep the field
+divergence-free, a serious correctness problem for any MHD result
+downstream.
+
+\textbf{Two hypotheses, each ruled out by a dedicated, isolated run:}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.2em]
+\item \emph{Damping causing it}: \code{inputs.noamort\_test}
+  (\code{castro.add\_ext\_src=0}, otherwise identical to the production
+  inputs) --- $\max|\nabla\cdot B|$ stays at the $\sim10^{-9}$-level
+  (relative) the whole run. Damping is not the cause.
+\item \emph{AMR regridding causing it}: \code{inputs.noregrid\_test}
+  (\code{amr.regrid\_int=-1}) --- same clean result. Regridding is not
+  the cause.
+\end{itemize}
+
+\textbf{The actual cause is the diagnostic itself, not the field.}
+\code{Div\_B} is registered as a derived quantity with zero extra ghost
+cells (\code{derive\_lst.add("Div\_B", ..., ca\_derdivb, the\_same\_box)},
+\code{Source/driver/Castro\_setup.cpp:983}), but \code{ca\_derdivb}
+reads one cell beyond the box's valid region (\code{dat(i+1,j,k,0)},
+\code{dat(i,j+1,k,1)}, \code{dat(i,j,k+1,2)},
+\code{Source/driver/Derive.cpp:1237,1241,1246}) --- unlike
+\code{magvort}, correctly registered with an extra ghost-cell layer
+(\code{grow\_box\_by\_one}, \code{Castro\_setup.cpp:819}). At box and
+domain edges this reads uninitialized/stale data, which is exactly what
+produces spuriously enormous values that have nothing to do with the
+actual field.
+
+\textbf{Fix (diagnostic-side, not solver-side):} a custom tool,
+\code{finterior.cpp} (\code{castro\_problems/wd\_braithwaite/tools/}),
+masks the 2 cells nearest any box or domain boundary (\code{margin=2})
+and reports interior-only extrema; every extraction path in the app now
+reads \code{Div\_B} exclusively through it
+(\code{braithwaite\_app/core/extraction.py:60-68} --- the same
+ghost-cell gap applies to every derived variable computed this way, not
+just \code{Div\_B}, so the interior-masking discipline is applied
+uniformly). With the artifact removed, the real interior field is
+divergence-free to near machine precision: \code{divB\_interior\_max}
+across the 21 seed measurements behind \S\ref{sec:seed-study} ranges
+$5.31\times10^{-10}$--$8.51\times10^{-10}$ at $64^3$,
+$2.48\times10^{-9}$ at $128^3$ (larger at finer resolution because a
+finer grid resolves smaller-scale structure, not because the CT error
+is growing --- consistent with a numerical-precision floor, not a real
+divergence).
+
+\textbf{The lesson --- same shape as \S\ref{sec:braithwaite}'s $4\pi$
+bug:} a diagnostic computed the wrong way can look catastrophically
+wrong about the \emph{physics} while the physics itself is fine; the
+fix here was never a solver change, only reading the derived quantity
+correctly.
+
+\subsection{The background-star discretization chain: point sampling, volume averaging, half-shift geometry}
+\label{sec:discretization-chain}
+
+Even with the right EOS (\S\ref{sec:damping-eos}) and a trustworthy
+\code{Div\_B} diagnostic (\S\ref{sec:divb-artifact}), the initial
+condition itself had a real, measurable defect: the peak (central)
+density Castro reports at $t=0$ did not match the SCF-computed $\rho_c$
+used to build it.
+
+\textbf{Baseline (vertex-centered domain, point sampling): $-4.78\%$.}
+With the domain's origin on a grid \emph{vertex} (Castro's usual
+convention) and the 1D profile read at each cell's center point, $t=0$
+\code{MAXIMUM DENSITY = 952180729.1} against a target $\rho_c=10^9$ ---
+$(952180729.1-10^9)/10^9=-4.78\%$ (\code{inputs.interp3d\_test:31-32},
+\code{run\_interp3d\_test.log}).
+
+\textbf{Volume averaging, same geometry: $-4.78\%$, unchanged.}
+Switching the IC sampler from a single point-sample per cell to an
+8-subcell volume average (\code{interpolate\_3d()},
+\code{Util/model\_parser/model\_parser.H}, \code{nsub=8} default, vs.\
+the plain pointwise \code{interpolate()} at \code{nsub=1};
+\code{\_prob\_params:31-34}) does not fix this by itself --- the defect
+is not a sampling-scheme problem.
+
+\textbf{Half-shift geometry + volume averaging: $-1.16\%$, a $4\times$
+reduction.} The real defect was alignment: a vertex-centered domain
+never puts any grid point exactly at the star's center, so the
+parabolic peak of a degenerate core is always undersampled regardless
+of scheme. Shifting the domain so a cell \emph{center} sits exactly at
+$r=0$:
+\[
+\begin{aligned}
+dx &= 2\cdot\text{box\_half\_width\_cm} / n_{cell}\\
+\text{prob\_lo} &= -(n_{cell}+1)/2\cdot dx\\
+\text{prob\_hi} &= \text{prob\_lo} + n_{cell}\cdot dx
+\end{aligned}
+\]
+(\code{half\_shift\_domain()}, \code{braithwaite\_app/core/star\_builder.py:27-52};
+requires even $n_{cell}$ --- AMReX rejects odd counts with
+``\code{defBaseLevel: must have even number of cells}'', hit directly
+this session) gives $t=0$ \code{MAXIMUM DENSITY = 988393849.5},
+$-1.16\%$ (\code{halfshift\_check\_vol.log}, reproduced in
+\code{run\_halfshift\_interp3d\_test.log}). Confirmed exact:
+$n_{cell}=64$, $\text{box\_half\_width\_cm}=4.9\times10^8$ gives
+$\text{prob\_lo}=-4.9765625\times10^8$,
+$\text{prob\_hi}=4.8234375\times10^8$ --- matching the real production
+inputs character-for-character (\code{inputs.halfshift\_test:13-14})
+and covered by a committed regression test
+(\code{tests/test\_star\_builder.py:35-43}).
+
+\textbf{Confirming diagnosis: half-shift + point sampling gives exactly
+$0\%$.} With the domain shifted, a plain point-sample (\code{nsub=1})
+lands the cell center exactly on the model profile's $r=0$ grid point:
+\code{MAXIMUM DENSITY = 1000000000} to the printed digit
+(\code{halfshift\_check\_pt.log}). \textbf{Interpretation}
+(\code{inputs.pslope\_hydrotest:130-136}): alignment, not resolution or
+sampling scheme, was the dominant defect --- volume averaging alone
+recovers most of it ($-4.78\%\to-1.16\%$, still non-zero because it is
+genuinely averaging over a curved profile), while getting the geometry
+right removes the rest.
+
+The remaining $-1.16\%$ at $64^3$ (with volume averaging) is the number
+carried forward into every measurement in this section --- a resolution
+effect, not an alignment one, and small enough not to threaten the
+validity-window methodology of \S\ref{sec:validity-window}, whose
+criterion is about $\rho_c$'s \emph{drift} relative to its own $t=0$
+value, not about matching the SCF target exactly.
+
+\subsection{The gravity \texorpdfstring{$r=0$}{r=0} crash, and Castro's three core patches}
+\label{sec:gravity-patches}
+
+Running the half-shift geometry of \S\ref{sec:discretization-chain}
+under self-gravity (\code{USE\_GRAV=TRUE}) crashes on the very first
+step: \code{amrex::Abort::0::State has NaNs in the density
+component::check\_for\_nan()} inside
+\code{Castro::construct\_ctu\_mhd\_source}
+(\code{halfshift\_bisect\_pointsample.log}). Half-shift is exactly the
+geometry that puts a cell \textbf{center} at $r=0$
+(\S\ref{sec:discretization-chain}) --- and
+\code{Gravity::interpolate\_monopole\_grav} divides by $r$ with no zero
+guard:
+\begin{quote}
+\code{// Source/gravity/Gravity.cpp:1431 (before)}\\
+\code{grav(i,j,k,n) = mag\_grav * (loc[n] / r);}
+\end{quote}
+
+\textbf{Fix} --- physically exact, not a numerical patch: for any
+spherically-symmetric mass distribution, $g(r{=}0)=0$ by symmetry, so:
+\begin{quote}
+\code{if (r > 0.0\_rt) \{}\\
+\code{\quad grav(i,j,k,n) = mag\_grav * (loc[n] / r);}\\
+\code{\} else \{}\\
+\code{\quad grav(i,j,k,n) = 0.0\_rt;}\\
+\code{\}}
+\end{quote}
+
+Verified two ways: (1) the crash disappears and the run proceeds; (2) a
+dedicated diagnostic tool, \code{fline.cpp} (dumps a variable along a
+line of cells), confirms $\text{grav}_x(r{=}0)=0$ exactly, with the
+field antisymmetric and smooth on either side of the origin --- the
+expected shape, not a discontinuity papering over the fix.
+
+This is one of \textbf{three core patches} this project has needed
+against its pinned Castro build, all documented in
+\code{castro\_problems/wd\_braithwaite/CASTRO\_CORE\_PATCHES.md}:
+
+\begin{center}
+\begin{tabular}{@{}p{0.5cm}p{4.4cm}p{4.6cm}p{4.4cm}@{}}
+\toprule
+\# & File:line & Symptom & Fix\\
+\midrule
+1 & \code{Source/driver/Castro\_io.cpp} & \code{ztwd} build fails: \code{'network\_rp' has not been declared} & Missing \code{\#include <extern\_parameters.H>}; added\\
+2 & \code{Castro\_setup.cpp:983} / \code{Derive.cpp:1237,1241,1246} & \code{Div\_B} reads garbage at box/domain edges & Diagnostic-side fix --- read only through \code{finterior.cpp}'s interior mask (\S\ref{sec:divb-artifact}); the derive registration itself is unchanged\\
+3 & \code{Source/gravity/Gravity.cpp:1431} & \code{NaN} density, first step, under half-shift geometry & $r{=}0$ guard, $g(r{=}0)=0$ (above)\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Patch 3 is enforced at runtime, not just documented:
+\code{braithwaite\_app/core/star\_builder.py:150-238} defines
+\code{GravityPatchMissing} and a two-layer check --- a static grep for
+the guard string in \code{Gravity.cpp}, plus a functional check (via
+\code{fline}) that $\text{grav}_x(r{=}0)$ actually comes out $0.0$ ---
+and the app refuses to launch a star-construction run against an
+unpatched Castro build rather than silently producing a NaN crash
+later.
+
+\subsection{The well-balancing gap: why \texorpdfstring{$\rho_c$}{rho\_c} never truly settles under MHD}
+\label{sec:wellbalancing}
+
+Even after \S\ref{sec:damping-eos} (right EOS),
+\S\ref{sec:discretization-chain} (aligned geometry) and
+\S\ref{sec:gravity-patches} (no gravity crash), the background star
+still does not reach a numerically static equilibrium --- it oscillates
+or drifts under Castro's own truncation error, because hydrostatic
+balance is never exact on a finite grid without deliberately
+subtracting it out before reconstruction.
+
+Castro has exactly this mechanism, but only in its pure-hydro path:
+\begin{quote}\ttfamily\small
+\$ grep -rn "use\_pslope" Source/\\
+Source/driver/Castro\_setup.cpp:395~~~~~~~~(SDC path)\\
+Source/driver/Castro\_advance\_sdc.cpp:145~~(SDC path)\\
+Source/driver/\_cpp\_parameters:162~~~~~~~~~use\_pslope~~~bool~~~0\\
+Source/hydro/trace\_ppm.cpp:248~~~~~~~~~~~~if (castro::use\_pslope || castro::ppm\_well\_balanced)\\
+Source/hydro/Castro\_mol.cpp:66~~~~~~~~~~~~if (use\_pslope == 1)\\
+Source/hydro/trace\_plm.cpp:177~~~~~~~~~~~~if (use\_pslope == 1)\\[4pt]
+\$ grep -n "use\_pslope|well\_balanced|pslope" Source/mhd/mhd\_plm.cpp Source/mhd/mhd\_ppm.cpp\\
+(no matches)
+\end{quote}
+
+\code{use\_pslope} subtracts the discretized hydrostatic pressure
+profile before reconstruction/limiting, which is what lets a pure-hydro
+atmosphere sit still on a coarse grid. It is implemented in
+\code{trace\_plm.cpp}/\code{trace\_ppm.cpp}/\code{Castro\_mol.cpp} ---
+all pure-hydro reconstruction --- and \textbf{confirmed absent} from
+\code{Source/mhd/mhd\_plm.cpp} and \code{Source/mhd/mhd\_ppm.cpp}, the
+MHD path this project actually runs.
+
+To test whether \code{use\_pslope} would fix the drift if it \emph{were}
+available, a second, hydro-only Castro build was made
+(\code{castro/Exec/science/wd\_braithwaite\_hydro\_test/},
+\code{USE\_MHD=FALSE}, \code{USE\_GRAV=TRUE}, \code{EOS\_DIR=ztwd}),
+using the same combination already validated for exactly this purpose
+elsewhere in Castro (\code{ppm\_type=0}, \code{use\_pslope=1},
+\code{grav\_source\_type=4} --- precedent:
+\code{Exec/gravity\_tests/evrard\_collapse/inputs:23-25}, confirmed
+identical). With damping still active for the whole run
+(\code{stop\_time=4.5s}, inside
+$\text{damping\_ramp\_start\_s}\approx4.965$s), $\rho_c$ dips from
+$988393849.5$ to a minimum of $921210812.9$ around
+$t/t_{dyn}\approx7.3$, then rises back to $1022079214$ by the end of
+the run (\code{run\_pslope\_hydrotest.log}, 508 steps) --- an
+oscillation, not a clean settle, and confounded with damping still
+being on, so this is not a clean isolated measurement of
+\code{use\_pslope}'s effect by itself.
+
+\textbf{A longer test (this session, later): a pre-relaxation attempt.}
+The same \code{use\_pslope=1} + \code{grav\_source\_type=4} combination
+was run again, this time long enough to get past damping's own ramp-off
+(\code{damping\_end\_time\_in\_tdyn=20}, deliberately extended to give
+the mechanism room to prove itself one way or the other) --- star
+regenerated from scratch ($\rho_c=10^9$, $\mu_e=2.0$, git hash
+recorded, $VE=1.10\times10^{-4}$). Result: $\rho_c$ drifts smoothly and
+slowly from $-7.8\%$ to $+9.5\%$ over roughly 14 $t_{dyn}$
+($t/t_{dyn}\approx5.7$--$19$) --- dramatically better than the
+un-relaxed star's $\sim0.03\,t_{dyn}$ window (\S\ref{sec:validity-window})
+--- then, starting almost exactly at the damping ramp-off window
+($t/t_{dyn}=18$--$20$), undergoes a \textbf{monotonic, accelerating,
+non-oscillating runaway}: $+20\%$ at $t/t_{dyn}=20.2$, $+132\%$ at
+$21.8$, $+857\%$ at $23.4$, reaching $+1{,}221{,}000\%$
+($\rho_c=1.22\times10^{13}$ g/cm$^3$) by $t/t_{dyn}\approx35$, with no
+sign of turning over.
+
+\textbf{The discriminating test.} Two explanations produce the
+identical signature (stable, then runaway right after damping ends):
+(A) damping was masking a pure numerical instability, independent of
+$\rho_c$'s level --- collapse would follow \emph{any} ramp-off, even an
+early one with $\rho_c$ still near its initial value; or (B) the drift
+itself pushed $\rho_c$ toward a genuine physical threshold, and damping
+was suppressing a real collapse that only becomes inevitable once
+$\rho_c$ has climbed far enough --- ramp-off timing wouldn't matter,
+$\rho_c$ level would. A second run, identical in every other respect,
+ramped damping off at $t/t_{dyn}\approx6$ instead of $\approx20$ ---
+while $\rho_c$ was still at $-7.6\%$ (not elevated toward anything; if
+anything, below its initial value). \textbf{The same runaway began
+within $\sim1.5\,t_{dyn}$ of this early ramp-off} ($-6.0\%$ at
+$t/t_{dyn}=7.02$ $\to$ $+1.3\%$ at $7.62$ $\to$ $+79\%$ at $9.06$),
+with $\rho_c$ never having climbed beforehand. $\rho_c$'s level cannot
+be the trigger, since it hadn't moved; ramp-off timing alone correctly
+predicts the onset in both runs. \textbf{Hypothesis (A) confirmed, (B)
+ruled out.}
+
+Full series persisted
+(\code{braithwaite\_app/core/data/prerelax\_diagnostic.csv}, both runs,
+\code{cause\_status=CONFIRMED (A)}), in a file separate from
+\code{results.csv}/\code{dipole\_diagnostic.csv} for the same reason
+those are separate --- this file's own numbers needed a second run
+before the interpretation could be trusted, and that discipline is
+recorded in the data, not only in this paragraph.
+
+\textbf{An implication stronger than it first looks:} this is not just
+another confirmation that the MHD reconstruction lacks well-balancing
+--- it is evidence that \textbf{even where \code{use\_pslope} already
+exists} (the hydro build tested here), it does not genuinely stabilize
+this specific configuration (half-shift geometry, \code{MonopoleGrav},
+\code{ztwd} EOS) once damping is removed. That weakens the optimistic
+reading below --- that porting \code{use\_pslope} into
+\code{mhd\_plm.cpp}/\code{mhd\_ppm.cpp} would be ``the'' fix, merely
+out of this project's scope. If the mechanism already available on the
+hydro side doesn't resolve it, there is no evidence porting it into
+MHD would fix it alone --- the root cause may lie elsewhere (the
+mismatch between local reconstruction and the monopole gravity solve,
+already a reasonable suspect, but not isolated and tested here).
+
+\textbf{Conclusion adopted for this project:} $\rho_c$ never settles
+under any initial-condition/damping combination tried. The absence of
+well-balancing in Castro's MHD reconstruction
+(\code{braithwaite\_app/main.py:13-14}) is confirmed absent from the
+code (the \code{grep} above) and is certainly \emph{a} contributing
+factor, but the pre-relaxation result above shows it is not obviously
+\emph{the} whole story: the hydro-side mechanism that would need
+porting doesn't fully stabilize this configuration either. Porting
+\code{use\_pslope} (or an equivalent) into
+\code{mhd\_plm.cpp}/\code{mhd\_ppm.cpp} would in any case require
+modifying Castro's MHD solver core --- explicitly out of scope for this
+project (a decision made and confirmed with the collaborator, not a
+default) --- and, per the finding above, is no longer assumed to be a
+guaranteed fix even if it were in scope. \S\ref{sec:validity-window} is
+the methodology adopted instead of chasing a fix that lives outside
+this project's boundary and is no longer certain to work.
+
+\subsection{Measuring inside a validity window, instead of chasing a stable star}
+\label{sec:validity-window}
+
+\S\ref{sec:wellbalancing} makes ``wait for the star to stabilize'' an
+unreachable goal with the current Castro build. The methodology adopted
+instead: measure the field's own diagnostics ($E_{tor}/E_{mag}$) inside
+a time interval where (a) the field has already relaxed past its own
+initial transient, and (b) the star's structural drift has not yet
+contaminated the measurement --- rather than waiting for either to
+fully settle.
+
+\code{find\_measurement\_window(rho\_c\_series, rho\_c\_ic,
+t\_field\_relax\_ttdyn=0.4, rho\_c\_thresholds=(0.01, 0.02))}
+(\code{braithwaite\_app/core/star\_builder.py:75-144}):
+
+\begin{itemize}[leftmargin=1.4em,itemsep=0.3em]
+\item \textbf{Lower bound, \code{t\_field\_relax\_ttdyn} (default
+  $0.4$).} The field's own $E_{tor}/E_{mag}$ reaches its quasi-steady
+  band by $t/t_{dyn}\approx0.4$--$1.1$ --- validated specifically for
+  $E_{mag}/|W|=0.15$ (the value used throughout \S\ref{sec:seed-study}).
+  The function's docstring is explicit that this is \textbf{not a
+  universal constant} and does not silently assume $0.4$ generalizes to
+  other field strengths.
+\item \textbf{Upper bound, $X$.} The first $\rho_c$ sample that leaves a
+  $\pm$threshold band around its own $t=0$ value --- the \emph{first
+  out-of-band} sample, not the \emph{last in-band} one (an earlier
+  version of this function returned the wrong one of the two, giving
+  $X_{1\%}=0.539$ instead of the correct $0.573$; fixed to match the
+  convention used throughout this investigation, caught by a regression
+  test against a real log). Two thresholds are tracked: $1\%$
+  ($X_{1\%}$) and $2\%$ ($X_{2\%}$, the wider, operationally-used
+  boundary).
+\item \textbf{The window is the interval
+  $[t_{\text{field relax}},X_{2\%}]$}, not $[0,X_{2\%}]$ --- the
+  field's own relaxation transient at the start is excluded on purpose.
+  If $X_{2\%}\le t_{\text{field relax}}$, there is \textbf{no valid
+  window at all}, and the function returns \code{valid=False} with a
+  reason --- it never silently reports ``valid until X'' when X falls
+  inside the field's own relaxation transient.
+\end{itemize}
+
+Real regression numbers, against an actual field-free evolution log
+($t_{dyn}=0.2758062098$s, $\rho_{c,ic}=988393849.5$,
+\code{run\_halfshift\_interp3d\_test.log};
+\code{tests/test\_star\_builder.py:66-79}): $X_{1\%}\approx0.573$,
+$X_{2\%}\approx1.128$, window $=[0.4,1.128]$ $t/t_{dyn}$, valid.
+(\code{parse\_rho\_c\_log} reads Castro's raw \code{TIME=...\ MAXIMUM
+DENSITY=...} output directly --- density is immune to the
+\code{Div\_B}-style ghost-cell gap of \S\ref{sec:divb-artifact}, so no
+interior masking is needed for this particular series.)
+
+\textbf{Independent check that the window boundary is meaningful, not
+just a convenient cutoff:} plotting $E_{tor}/E_{mag}$ against $\rho_c$
+itself (not against time) --- an ad hoc diagnostic developed during
+this investigation, not a committed script --- shows the two are
+essentially decoupled inside the window (weak/mixed correlation) and
+become strongly correlated ($r\approx0.96$--$1.00$) with $\rho_c$ once
+past it. That transition is the direct signature of
+\S\ref{sec:wellbalancing}'s drift: once the star starts moving, the
+field's ratio gets kinematically slaved to the collapsing structure
+rather than reflecting independent field dynamics --- exactly what a
+valid measurement window is supposed to exclude.
+
+A second background star at $128^3$ (field-free, same construction) was
+checked over a longer baseline than the default window and stayed
+inside the $1\%$ band for the \textbf{entire} tested range,
+$t/t_{dyn}=0.4$--$1.45$ --- never left even the tighter threshold,
+evidence that the window is genuinely conservative at higher
+resolution, not a coincidence of the $64^3$ case.
+
+\subsection{The seed study: \texorpdfstring{$Bt/Bp$}{Bt/Bp} is poloidal-dominated and seed-specific}
+\label{sec:seed-study}
+
+With \S\ref{sec:validity-window}'s methodology in hand, two independent
+batches of $n=10$ random seeds (different seed sets, $64^3$, same
+background star, $\rho_c\approx9.88\times10^8$, $\mu_e=2.0$,
+$E_{mag}/|W|_{\text{target}}=0.15$) were relaxed and measured inside
+their validity window, plus one $128^3$ reproduction of a single seed
+as a resolution cross-check. Data:
+\code{braithwaite\_app/core/data/results.csv}.
+
+\begin{center}
+\begin{tabular}{@{}p{2.6cm}p{6.0cm}p{1.2cm}p{3.0cm}@{}}
+\toprule
+Batch & Seeds & $n$ & $E_{tor}/E_{mag}$ range\\
+\midrule
+A & 42, 7, 123, 2024, 55, 99, 314, 777, 1001, 8080 & 10 & $0.3166$--$0.3697$\\
+B & 1--10 & 10 & $0.2761$--$0.4023$\\
+$128^3$ reproduction & 42 & 1 & $0.3048$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{All 21 measurements are poloidal-dominated}
+($E_{tor}/E_{mag}<0.5$, the threshold used throughout,
+\code{ui/aggregate\_view.py:18}) --- no exceptions, in either batch or
+at either resolution. Combined band across all 21: $[0.2761,0.4023]$.
+Measurement times fall inside the validity window established in
+\S\ref{sec:validity-window} (\code{t\_ttdyn\_measured} in
+$0.787$--$1.128$).
+
+\textbf{The spread is seed-specific, not oscillation phase.}
+Re-running seeds against a baseline four times longer than the
+measurement window preserves each seed's rank-ordering relative to the
+others --- if the spread were just different seeds being sampled at
+different phases of one common oscillation, extending the baseline
+would scramble that ordering; it does not. This is why the aggregate
+view (\S\ref{sec:desktop-app}) plots the ranked scatter of individual
+seeds and never collapses them into a mean $\pm$ error bar --- the
+per-seed spread \textbf{is} the result, not noise to be averaged away.
+
+\begin{notebox}{Helicity, tested and rejected as an explanation for the spread}
+A candidate explanation --- that the seed-to-seed spread correlates
+with the initial random field's net helicity --- was tested by
+correlating each seed's measured $E_{tor}/E_{mag}$ against its
+(computable, since the seed RNG state is recorded) initial helicity. At
+$n=4$ this gave a suggestively strong correlation ($r\approx-0.84$);
+extending to the full $n=10$ batch killed it ($r\approx-0.33$, unstable
+under leave-one-out). This analysis was done ad hoc during this
+investigation and is not backed by a committed script or file in the
+repository --- it is recorded here, as a negative result, specifically
+so it is not silently rediscovered or, worse, mistakenly reintroduced
+as an explanation in a future write-up. \textbf{Helicity does not
+explain the spread; the cause of the seed-specific $Bt/Bp$ value
+remains an open question} (\S\ref{sec:aberto}).
+\end{notebox}
+
+\subsection{The Braithwaite desktop app, replacing the disabled Streamlit ``Tab 5''}
+\label{sec:desktop-app}
+
+The dashboard's Streamlit ``Tab 5'' (referenced in earlier drafts of
+\S\ref{sec:braithwaite}) was never brought to a working state --- a
+stale, effectively hardcoded-disabled skeleton. It has been replaced by
+a standalone PyQt6 desktop application, \code{braithwaite\_app/}
+(launched via \code{./braithwaite}, which runs
+\code{scf/.venv/bin/python3 braithwaite\_app/main.py}). The physics
+still lives entirely in Castro and the existing
+\code{scf/}/\code{dashboard/} code (R1 is unchanged) --- the app wraps
+and orchestrates it, it does not reimplement it
+(\code{core/scf\_store.py} calls \code{scf.hachisu\_scf},
+\code{store}, \code{castro\_model\_writer}, \code{diagnostics}
+directly).
+
+\textbf{Non-negotiable architecture rule: the app must never block
+waiting on Castro.} Every Castro invocation is a detached subprocess
+(\code{subprocess.Popen(..., start\_new\_session=True,
+stdin=subprocess.DEVNULL)}); the UI polls logs and plotfiles on a
+\code{QTimer}, never blocks on process completion. Verified with two
+live tests that hold a subprocess alive and interact with a widget in
+the same wall-clock window (sub-millisecond response), not just
+asserted by code inspection.
+
+\textbf{Two-step physics flow, matching \S\ref{sec:validity-window}'s
+methodology directly:}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.3em]
+\item \textbf{Passo A --- background star.} Builds the deterministic IC
+  (cacheable by $(\rho_c,\mu_e,\text{resolution})$ --- \S\ref{sec:rho-c-gate}'s
+  neutronization gate and the VE gate both run before any Castro
+  process launches, same gates as Tab 1), verifies the gravity patch of
+  \S\ref{sec:gravity-patches} is present (refuses to launch otherwise),
+  launches a short field-free evolution just far enough to evaluate
+  \code{find\_measurement\_window()} (\S\ref{sec:validity-window}), and
+  reports the \textbf{validity window} as the step's result --- never a
+  ``stabilized: yes/no'' boolean, since \S\ref{sec:wellbalancing}
+  established that question has no reachable ``yes.''
+\item \textbf{Passo B --- run study.} Disabled until Passo A has
+  produced a valid window. Launches $N$ seeded field-relaxation runs
+  (same $E_{mag}/|W|$ target or a distributed range across seeds), each
+  measured inside the window from Passo A.
+\end{itemize}
+
+\textbf{Determinism check:} re-running seed 42 reproduces a
+bit-identical $\rho_c(t)$ series against the original run --- a
+stronger check than matching $E_{tor}/E_{mag}$ alone, since it verifies
+the entire IC/RNG/build pipeline, not just the final diagnostic.
+
+\textbf{Persistence} goes into the same protected, versioned store as
+every other number in this document (\code{core/persistence.py},
+\code{STAR\_CACHE\_SCHEMA\_VERSION}, same schema-mismatch-is-a-cache-miss
+pattern as \code{store.SCHEMA\_VERSION}, \S\ref{sec:aba4}) --- not a
+separate, disposable file.
+
+\textbf{UI choices driven directly by findings elsewhere in this
+document:} the aggregate view (\code{ui/aggregate\_view.py}) plots a
+ranked scatter per seed and never a mean $\pm$ error bar, per
+\S\ref{sec:seed-study}'s rank-ordering result; the background-star
+screen exposes only $\rho_c$ and $\mu_e$ as physical inputs, with an
+explanatory note in the UI itself, because --- field-free and
+non-rotating by construction (the field is seeded and relaxed
+\emph{after} this step, never imposed as part of an SCF equilibrium)
+and under the temperature-independent \code{ztwd} EOS (\S\ref{sec:eos})
+--- those two are the star's only physical degrees of freedom
+(\S\ref{sec:rho-c-gate}); and $\rho_c$ is entered via a
+scientific-notation spin box (\code{ui/widgets.py ::
+ScientificDoubleSpinBox}) rather than Qt's default fixed-point display,
+because verifying a value like \code{1000000000.000} digit-by-digit is
+exactly the kind of thing that hides a stray or missing zero until the
+wrong star gets built.
+
 \section{Known limitations}
 \label{sec:limitacoes}
 
@@ -1749,10 +2330,25 @@ $l_{max}=16$ configuration unless otherwise noted:
   attribute. This is left as the responsibility of Castro's
   \code{problem\_initialize.H} (not yet written).
 \item \textbf{Phase 0 of the plan (building Castro with
-  \code{USE\_MHD=TRUE}) is pending} --- system dependencies
-  (\code{gfortran}, \code{libhdf5-openmpi-dev}, \code{libopenmpi-dev})
-  have not yet been installed in this environment. Nothing in Tab 3 has
-  been tested against a real Castro build.
+  \code{USE\_MHD=TRUE}) was pending} --- \textbf{done}: Phase 0 is
+  verified against Castro's own CI recipe for the Orszag-Tang MHD test
+  (\S\ref{sec:braithwaite}), and every result in
+  \S\ref{sec:braithwaite}--\S\ref{sec:seed-study} comes from a real
+  Castro build and real runs.
+\item \textbf{Castro's background star does not reach a numerically
+  static equilibrium under MHD} (\S\ref{sec:wellbalancing}) --- a
+  well-balancing gap in Castro's MHD reconstruction path
+  (\code{mhd\_plm.cpp}/\code{mhd\_ppm.cpp}), not something this
+  project's own IC/damping choices can fix. A hydro-side pre-relaxation
+  attempt with the equivalent mechanism available
+  (\code{use\_pslope=1} + \code{grav\_source\_type=4}) does not fix it
+  either --- confirmed (not merely suspected) by a discriminating test:
+  the star is only quiet as long as a velocity damping term is active,
+  and collapses within $\sim1.5\,t_{dyn}$ of that damping being removed
+  regardless of $\rho_c$'s level at that moment (\S\ref{sec:wellbalancing}).
+  Measurements use the validity-window methodology of
+  \S\ref{sec:validity-window} instead of waiting for a stabilization
+  this Castro build cannot reach.
 \item \textbf{Rigid rotation (V-R1) does not validate against the
   literature ($\sim1.5\,M_\odot$)} --- the $\Omega_c$-controlled sequence
   terminates numerically at $R_{pol}/R_{eq}\approx0.93$ with mass-loss
@@ -1856,6 +2452,36 @@ initiative (rule G1):
   since that result never depended on $K\ge4\times10^{-3}$. Would need
   comparing full $\rho(r,\theta)$ profiles across mesh sizes (not just
   scalars) to tell the two hypotheses apart; not done here.
+\item \textbf{The exact damping-off collapse rate cited in
+  \S\ref{sec:damping-eos} ($+40\%$ by $t=0.021$s, 69 steps)} is
+  documented only in a run's own input-file header comment --- the raw
+  log behind it was overwritten by later reuse of the same filename and
+  could not be independently re-derived from a surviving artifact.
+\item \textbf{\code{use\_pslope} was only tested confounded with
+  damping} --- \textbf{resolved}: a clean isolated test (early damping
+  ramp-off, $t/t_{dyn}\approx6$, $\rho_c$ still near its IC value) was
+  run and confirms the hydro-side \code{use\_pslope=1}+
+  \code{grav\_source\_type=4} combination does \emph{not} stabilize the
+  star once damping is removed --- the earlier oscillatory result was
+  damping suppressing the same instability, not \code{use\_pslope}
+  partially working (\S\ref{sec:wellbalancing}).
+\item \textbf{The cause of the seed-specific $Bt/Bp$ spread}
+  (\S\ref{sec:seed-study}) remains unidentified --- helicity was tested
+  and rejected as an explanation; no replacement hypothesis has been
+  tested yet.
+\item \textbf{The actual root cause of the discretization-force
+  instability is still not isolated} (\S\ref{sec:wellbalancing}) ---
+  confirmed to be independent of $\rho_c$'s drift level (the
+  early-ramp-off test rules that out) and to persist even where
+  \code{use\_pslope}+\code{grav\_source\_type=4} are both active (hydro
+  build), so it is not simply ``MHD lacks well-balancing.'' The
+  mismatch between local PLM/PPM reconstruction and the global monopole
+  gravity solve is a reasonable next suspect (flagged in
+  \S\ref{sec:wellbalancing}) but has not been isolated or tested
+  directly --- porting well-balancing into
+  \code{mhd\_plm.cpp}/\code{mhd\_ppm.cpp} (out of scope for this
+  project regardless, per \S\ref{sec:wellbalancing}) is no longer
+  assumed to be a guaranteed fix even if it were pursued.
 \end{enumerate}
 
 \section{References}

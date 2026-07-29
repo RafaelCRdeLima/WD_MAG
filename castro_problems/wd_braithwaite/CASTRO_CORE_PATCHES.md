@@ -72,3 +72,61 @@ never raw `fextrema`, when using it as a correctness check.
 See `docs/teoria.md` Sec 6.6 for the full investigation (including how
 this was distinguished from the global-damping and AMR-regrid
 hypotheses that were tested and ruled out along the way).
+
+## `Gravity::interpolate_monopole_grav` -- division by zero at r=0
+
+**Symptom:** a run using a domain deliberately shifted by half a cell
+(so that a cell *center*, not a cell *vertex*, coincides with the
+star's center -- see docs/teoria.md Sec 6.7 on the vertex-vs-center IC
+sampling deficit) aborted on the very first step with `State has NaNs
+in the density component`, inside `Castro::construct_ctu_mhd_source`.
+Bisected first (`problem.nsub=1`, i.e. reverting to plain pointwise
+sampling, on the same shifted domain): identical crash, same step --
+this ruled out `interpolate_3d`/volume-averaging and isolated the bug
+to the shifted domain itself, before any source reading was done.
+
+**Root cause, confirmed by reading `Source/gravity/Gravity.cpp:1431`**
+(`Gravity::interpolate_monopole_grav`): the scalar radial gravity
+magnitude `mag_grav` is projected onto Cartesian components via
+`grav(i,j,k,n) = mag_grav * (loc[n] / r)`, with no guard for `r == 0`.
+On every ordinary Castro setup the star's center sits on a cell
+*vertex* (shared by up to 8 cells), so no cell center is ever exactly
+at `r=0` and this is unreachable. The half-shifted domain puts one
+cell center exactly at `problem::center` by construction, giving
+`loc[n]/r = 0/0 = NaN` for that one cell -- which then poisons gravity,
+then the state, on the first source application.
+
+**Fix applied** (`Source/gravity/Gravity.cpp`, in
+`interpolate_monopole_grav`, replacing the unconditional
+`grav(i,j,k,n) = mag_grav * (loc[n] / r);`):
+
+```cpp
+if (r > 0.0_rt) {
+    for (int n = 0; n < AMREX_SPACEDIM; ++n) {
+        grav(i,j,k,n) = mag_grav * (loc[n] / r);
+    }
+} else {
+    for (int n = 0; n < AMREX_SPACEDIM; ++n) {
+        grav(i,j,k,n) = 0.0_rt;
+    }
+}
+```
+
+This is not a workaround but the correct physics: `g(r=0)=0` exactly
+for any spherically symmetric mass distribution (zero net force at the
+center by symmetry) -- the guard completes the limit the interpolator
+should already take, rather than avoiding the singular point by an
+arbitrary small offset (which was considered and rejected: it doesn't
+remove the singularity, it moves the sampled cell onto its steep
+flank, replacing a loud NaN with a silent, offset-magnitude-dependent
+spurious force at the density peak -- worse, not better).
+
+**Verified** with a static (`max_step=0`) check on the shifted domain
+plus a custom diagnostic tool, `tools/fline.cpp` (mirrored here, build
+with `cd external/amrex/Tools/Plotfile && make programs=fline`, dumps
+a variable along a line of cells): `grav_x` along the line through the
+center cell is exactly zero at `r=0` and antisymmetric, smooth, and
+physically sane (pointing inward, growing with distance) in every
+neighboring cell -- no artifact introduced by the patch itself.
+
+See `docs/teoria.md` Sec 6.8 for the full investigation.
