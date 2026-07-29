@@ -354,56 +354,100 @@ def fig_slices():
     plt.close(fig)
 
 
-def fig_isosurfaces():
-    from matplotlib.colors import LightSource
-    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+def _lines(d, key):
+    """The cached ragged polylines for one field, in units of 1e8 cm."""
+    xyz = np.asarray(d[f"line_{key}_xyz"]) / 1e8
+    mag = np.asarray(d[f"line_{key}_mag"])
+    off = np.asarray(d[f"line_{key}_off"])
+    return [(xyz[off[i]:off[i + 1]], mag[off[i]:off[i + 1]])
+            for i in range(len(off) - 1)]
+
+
+def fig_fieldlines():
+    from matplotlib.colors import LinearSegmentedColormap, LogNorm
+    from mpl_toolkits.mplot3d.art3d import Line3DCollection
 
     d, meta = _load3d()
     if d is None:
         return
 
-    star = np.asarray(d["tri_star"]) / 1e8
-    lim = 1.02 * np.abs(star).max()
-    ls = LightSource(azdeg=225, altdeg=40)
+    cmap = LinearSegmentedColormap.from_list(
+        "b", ["#cde2fb", "#9ec5f4", "#5598e7", "#256abf", "#184f95",
+              "#0d366b"])
 
-    fig, axes = plt.subplots(1, 3, figsize=(WIDE_IN, WIDE_IN * 0.34),
+    # One color range across the panels: the panels follow three
+    # different fields but the quantity is the same, so a per-panel
+    # autoscale would hide that the toroidal part is the weaker one.
+    all_mag = np.concatenate([np.asarray(d[f"line_{k}_mag"])
+                              for k, _ in PANELS])
+    vmax = float(np.percentile(all_mag, 99.5))
+    norm = LogNorm(vmin=vmax / 60.0, vmax=vmax)
+
+    r_star = meta["r_star_cm"] / 1e8
+    lim = 1.05 * r_star
+
+    fig, axes = plt.subplots(1, 3, figsize=(WIDE_IN, WIDE_IN * 0.36),
                              subplot_kw=dict(projection="3d"))
-    fig.subplots_adjust(left=0.01, right=0.99, bottom=0.02, top=0.97,
-                        wspace=0.02)
+    fig.subplots_adjust(left=0.005, right=0.955, bottom=0.0, top=0.99,
+                        wspace=0.0)
+
+    # A faint wireframe at the stellar surface, for scale.
+    u = np.linspace(0, 2 * np.pi, 37)
+    v = np.linspace(0, np.pi, 19)
+    sx = r_star * np.outer(np.cos(u), np.sin(v))
+    sy = r_star * np.outer(np.sin(u), np.sin(v))
+    sz = r_star * np.outer(np.ones_like(u), np.cos(v))
+
     for ax, (key, title) in zip(axes, PANELS):
-        tri = np.asarray(d[f"tri_{key}"]) / 1e8
+        ax.plot_wireframe(sx, sy, sz, rstride=6, cstride=6,
+                          color=C_GRID, linewidth=0.25, zorder=1)
 
-        ax.add_collection3d(Poly3DCollection(
-            star, facecolor="#d9d7cc", edgecolor="none", alpha=0.13,
-            zorder=1))
-        ax.add_collection3d(Poly3DCollection(
-            tri, facecolors="#2a78d6", linewidths=0, alpha=0.92,
-            shade=True, lightsource=ls, zorder=2))
+        for xyz, mag in _lines(d, key):
+            segs = np.stack([xyz[:-1], xyz[1:]], axis=1)
+            lc = Line3DCollection(
+                segs, cmap=cmap, norm=norm, linewidths=0.85,
+                capstyle="round", zorder=3)
+            lc.set_array(0.5 * (mag[:-1] + mag[1:]))
+            ax.add_collection3d(lc)
 
-        ax.set_title(title, fontsize=8, pad=-2)
+            # Direction: a few arrowheads per line, tangent to it.
+            n = len(xyz)
+            for frac in (0.3, 0.62, 0.9):
+                i = int(frac * (n - 2))
+                p, t = xyz[i], xyz[i + 1] - xyz[i]
+                if np.linalg.norm(t) == 0:
+                    continue
+                t = t / np.linalg.norm(t)
+                ax.quiver(*p, *t, length=0.30 * r_star, normalize=True,
+                          arrow_length_ratio=0.55, linewidth=0.7,
+                          color=cmap(norm(mag[i])), zorder=4)
+
+        ax.set_title(title, fontsize=8, pad=-4)
         ax.set_xlim(-lim, lim)
         ax.set_ylim(-lim, lim)
         ax.set_zlim(-lim, lim)
         ax.set_box_aspect((1, 1, 1))
         ax.view_init(elev=18, azim=-56)
-        ax.tick_params(labelsize=5.5, pad=-3)
+        ax.tick_params(labelsize=5.5, pad=-3.5)
         for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
             axis.pane.set_facecolor("white")
             axis.pane.set_edgecolor(C_GRID)
             axis.line.set_color(C_MUTED)
             axis._axinfo["grid"]["color"] = C_GRID
             axis._axinfo["grid"]["linewidth"] = 0.3
-        ax.set_xticks([-2, 0, 2])
-        ax.set_yticks([-2, 0, 2])
-        ax.set_zticks([-2, 0, 2])
+            axis.set_ticks([-2, 0, 2])
     axes[0].set_xlabel(r"$x$ ($10^8$ cm)", fontsize=6.5, labelpad=-8)
     axes[0].set_ylabel(r"$y$", fontsize=6.5, labelpad=-8)
     axes[0].set_zlabel(r"$z$", fontsize=6.5, labelpad=-8)
 
-    print(f"  isosurface level {meta['iso_gauss']:.3e} G "
-          f"(quote this in the caption)")
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    cb = fig.colorbar(sm, ax=axes, fraction=0.016, pad=0.0, aspect=26)
+    cb.set_label("field strength along the line (G)", fontsize=7,
+                 labelpad=2)
+    cb.outline.set_linewidth(0.5)
+    cb.ax.tick_params(labelsize=6.5, width=0.5, length=2, pad=1.5)
 
-    fig.savefig(HERE / "isosurfaces.pdf")
+    fig.savefig(HERE / "fieldlines.pdf")
     plt.close(fig)
 
 
@@ -412,5 +456,5 @@ if __name__ == "__main__":
     fig_relaxation()
     fig_paired()
     fig_slices()
-    fig_isosurfaces()
+    fig_fieldlines()
     print("wrote", *(p.name for p in sorted(HERE.glob("*.pdf"))))

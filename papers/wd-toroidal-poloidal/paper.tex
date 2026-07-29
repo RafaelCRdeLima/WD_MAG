@@ -488,7 +488,7 @@ not.}
 \label{sec:structure}
 
 The diagnostics above are volume integrals. Figures~\ref{fig:slices}
-and~\ref{fig:iso} show what the field they integrate over actually looks
+and~\ref{fig:lines} show what the field they integrate over actually looks
 like, for seed 20 at $t/t_{\mathrm{dyn}} = 0.83$ -- a plotfile inside the
 validity window, from the realization whose toroidal fraction ($0.338$)
 is the closest in the batch to the ensemble mean, so the figure is
@@ -521,35 +521,48 @@ vanishes on the axis, where $\varpi \to 0$.}
 \label{fig:slices}
 \end{figure*}
 
-Figure~\ref{fig:iso} makes the comparison quantitative in three
-dimensions, by drawing the isosurface of each field at one common level,
-$5.96\times10^{12}$\,G, so that the enclosed volumes can be compared
-directly. That level is the $90$th percentile of $|\mathbf{B}|$ inside
-the star, so the total field exceeds it in $10.0\%$ of the stellar volume
-by construction; the poloidal part exceeds it in $5.9\%$ and the toroidal
-part in $2.1\%$, a volume ratio of $2.8$. The difference in topology is
-as clear as the difference in volume: the strong-poloidal region is one
-connected structure spanning much of the star, while the strong-toroidal
-region is a handful of disconnected fragments.
+Figure~\ref{fig:lines} follows the field lines themselves, integrated
+through each of the three fields from a common set of starting points, so
+that the panels differ only by which field is being followed. The
+connectivity is what the slices cannot show. Lines of the total field are
+tangled, reversing direction on scales well short of the stellar radius
+and filling the volume without organizing into anything larger -- the
+signature of a multi-scale seed that the accessible baseline has not had
+time to rearrange. Lines of the poloidal part are tangled in the same
+way, in meridional loops. Lines of the toroidal part, by contrast, are
+closed circles about the $z$ axis, and necessarily so: with
+$\mathbf{B}_{\mathrm{t}} = B_\varphi\,\hat{\mathbf{e}}_\varphi$ by
+construction, its field lines can only be circles. That panel is
+therefore not evidence of an organized toroidal structure -- what it
+carries is where the toroidal component is strong, and in which sense it
+circulates, not a topology the relaxation produced.
 
-One caveat on reading these panels, which the integrated numbers hide.
-Poloidal dominance is a statement about volume-integrated energy, not a
-pointwise one: the median $|B_{\mathrm{p}}|/|B_{\mathrm{t}}|$ inside the
-star is $1.65$, but $|B_{\mathrm{t}}|$ exceeds $|B_{\mathrm{p}}|$ in
-$32\%$ of the stellar volume. The field is locally toroidal-dominated
-over a third of the star while remaining poloidal-dominated overall.
+Two numbers put the visual impression on a scale. Taking the $90$th
+percentile of $|\mathbf{B}|$ inside the star, $5.96\times10^{12}$\,G, as
+a common reference level, the total field exceeds it in $10.0\%$ of the
+stellar volume by construction, while the poloidal part exceeds it in
+$5.9\%$ and the toroidal part in $2.1\%$ -- a volume ratio of $2.8$
+between the two components at the same field strength.
+
+And one caveat that the integrated numbers hide. Poloidal dominance is a
+statement about volume-integrated energy, not a pointwise one: the median
+$|B_{\mathrm{p}}|/|B_{\mathrm{t}}|$ inside the star is $1.65$, but
+$|B_{\mathrm{t}}|$ exceeds $|B_{\mathrm{p}}|$ in $32\%$ of the stellar
+volume. The field is locally toroidal-dominated over a third of the star
+while remaining poloidal-dominated overall.
 
 \begin{figure*}
 \centering
-\includegraphics[width=\textwidth]{figures/isosurfaces.pdf}
-\caption{Isosurfaces of the same three fields as
-Fig.~\ref{fig:slices}, all at the same level,
-$5.96\times10^{12}$\,G (the $90$th percentile of $|\mathbf{B}|$ inside
-the star), so that the enclosed volumes are directly comparable. The
-translucent envelope is the stellar surface. The strong-poloidal region
-is a single connected structure; the strong-toroidal region is
-fragmented.}
-\label{fig:iso}
+\includegraphics[width=\textwidth]{figures/fieldlines.pdf}
+\caption{Field lines of the same three fields as Fig.~\ref{fig:slices},
+traced from a common set of starting points in the strong-field region,
+colored by the local field strength on a shared scale, with arrowheads
+giving the direction. The faint wireframe is the stellar surface. Lines
+of the total and poloidal fields are tangled on scales short of the
+stellar radius; lines of the toroidal component are closed circles about
+the $z$ axis by construction, so that panel shows where the toroidal
+field is strong rather than a structure the relaxation selected.}
+\label{fig:lines}
 \end{figure*}
 
 \begin{acknowledgements}
