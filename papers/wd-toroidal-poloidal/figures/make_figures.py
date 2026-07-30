@@ -489,10 +489,114 @@ def fig_fieldlines():
     plt.close(fig)
 
 
+# ----------------------------------------------------------------------
+# Fig. 6 -- each component in the plane where it actually lives
+# ----------------------------------------------------------------------
+
+def fig_components():
+    from matplotlib.colors import LinearSegmentedColormap, LogNorm, TwoSlopeNorm
+
+    d, meta = _load3d()
+    if d is None or "eq_Bt_signed" not in d:
+        print("skipping components figure: re-run extract_fields.py")
+        return
+
+    rho_floor = meta["rho_peak"] * meta["rho_floor_frac"]
+
+    # Equatorial slice: yt returns a z-normal slice as [y, x], so no
+    # transpose (verified by rebuilding B_phi from sliced B_x, B_y).
+    bt = np.asarray(d["eq_Bt_signed"]) / 1e13
+    rho_eq = np.asarray(d["eq_density"])
+    ext_eq = np.asarray(d["eq_extent_cm"]) / 1e8
+
+    # Meridional slice: y-normal comes back as [x, z], so transpose to put
+    # z on the vertical.
+    bx = np.asarray(d["mer_B_x"]).T
+    bz = np.asarray(d["mer_B_z"]).T
+    bp = np.asarray(d["slice_Bp"]).T
+    rho_mer = np.asarray(d["slice_density"]).T
+    ext = np.asarray(d["extent_cm"]) / 1e8
+
+    fig, (axe, axm) = plt.subplots(1, 2, figsize=(WIDE_IN * 0.78,
+                                                  WIDE_IN * 0.36),
+                                   gridspec_kw=dict(wspace=0.42))
+
+    # --- (a) B_phi in the equatorial plane, signed -----------------------
+    # Diverging: two hues with a neutral midpoint, symmetric limits, so the
+    # zero contour reads as zero and the two senses of circulation are
+    # equally weighted.
+    div = LinearSegmentedColormap.from_list(
+        "div", ["#0d366b", "#2a78d6", "#9ec5f4", "#efeee9", "#f6b79b",
+                "#eb6834", "#8c3210"])
+    vlim = float(np.percentile(np.abs(bt[rho_eq > rho_floor]), 99))
+    im = axe.imshow(np.ma.masked_where(rho_eq <= rho_floor, bt),
+                    origin="lower", extent=ext_eq, cmap=div,
+                    norm=TwoSlopeNorm(vmin=-vlim, vcenter=0.0, vmax=vlim),
+                    interpolation="bilinear", rasterized=True, zorder=1)
+    gx = np.linspace(ext_eq[0], ext_eq[1], bt.shape[1])
+    gy = np.linspace(ext_eq[2], ext_eq[3], bt.shape[0])
+    # Zero contour only where there is a star: outside, B_phi is the
+    # numerical floor and its sign changes are noise, which would draw a
+    # maze over the whole panel.
+    inside_eq = rho_eq > rho_floor
+    axe.contour(gx, gy, np.ma.masked_where(~inside_eq, bt), levels=[0.0],
+                colors="#0b0b0b", linewidths=0.35, alpha=0.55, zorder=2)
+    axe.contour(gx, gy, (rho_eq > rho_floor).astype(float), levels=[0.5],
+                colors="#0b0b0b", linewidths=0.7, zorder=3)
+    axe.set_title(r"(a) $B_\varphi$ in the equatorial plane", fontsize=7.5,
+                  pad=3)
+    axe.set_xlabel(r"$x$  ($10^8$ cm)", labelpad=1.5)
+    axe.set_ylabel(r"$y$  ($10^8$ cm)", labelpad=1.0)
+    cb = fig.colorbar(im, ax=axe, fraction=0.046, pad=0.02)
+    cb.set_label(r"$B_\varphi$  ($10^{13}$ G)", fontsize=7)
+    cb.outline.set_linewidth(0.5)
+    cb.ax.tick_params(labelsize=6, width=0.5, length=2, pad=1.5)
+
+    # --- (b) B_p in the meridional plane, as streamlines -----------------
+    cmap = LinearSegmentedColormap.from_list(
+        "b", ["#f4f8fe", "#cde2fb", "#9ec5f4", "#5598e7", "#256abf",
+              "#184f95", "#0d366b"])
+    inside = rho_mer > rho_floor
+    vmax = float(np.percentile(bp[inside], 99))
+    im2 = axm.imshow(np.ma.masked_where(~inside | (bp <= 0.0), bp),
+                     origin="lower",
+                     extent=ext, cmap=cmap,
+                     norm=LogNorm(vmin=vmax / 3e2, vmax=vmax),
+                     interpolation="bilinear", rasterized=True, zorder=1)
+    mx = np.linspace(ext[0], ext[1], bp.shape[1])
+    mz = np.linspace(ext[2], ext[3], bp.shape[0])
+    # Same reason: streamlines through the vacuum are streamlines of the
+    # floor, and they swamp the structure that is actually there.
+    bx_in = np.where(inside, bx, np.nan)
+    bz_in = np.where(inside, bz, np.nan)
+    axm.streamplot(mx, mz, bx_in, bz_in, color="#0b0b0b", linewidth=0.4,
+                   density=1.7, arrowsize=0.55, zorder=3)
+    axm.contour(mx, mz, inside.astype(float), levels=[0.5],
+                colors="#0b0b0b", linewidths=0.7, zorder=4)
+    axm.set_title(r"(b) $\mathbf{B}_{\rm p}$ in the meridional plane",
+                  fontsize=7.5, pad=3)
+    axm.set_xlabel(r"$x$  ($10^8$ cm)", labelpad=1.5)
+    axm.set_ylabel(r"$z$  ($10^8$ cm)", labelpad=1.0)
+    cb2 = fig.colorbar(im2, ax=axm, fraction=0.046, pad=0.02)
+    cb2.set_label(r"$|\mathbf{B}_{\rm p}|$  (G)", fontsize=7)
+    cb2.outline.set_linewidth(0.5)
+    cb2.ax.tick_params(labelsize=6, width=0.5, length=2, pad=1.5)
+
+    for ax in (axe, axm):
+        ax.set_aspect("equal")
+        ax.tick_params(labelsize=6.5, pad=1.5)
+        for s_ in ax.spines.values():
+            s_.set_color(C_MUTED)
+
+    fig.savefig(HERE / "components.pdf")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     fig_window()
     fig_relaxation()
     fig_paired()
     fig_slices()
     fig_fieldlines()
+    fig_components()
     print("wrote", *(p.name for p in sorted(HERE.glob("*.pdf"))))

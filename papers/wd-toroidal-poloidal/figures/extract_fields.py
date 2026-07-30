@@ -86,6 +86,27 @@ def main():
             store["extent_cm"] = np.asarray(s["extent_cm"])
         print(f"  slice {key}: {arr.shape}, |.| max {np.abs(arr).max():.3e} G")
 
+    # --- 2D: each component in the plane where it actually lives --------
+    # B_t lies entirely in the equatorial plane (e_phi is horizontal), so
+    # nothing of it is lost there; what carries the information is its SIGN
+    # (which way it circulates) and its zero contour (the null surfaces
+    # that fill 39% of the interior).
+    eq = fr.load_slice(PLOTFILE, "Bt (toroidal, B_phi)", "z",
+                       resolution=SLICE_RES)
+    store["eq_Bt_signed"] = np.asarray(eq["array"])
+    store["eq_density"] = np.asarray(eq["density_array"])
+    store["eq_extent_cm"] = np.asarray(eq["extent_cm"])
+    print(f"  equatorial B_phi (signed): range "
+          f"{store['eq_Bt_signed'].min():.2e} .. {store['eq_Bt_signed'].max():.2e} G")
+
+    # B_p lies entirely in the meridional plane: at y = 0, e_phi is along
+    # y, so B_p there is exactly (B_x, 0, B_z) -- the two in-plane
+    # components. Streamlines of those show its real 2D topology.
+    for comp in ("B_x", "B_z"):
+        sl2 = fr.load_slice(PLOTFILE, comp, "y", resolution=SLICE_RES)
+        store[f"mer_{comp}"] = np.asarray(sl2["array"])
+    print("  meridional B_x, B_z cached for the poloidal streamlines")
+
     # --- 3D: field lines of the total, poloidal and toroidal fields -----
     vg = fr.load_vector_grid(PLOTFILE)
     dims = vg["dims"]
