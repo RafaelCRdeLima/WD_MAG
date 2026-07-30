@@ -2,10 +2,18 @@
 
 Run:  scf/.venv/bin/python3 papers/wd-toroidal-poloidal/figures/make_field_figures.py
 
-Two figures, and the axisymmetry of this configuration decides the form of
-both.
+Three figures, and the axisymmetry of this configuration decides the form of
+all of them.
 
-Meridional slice. For an axisymmetric field the poloidal field lines ARE
+3D poloidal loops (Fig. 2 of the paper). A poloidal line has no azimuthal
+component, so it stays in one meridional plane and is exactly a contour of
+u there: a planar closed loop about the O-point, repeated at every azimuth.
+Levels straddle the separatrix so the figure shows which loops close inside
+the star and which close outside it.
+
+Meridional slice. Not used by the paper any more -- the 3D poloidal figure
+replaced it -- but kept as a diagnostic, since it is the quickest way to see
+the B_phi distribution and the density envelope together. For an axisymmetric field the poloidal field lines ARE
 the contours of the flux function -- exactly, not approximately, since
 B_pol = (-u_z, u_varpi)/varpi is perpendicular to grad u. So they are drawn
 as contours rather than by integrating streamlines, which removes the
@@ -106,6 +114,111 @@ def to_meridional(r, th, fields, rmax, n=401):
     return vp, zz, VP, ZZ, out
 
 
+def fig_poloidal_3d(r, th, H, u, Br, Bth, Rstar):
+    """The poloidal field in three dimensions, to pair with the total field.
+
+    A poloidal line has no azimuthal component, so it stays in one meridional
+    plane and IS a contour of u there -- exactly. Each line is therefore a
+    planar closed loop about the O-point, and the three-dimensional field is
+    those loops repeated at every azimuth; a few azimuths are drawn.
+
+    The levels are chosen to straddle the separatrix: the inner three are the
+    same surfaces the total-field figure winds its helices on, and the outer
+    two leave the star and close outside it, where rho and hence B_phi vanish.
+    That contrast is the twisted-torus geometry, and it is why the toroidal
+    field is confined while the poloidal one reaches the exterior.
+    """
+    from matplotlib.colors import LinearSegmentedColormap, LogNorm
+
+    S8 = 1e8
+    Bp = np.hypot(Br, Bth)
+    rmax = 2.0 * Rstar
+    vp, zz, VP, ZZ, (u_m, bp_m, H_m) = to_meridional(
+        r, th, (u, Bp, H), rmax, n=601)
+    inside = H_m > 0.0
+
+    k_o = np.unravel_index(
+        np.argmax(np.where(inside, np.abs(u_m), -np.inf)), u_m.shape)
+    u_axis = u_m[k_o]
+    j_eq = np.argmin(np.abs(zz))
+    w_edge = vp[inside[:, j_eq]].max()
+    u_sep = u_m[np.argmin(np.abs(vp - w_edge)), j_eq] / u_axis
+    print(f"  separatrix at u/u_axis = {u_sep:.4f}")
+
+    fracs = sorted([0.97, 0.90, 0.80, 0.68, 0.55])   # contour wants increasing
+    tmp = plt.figure()
+    cs = tmp.gca().contour(VP, ZZ, u_m, levels=[f * u_axis for f in fracs])
+    segs = [list(s) for s in cs.allsegs]
+    plt.close(tmp)
+
+    f_bp = RGI((vp, zz), bp_m, bounds_error=False, fill_value=0.0)
+    cmap = LinearSegmentedColormap.from_list("b", BLUES[1:])
+    finite = bp_m[inside & (bp_m > 0)]
+    norm = LogNorm(vmin=np.percentile(finite, 1.0),
+                   vmax=np.percentile(finite, 99.9))
+
+    fig = plt.figure(figsize=(WIDE_IN * 0.62, WIDE_IN * 0.42))
+    ax3 = fig.add_subplot(111, projection="3d")
+    # four azimuths, not more: every loop passes close to the axis at high
+    # |z|, where the poloidal field is strongest, and more planes pile up
+    # into an unreadable dark column there
+    phis = np.deg2rad([0.0, 90.0, 180.0, 270.0])
+    reach = 0.0
+
+    for frac, level_segs in zip(fracs, segs):
+        for seg in level_segs:
+            if len(seg) < 8:
+                continue
+            w, z = seg[:, 0], seg[:, 1]
+            reach = max(reach, np.hypot(w, z).max())
+            mag = f_bp(np.stack([w, z], axis=-1))
+            for ph in phis:
+                line = np.stack([w * np.cos(ph), w * np.sin(ph), z], axis=-1)
+                pieces = np.stack([line[:-1] / S8, line[1:] / S8], axis=1)
+                lc = Line3DCollection(pieces, cmap=cmap, norm=norm,
+                                      linewidths=0.65, zorder=3)
+                lc.set_array(0.5 * (mag[:-1] + mag[1:]))
+                ax3.add_collection3d(lc)
+        out = "closes outside the star" if frac < u_sep else "closed inside"
+        print(f"  u/u_axis = {frac:.2f}: {len(level_segs)} loop(s), {out}")
+
+    # the true surface, not a sphere: this star is prolate and the figure
+    # has to show where the lines cross it
+    th_s = np.linspace(0.0, np.pi, 61)
+    R_s = np.array([r[H[:, np.argmin(np.abs(th - t))] > 0].max()
+                    for t in th_s])
+    ph_s = np.linspace(0.0, 2 * np.pi, 61)
+    XS = (R_s[:, None] * np.sin(th_s)[:, None]) * np.cos(ph_s)[None, :]
+    YS = (R_s[:, None] * np.sin(th_s)[:, None]) * np.sin(ph_s)[None, :]
+    ZS = (R_s[:, None] * np.cos(th_s)[:, None]) * np.ones_like(ph_s)[None, :]
+    ax3.plot_wireframe(XS / S8, YS / S8, ZS / S8, rstride=4, cstride=4,
+                       color="#cfcec6", linewidth=0.3, zorder=1)
+
+    lim = 1.04 * reach / S8
+    ax3.set_xlim(-lim, lim); ax3.set_ylim(-lim, lim); ax3.set_zlim(-lim, lim)
+    ax3.set_box_aspect((1, 1, 1))
+    ax3.view_init(elev=22, azim=-58)
+    ax3.tick_params(labelsize=6, pad=-2)
+    for a in (ax3.xaxis, ax3.yaxis, ax3.zaxis):
+        a.pane.set_facecolor("white"); a.pane.set_edgecolor(C_GRID)
+        a.line.set_color(C_MUTED)
+        a._axinfo["grid"]["color"] = C_GRID
+        a._axinfo["grid"]["linewidth"] = 0.3
+    ax3.set_xlabel(r"$x$ ($10^8$ cm)", fontsize=7, labelpad=-6)
+    ax3.set_ylabel(r"$y$", fontsize=7, labelpad=-6)
+    ax3.set_zlabel(r"$z$", fontsize=7, labelpad=-6)
+
+    sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+    cb = fig.colorbar(sm, ax=ax3, fraction=0.028, pad=0.02)
+    cb.set_label(r"$|\mathbf{B}_{\rm p}|$  (G)", fontsize=7.5)
+    cb.outline.set_linewidth(0.5)
+    cb.ax.tick_params(labelsize=6.5, width=0.5, length=2, pad=1.5)
+
+    fig.savefig(HERE / "field_poloidal_3d.pdf")
+    plt.close(fig)
+    print("wrote field_poloidal_3d.pdf")
+
+
 def main():
     from matplotlib.colors import LinearSegmentedColormap, LogNorm
 
@@ -115,6 +228,8 @@ def main():
     Bz = Br * cos_t - Bth * sin_t           # the spherical ones
     Req, Rpol = diag.equatorial_polar_radii(H, r, th)
     print(f"R_eq = {Req:.4e}  R_pol = {Rpol:.4e}  R_pol/R_eq = {Rpol/Req:.4f}")
+
+    fig_poloidal_3d(r, th, H, u, Br, Bth, Rstar)
 
     rmax = 1.05 * Rstar
     vp, zz, VP, ZZ, (rho_m, H_m, u_m, bphi_m, bvp_m, bz_m) = to_meridional(

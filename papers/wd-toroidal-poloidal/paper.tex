@@ -303,29 +303,33 @@ inside it.
 \subsection{The field inside the star}
 \label{sec:structure}
 
-Figures~\ref{fig:meridional} and~\ref{fig:lines3d} show the field the
-previous section quantifies. Both take a form dictated by the
-axisymmetry: for an axisymmetric field $\mathbf{B}_{\mathrm{p}}$ is
-perpendicular to $\nabla u$, so the poloidal field lines \emph{are} the
-contours of the flux function, exactly, and are drawn as such rather than
-integrated. The three-dimensional lines are integrated in cylindrical
+Figures~\ref{fig:poloidal3d} and~\ref{fig:lines3d} show the field the
+previous section quantifies, first the poloidal component alone and then
+the full field. Both take a form dictated by the axisymmetry. A poloidal
+line has no azimuthal component, so it never leaves its meridional plane,
+and there $\mathbf{B}_{\mathrm{p}}$ is perpendicular to $\nabla u$: the
+poloidal lines \emph{are} the contours of the flux function, exactly, and
+Fig.~\ref{fig:poloidal3d} draws them as such rather than integrating
+them. Each is a planar closed loop about the O-point, and the
+three-dimensional poloidal field is those loops repeated at every
+azimuth. The lines of the full field are integrated in cylindrical
 coordinates for the same reason -- it keeps them on their flux surfaces
 by construction, and the drift of $u$ along a traced line then measures
 the integration error rather than hiding it. Over the lines drawn it
-stays between $10^{-4}$ and $3\times10^{-3}$.
+stays between $10^{-4}$ and $6\times10^{-4}$.
 
-The meridional cut shows the star is prolate (Table~\ref{tab:config}),
-which is the deformation a toroidal field produces and the opposite of
-rotation's. $B_\varphi$ is
-concentrated well inside the surface, vanishing on the axis where
-$\varpi \to 0$ and at the surface where the density does. The dashed
-contour marks $\rho = 10^{-3}\rho_c$ and sits far inside the stellar
-surface, which is the extended low-density envelope this configuration
-carries: the field lives in the dense interior, not in the envelope it
-inflates.
+The two components are complementary in where they live. $B_\varphi$
+vanishes on the axis, where $\varpi \to 0$, and at the surface, where the
+density does; $|\mathbf{B}_{\mathrm{p}}|$ does the opposite, peaking on
+the axis near the centre at $1.5\times10^{12}\,$G against
+$1.2\times10^{10}\,$G at half the stellar radius in the equatorial plane,
+a hundredfold contrast. The poloidal field also reaches outside the star,
+where $\rho$ and hence $B_\varphi$ are zero, so the exterior field is
+purely poloidal and roughly dipolar: $u$ falls off as $1/r$ beyond the
+surface, and it is this component alone that a distant observer could
+detect.
 
-In three dimensions the same field is a set of nested tori wound by a
-tight helix. Which tori exist is fixed by the flux at the stellar
+Which loops close inside the star is fixed by the flux at the stellar
 surface. Along the equator $u$ rises from zero on the rotation axis to
 its maximum $u_{\rm axis}$ at the O-point of the poloidal field, at
 $\varpi = 3.06\times10^{8}\,$cm, and then falls to $0.775\,u_{\rm axis}$
@@ -334,8 +338,10 @@ Surfaces with $u > 0.775\,u_{\rm axis}$ close inside the star and carry
 the toroidal field; surfaces below it intersect the stellar surface, and
 a line on one of them leaves the star, where $\rho$ and therefore
 $B_\varphi$ vanish and the line stops winding altogether. The closed
-region is the twisted torus proper, and it is where
-Fig.~\ref{fig:lines3d} draws its lines. They are seeded by flux level
+region is the twisted torus proper. Fig.~\ref{fig:poloidal3d} shows the
+separatrix directly: its inner three loops close inside the star and its
+outer two bulge through the surface and close outside it, and
+Fig.~\ref{fig:lines3d} winds its helices on the inner three. They are seeded by flux level
 rather than by radius, since $u$ is what labels the surfaces: equally
 spaced radii land on unequally spaced surfaces and can straddle the
 separatrix, putting two structurally different objects in one picture.
@@ -379,15 +385,18 @@ answer different questions.
 
 \begin{figure}
 \centering
-\includegraphics[width=\columnwidth]{figures/field_meridional.pdf}
-\caption{Meridional cut of the adopted configuration. Colour is
-$|B_\varphi|$, out of the plane. Black contours are the poloidal field
-lines, which for an axisymmetric field are exactly the contours of the
-flux function; orange arrows give the poloidal direction, drawn as unit
-vectors because the poloidal amplitude spans orders of magnitude. The
-heavy black curve is the stellar surface, prolate as a toroidal field
-makes it; the dashed curve is $\rho = 10^{-3}\rho_c$.}
-\label{fig:meridional}
+\includegraphics[width=\columnwidth]{figures/field_poloidal_3d.pdf}
+\caption{The poloidal component alone, in three dimensions, coloured by
+$|\mathbf{B}_{\mathrm{p}}|$. A poloidal line stays in one meridional
+plane and is exactly a contour of the flux function there, so each is a
+planar closed loop about the O-point; loops are drawn at
+$u/u_{\rm axis} = 0.97$, $0.90$, $0.80$, $0.68$ and $0.55$, and repeated
+at four azimuths. The first three close inside the star and are the
+surfaces Fig.~\ref{fig:lines3d} winds its lines on; the last two cross
+the surface and close outside, where the density and hence $B_\varphi$
+vanish and the field is purely poloidal. The wireframe is the stellar
+surface itself, prolate as a toroidal field makes it, not a sphere.}
+\label{fig:poloidal3d}
 \end{figure}
 
 \begin{figure}
