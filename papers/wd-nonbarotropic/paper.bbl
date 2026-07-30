@@ -1,0 +1,34 @@
+\begin{thebibliography}{8}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+
+\bibitem[{{Armaza} {et~al.}(2015){Armaza}, {Reisenegger}, \&
+  {Valdivia}}]{armaza2015}
+{Armaza}, C., {Reisenegger}, A., \& {Valdivia}, J.~A. 2015, \apj, 802, 121
+
+\bibitem[{{Ciolfi} {et~al.}(2009){Ciolfi}, {Ferrari}, {Gualtieri}, \&
+  {Pons}}]{ciolfi2009}
+{Ciolfi}, R., {Ferrari}, V., {Gualtieri}, L., \& {Pons}, J.~A. 2009, \mnras,
+  397, 913
+
+\bibitem[{{Ciolfi} \& {Rezzolla}(2013)}]{ciolfi2013}
+{Ciolfi}, R. \& {Rezzolla}, L. 2013, \mnras, 435, L43
+
+\bibitem[{{Duez} \& {Mathis}(2010)}]{duez2010}
+{Duez}, V. \& {Mathis}, S. 2010, \aap, 517, A58
+
+\bibitem[{{Grad} \& {Rubin}(1958)}]{grad1958}
+{Grad}, H. \& {Rubin}, H. 1958, Proceedings of the 2nd UN Conf. on the Peaceful
+  Uses of Atomic Energy, 31, 190
+
+\bibitem[{{Lander} \& {Jones}(2009)}]{lander2009}
+{Lander}, S.~K. \& {Jones}, D.~I. 2009, \mnras, 395, 2162
+
+\bibitem[{{Mastrano} {et~al.}(2011){Mastrano}, {Melatos}, {Reisenegger}, \&
+  {Akg{\"u}n}}]{mastrano2011}
+{Mastrano}, A., {Melatos}, A., {Reisenegger}, A., \& {Akg{\"u}n}, T. 2011,
+  \mnras, 417, 2288
+
+\bibitem[{{Shafranov}(1966)}]{shafranov1966}
+{Shafranov}, V.~D. 1966, Reviews of Plasma Physics, 2, 103
+
+\end{thebibliography}

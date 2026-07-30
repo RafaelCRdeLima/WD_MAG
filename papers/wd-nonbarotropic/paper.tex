@@ -1,0 +1,267 @@
+% paper.tex -- draft, A&A LaTeX class (aa.cls v7.0, EDP Sciences)
+% Mixed poloidal-toroidal equilibria beyond barotropy.
+% TODO: title, author list, affiliations, introduction, conclusions.
+% TODO: the non-barotropic references were entered from memory -- check
+% every volume and page against ADS before this leaves the machine.
+
+\documentclass{aa}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{txfonts}
+\usepackage{natbib}
+
+\begin{document}
+
+   \title{Mixed poloidal-toroidal fields in massive white dwarfs
+          beyond barotropy}
+
+   \subtitle{Draft -- work in progress}
+
+   \author{TBD\inst{1}
+          }
+
+   \institute{Affiliation TBD\\
+              \email{tbd@example.org}
+             }
+
+   \date{Draft \today}
+
+   \abstract
+   % context
+   {A white dwarf supported above the Chandrasekhar mass by a magnetic
+    field needs most of that field to be toroidal, because the toroidal
+    branch is the one that reaches the required energy. It also needs a
+    poloidal component, or it has no exterior dipole and nothing for
+    magnetic braking or an observer to act on.}
+   % aims
+   {We ask whether a self-consistent equilibrium can carry both at once,
+    and identify precisely which assumption blocks it.}
+   % methods
+   {TBD.}
+   % results
+   {TBD -- so far, the barotropic ceiling has been measured in this code:
+    a self-consistent barotropic twisted torus on a $1.35\,M_\odot$ white
+    dwarf saturates at $E_{\mathrm{tor}}/E_{\mathrm{mag}} = 0.04$.}
+   % conclusions
+   {TBD.}
+
+   \keywords{white dwarfs -- stars: magnetic field --
+             magnetohydrodynamics (MHD) -- methods: numerical}
+
+   \maketitle
+
+%-------------------------------------------------------------------
+
+\section{Introduction}
+
+TBD.
+
+%-------------------------------------------------------------------
+
+\section{What the equilibrium forces, and what barotropy adds}
+\label{sec:forced}
+
+It is worth separating the constraints, because they are usually quoted
+together and only one of them is negotiable.
+
+Consider an axisymmetric star in magnetostatic equilibrium, with no
+flows, and write the field through the flux function $u = \varpi
+A_\varphi$,
+\begin{equation}
+\mathbf{B} = \frac{1}{\varpi}\,\nabla u \times
+             \hat{\mathbf{e}}_\varphi
+             + B_\varphi \hat{\mathbf{e}}_\varphi .
+\label{eq:decomposition}
+\end{equation}
+Neither $\nabla P$ nor $\rho\nabla\Phi$ has an azimuthal component, so
+the azimuthal component of the Lorentz force must vanish by itself. That
+component is proportional to
+$(\mathbf{B}_{\mathrm{p}}\cdot\nabla)(\varpi B_\varphi)$, so
+\begin{equation}
+\varpi B_\varphi = \beta(u),
+\label{eq:beta}
+\end{equation}
+that is, $\varpi B_\varphi$ is constant along each poloidal field line.
+Outside the star the field is in vacuum and $B_\varphi$ vanishes, so
+$\beta$ must vanish on every line that reaches the surface. Writing
+$u_s$ for the largest value of $u$ on the stellar surface, the toroidal
+field is confined to the closed-line region $u > u_s$. This is the
+twisted torus, and it is what our companion paper measures directly as a
+separatrix.
+
+The point to make is that \emph{none of this used barotropy}.
+Equation~(\ref{eq:beta}) and the confinement follow from axisymmetry and
+from the exterior being field-free. Generalising the equation of state
+does not release them.
+
+What barotropy does add is a restriction on the poloidal source. If
+$\rho = \rho(P)$ then $\rho^{-1}\nabla P = \nabla h$ and the whole
+left-hand side of the Euler equation is a gradient, so
+$\rho^{-1}\mathbf{f}_L$ must be one too. Since the Lorentz force of
+Eq.~(\ref{eq:decomposition}) is everywhere parallel to $\nabla u$, this
+forces $\rho^{-1}\mathbf{f}_L = M'(u)\nabla u$ for some function $M$, and
+the equilibrium collapses to the Grad--Shafranov equation
+\citep{grad1958,shafranov1966}
+\begin{equation}
+\Delta^\ast u = -4\pi\varpi^2 \rho\, M'(u) - \beta(u)\beta'(u),
+\label{eq:gs}
+\end{equation}
+with the Bernoulli integral $h + \Phi - M(u) = \mathrm{const}$. The
+source of the poloidal field is pinned to the form $\rho M'(u)$: it must
+be proportional to the density, with a coefficient constant on flux
+surfaces.
+
+That single restriction is the subject of this paper. Relaxing it is what
+$\rho = \rho(P,s)$ buys, because then $\rho^{-1}\nabla P$ is no longer a
+gradient, the baroclinic term $\nabla\rho\times\nabla P$ is available to
+balance what the gradient cannot, and the poloidal source becomes free
+\citep{mastrano2011,armaza2015}. It is also the route by which
+\citet{ciolfi2013} reach large toroidal fractions in relativistic stars,
+where the barotropic family had been limited to a few percent
+\citep{lander2009,ciolfi2009,duez2010}.
+
+For a white dwarf the physical case for it is straightforward: a real
+white dwarf is stratified, in temperature and in composition, so
+barotropy is the simplification and not the realism. The price is that
+the equilibrium no longer determines itself -- a stratification has to be
+specified, or derived and then checked for physical plausibility.
+
+%-------------------------------------------------------------------
+
+\section{The barotropic ceiling, measured}
+\label{sec:ceiling}
+
+Before building a solver to beat a ceiling, the ceiling should be
+measured in the same code, on the same star. The value usually quoted for
+the barotropic twisted torus is a few percent of magnetic energy in the
+toroidal component; what follows is that number obtained here.
+
+The background is a field-free configuration at
+$\rho_c = 10^9$\,g\,cm$^{-3}$ and $\mu_e = 2$, giving
+$M = 1.346\,M_\odot$, $R_{\mathrm{eq}} = 2.46\times10^8$\,cm and
+$|W| = 2.257\times10^{51}$\,erg. On it we solve Eq.~(\ref{eq:gs}) with
+$M'(u) = k_0$ constant, $k_0 = 10^{-13}$, and
+\begin{equation}
+\beta(u) = \beta_0
+           \left(\frac{u-u_s}{u_{\mathrm{norm}}}\right)^{\zeta}
+           \quad \text{for } u > u_s, \qquad 0 \text{ otherwise},
+\label{eq:betaform}
+\end{equation}
+with $u_{\mathrm{norm}}$ fixed from the purely poloidal solution so that
+the functional form does not drift as $u$ evolves. The equation is
+nonlinear through $\beta\beta'(u)$ and is iterated to a relative change
+below $10^{-8}$. We sweep $\beta_0$, quoted through the field it asks
+for, $\beta_0 = B_{\mathrm{ref}}\varpi_{\mathrm{ref}}$ with
+$\varpi_{\mathrm{ref}} = R_{\mathrm{eq}}/2$, and repeat for
+$\zeta = 1$, $1.1$ and $2$.
+
+At $\beta_0 = 0$ the poloidal solution has
+$\max|\mathbf{B}_{\mathrm{p}}| = 2.45\times10^{12}$\,G, and its
+closed-line region occupies $37.7\%$ of the stellar volume. Space is
+therefore not what limits the toroidal component.
+
+The sweep is summarised in Table~\ref{tab:ceiling}. The highest converged
+toroidal fraction is
+\begin{equation}
+\left.\frac{E_{\mathrm{tor}}}{E_{\mathrm{mag}}}\right|_{\max}
+  = 0.040,
+\end{equation}
+at $\zeta = 1$ and $B_{\mathrm{ref}} = 10^{12}$\,G, reached after $428$
+iterations. Steeper $\beta$ profiles do worse: $\zeta = 1.1$ converges up
+to $0.029$ and $\zeta = 2$ only to $0.003$. Above those values the
+iteration leaves the basin entirely rather than degrading gracefully.
+
+Two things follow. The first is that the few-percent figure quoted from
+the literature is reproduced here, on a white dwarf rather than a neutron
+star, which is worth knowing before it is used as an argument.
+
+The second is quantitative and much sharper. At the ceiling the toroidal
+field holds $E_{\mathrm{tor}}/|W| = 1\times10^{-5}$. A
+$2\,M_\odot$ configuration of the kind our companion paper certifies
+requires $E_{\mathrm{tor}}/|W| = 0.203$. The barotropic twisted torus is
+not marginally short of what mass support needs; it is short by four
+orders of magnitude. Whatever supports a $2\,M_\odot$ white dwarf, it is
+not a self-consistent barotropic mixed equilibrium.
+
+\begin{table}
+\caption{Converged barotropic twisted-torus configurations. Rows above
+the highest converged $B_{\mathrm{ref}}$ for each $\zeta$ are omitted
+because the iteration diverges rather than returning a worse
+equilibrium.}
+\label{tab:ceiling}
+\centering
+\begin{tabular}{l l l l}
+\hline\hline
+$\zeta$ & $B_{\mathrm{ref}}$ (G) & $E_{\mathrm{tor}}/E_{\mathrm{mag}}$ &
+$\max|B_\varphi|$ (G) \\
+\hline
+$1.0$ & $10^{11}$          & $0.004$ & $9.84\times10^{10}$ \\
+$1.0$ & $3\times10^{11}$   & $0.029$ & $2.97\times10^{11}$ \\
+$1.0$ & $10^{12}$          & $0.040$ & $7.23\times10^{11}$ \\
+$1.1$ & $3\times10^{11}$   & $0.029$ & $3.10\times10^{11}$ \\
+$2.0$ & $10^{11}$          & $0.003$ & $1.02\times10^{11}$ \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{What this measurement does not settle}
+
+Two caveats, both real.
+
+The density is held fixed. The sweep solves Eq.~(\ref{eq:gs}) on the
+field-free background rather than iterating the stellar structure
+alongside it. The confinement of Sect.~\ref{sec:forced} is geometric and
+survives that, and at these field strengths the back-reaction on the
+structure is small, but the ceiling quoted here is a ceiling at fixed
+density and should be called that.
+
+The failure mode is a failure of the iteration. Above the values in
+Table~\ref{tab:ceiling} an under-relaxed fixed-point scheme stops
+converging. That is consistent with the equilibrium ceasing to exist, and
+it is what the literature reports, but the two are not the same
+statement, and separating them needs a continuation method that follows
+the branch rather than a sweep that restarts at each point. Until that is
+done, the honest claim is that the branch is unreachable here above
+$4\%$, not that it is empty.
+
+%-------------------------------------------------------------------
+
+\section{The non-barotropic construction}
+\label{sec:nonbarotropic}
+
+TBD. The plan, stated so the next step is falsifiable:
+
+\begin{enumerate}
+\item Drop the requirement that $\rho^{-1}\mathbf{f}_L$ be a gradient,
+      keeping Eq.~(\ref{eq:beta}) and the confinement, which
+      Sect.~\ref{sec:forced} shows are not negotiable.
+\item Choose the poloidal source freely rather than as $\rho M'(u)$, and
+      solve for the pressure by integrating
+      $\nabla P = \mathbf{f}_L - \rho\nabla\Phi$ along the resulting
+      field, which is possible exactly when
+      $\nabla\times\mathbf{f}_L = \nabla\rho\times\nabla\Phi$.
+\item Measure the stratification this demands -- the spread of $P$ over
+      surfaces of constant $\rho$ -- and ask whether it is plausible for
+      a white dwarf, in magnitude and in convective stability. This is
+      the step where the method can fail honestly, and it is the one
+      worth doing first.
+\item Only then ask how high $E_{\mathrm{tor}}/E_{\mathrm{mag}}$ and
+      $E_{\mathrm{tor}}/|W|$ go.
+\end{enumerate}
+
+%-------------------------------------------------------------------
+
+\section{Conclusions}
+
+TBD.
+
+\begin{acknowledgements}
+TBD.
+\end{acknowledgements}
+
+\bibliographystyle{aa}
+\bibliography{paper}
+
+\end{document}
