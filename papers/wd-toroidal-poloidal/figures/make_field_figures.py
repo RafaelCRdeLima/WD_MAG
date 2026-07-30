@@ -277,14 +277,6 @@ def main():
     ax3.set_ylabel(r"$y$", fontsize=7, labelpad=-6)
     ax3.set_zlabel(r"$z$", fontsize=7, labelpad=-6)
 
-    # say what distinguishes the three lines, since it is a choice
-    rows = "\n".join(
-        rf"$u/u_{{\rm axis}}={f:.2f}$:  {t:.1f} turns"
-        for f, _, _, t in drawn)
-    ax3.text2D(0.015, 0.985, "one meridional circuit each\n" + rows,
-               transform=ax3.transAxes, fontsize=6.2, color=C_MUTED,
-               va="top", ha="left", linespacing=1.5)
-
     sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
     cb = fig.colorbar(sm, ax=ax3, fraction=0.028, pad=0.02)
     cb.set_label(r"$|\mathbf{B}|$  (G)", fontsize=7.5)
