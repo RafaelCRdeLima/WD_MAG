@@ -122,12 +122,6 @@ def main():
         axg.text(4.0, v + 0.012, lab, fontsize=6.5, color=C_MUTED)
     axg.plot([RHO_C_STAR], [g_c], marker="o", markersize=4.0, color=C_FIELD,
              markeredgecolor="white", markeredgewidth=0.5, zorder=5)
-    axg.annotate(r"$\rho_c$ of the star of Sect. 6" "\n"
-                 rf"$\Gamma = {g_c:.3f}$",
-                 xy=(RHO_C_STAR, g_c), xytext=(3.0e3, 1.47), fontsize=6.5,
-                 color="#0b0b0b", ha="left",
-                 arrowprops=dict(arrowstyle="-", linewidth=0.5,
-                                 color=C_MUTED, shrinkA=1, shrinkB=3))
     axg.set_xlabel(r"$\rho$  (g cm$^{-3}$)")
     axg.set_ylabel(r"$\Gamma = \mathrm{d}\ln P/\mathrm{d}\ln\rho$")
     axg.set_ylim(1.29, 1.73)
