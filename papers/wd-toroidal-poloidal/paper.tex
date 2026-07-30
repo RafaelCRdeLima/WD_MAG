@@ -58,8 +58,10 @@ fully degenerate, zero-temperature electron gas
 parametrized by the normalized Fermi momentum $x \equiv p_F/(m_e c)$,
 
 \begin{align}
-P(x) &= A \left[ x(2x^2-3)\sqrt{x^2+1} + 3\sinh^{-1}x \right], \\
+P(x) &= A \left[ x(2x^2-3)\sqrt{x^2+1} + 3\sinh^{-1}x \right],
+\label{eq:pressure} \\
 \rho(x) &= B\,x^3,
+\label{eq:density}
 \end{align}
 
 \noindent where $A$ is a fixed combination of fundamental constants
@@ -88,6 +90,34 @@ relativistic core ($x \gg 1$) it approaches $\rho \propto H^3$,
 $n=3$ -- the marginal polytropic index at which the equilibrium mass
 becomes independent of central density, the origin of the
 Chandrasekhar mass limit.
+
+Figure~\ref{fig:eos} plots Eqs.~\ref{eq:pressure} and~\ref{eq:density}
+and shows where those limits actually apply. The transition is slow: the
+adiabatic index $\Gamma = \mathrm{d}\ln P/\mathrm{d}\ln\rho$ takes about
+four decades in density to fall from $5/3$ to $4/3$, and neither limit is
+a good description through most of that range. It also places the star
+used throughout Sect.~\ref{sec:results}. At its central density,
+$\rho_c = 9.9\times10^8$\,g\,cm$^{-3}$, the normalized Fermi momentum is
+$x = 8.0$ and $\Gamma = 1.343$ -- within $0.7\%$ of the relativistic
+limit. The core of that star therefore sits essentially at the marginal
+index, which is worth keeping in view when reading a mass or a radius
+from it: at $n \simeq 3$ the equilibrium is only weakly sensitive to
+$\rho_c$, and correspondingly delicate.
+
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth]{figures/eos.pdf}
+\caption{The equation of state of Eqs.~\ref{eq:pressure}
+and~\ref{eq:density} for $\mu_e = 2$. Upper panel: $P(\rho)$ with the two
+polytropic limits, each normalized on the curve in the regime where it
+holds. Lower panel: the adiabatic index, which crosses from $5/3$ to
+$4/3$ over roughly four decades in density. The dashed vertical line is
+the central density of the background star of Sect.~\ref{sec:results},
+where $\Gamma = 1.343$. The shaded region lies above the
+inverse-beta-decay threshold for $\mu_e = 2$, where this equation of
+state no longer describes a white dwarf.}
+\label{fig:eos}
+\end{figure}
 
 At sufficiently high density, inverse beta decay (electron capture)
 changes the composition locally and the constant-$\mu_e$ cold equation
