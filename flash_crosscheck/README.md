@@ -291,7 +291,39 @@ rather than quietly averaged in.
 So each code needs its own fix to use the better geometry, and Castro
 already has one.
 
+## What actually decides it: the window only exists on half-shift
+
+Running the window criterion of Sec 6.9 (`|drift| < 2%`, first crossing,
+lower bound `0.4 t_dyn`) against each field-free run gives:
+
+| geometry | Castro | FLASH |
+|---|---|---|
+| symmetric | peak `+2.76%`, `X_2% = 0.094` -> **no window** | peak `-2.08%`, `X_2% = 0.376` -> **no window** |
+| half-shift | peak `+0.81%`, `X_2% = 1.128` -> **window [0.4, 1.128]** | spurious central flow, `dt` throttled `100x` -> unusable |
+
+Two things follow, and they matter more than the drift ratio.
+
+**On the symmetric geometry neither code produces a valid measurement
+window.** Castro fails by overshooting to `+2.76%` in the first tenth of a
+dynamical time; FLASH fails by drifting past `-2%` at `0.376`. The
+like-for-like comparison in the previous section is therefore a fair code
+comparison run on a configuration that is scientifically unusable for both
+of them. The factor of ten is real but it is not what decides anything.
+
+**The half-shift geometry is what makes the window exist**, and it does so
+by suppressing the initial transient -- `+0.81%` against `+2.76%`, a
+factor of 3.4 -- because the star starts `-1.16%` from its target instead
+of `-4.78%`. That is the whole reason Sec 6.6 mattered. Castro can run
+that geometry because of core patch 3 (`g(r=0)=0`, Sec 6.7). FLASH cannot,
+yet.
+
+So the case for staying on Castro does not rest on Castro being the better
+code in general. It rests on Castro being the only one of the two that can
+currently run the configuration in which this measurement is possible at
+all.
+
 ## Status
+
 
 
 
