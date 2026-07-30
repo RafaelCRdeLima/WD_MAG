@@ -242,7 +242,57 @@ it means the FLASH initial condition now starts from the same quality of
 hydrostatic balance the Castro results were measured on. Volume averaging
 uses `sim_nSubZones = 8`, matching Castro's `nsub = 8` default.
 
+## The comparison, on matched geometry
+
+The right Castro reference turned out not to be the one used earlier.
+`series.npz` holds the *half-shift* field-free run, and comparing that
+against a symmetric FLASH run mixes the geometry into the difference.
+`run_interp3d_test.log` is the symmetric / vertex-centered field-free
+Castro run -- 513 samples to `16.3 t_dyn`, same star, same damping window
+`[0, 20 t_dyn]`, `E_mag/|W| = 0`, and `t=0 rho_c = 952180729.1`
+(`-4.78%`), which is Sec 6.6's baseline case and matches the FLASH
+symmetric run's `-4.70%`. So both sides now sit on the same geometry with
+the same initial-condition deficit.
+
+| `t/t_dyn` | Castro | FLASH |
+|---|---|---|
+| 0.20 | `+2.51%` | `-0.47%` |
+| 0.40 | `+0.60%` | `-2.23%` |
+| 0.70 | `-0.28%` | `-4.74%` |
+| **1.128** | **`-0.91%`** | **`-9.03%`** |
+| 1.60 | `-1.43%` | `-14.61%` |
+
+**At the window's upper bound Castro is at `-0.91%` and FLASH at
+`-9.03%`: a factor of 10.** And the shapes differ qualitatively, which
+matters more than the ratio. Castro rises to `+2.5%`, turns over, and
+settles near `-1%` -- the star relaxes and then holds. FLASH declines
+monotonically and close to linearly, with no turnover, and is still
+falling when the run dies at `1.62 t_dyn`.
+
+On the question that started this: **no, FLASH does not hold the star
+better -- it holds it about ten times worse**, and migrating to it is not
+supported by this test. Castro's `-0.91%` over the whole validity window
+is a genuinely good result, better than the half-shift run's `-2.05%`.
+
+### The half-shift trap in FLASH
+
+The Sec 6.6 fix ports and reproduces Castro's IC number (`-1.23%` against
+`-1.16%`), but it cannot be used in FLASH as things stand. Half-shift is
+exactly the geometry that puts a cell centre at `r=0`, and that is where
+Castro needed core patch 3 (`g(r=0)=0`, Sec 6.7). FLASH does not crash --
+its multipole solver differentiates the potential rather than forming
+`mag_grav * loc/r`, so there is no division by zero -- but the timestep
+limiter sits at the origin from step 1 and `dt` settles about `100x` below
+the symmetric run's, which is the signature of a spurious flow in the
+central cell. Since `rho_c` *is* that cell, the half-shift FLASH run cannot
+measure the quantity being compared, and it is excluded from the table
+rather than quietly averaged in.
+
+So each code needs its own fix to use the better geometry, and Castro
+already has one.
+
 ## Status
+
 
 
 
@@ -261,7 +311,12 @@ uses `sim_nSubZones = 8`, matching Castro's `nsub = 8` default.
 - [x] Sec 6.6 mapping fix ported: half-shift geometry plus `nsub = 8`
       volume averaging takes the IC from `-4.70%` to `-1.23%`, against
       Castro's `-1.16%`
-- [ ] Re-measure the drift from the corrected IC (run in progress)
+- [x] Comparison done on matched (symmetric) geometry: Castro `-0.91%`
+      against FLASH `-9.03%` at the window's upper bound
+- [ ] FLASH needs its own `r=0` treatment before it can use the half-shift
+      geometry: spurious central flow, `dt` throttled `100x`
+- [ ] Lower the FLASH ambient below `1 g/cm^3`, the likeliest remaining
+      contributor to both the excess drift and the terminal crash
 - [ ] Lower the ambient below `1 g/cm^3` (needs the Helmholtz inversion to
       cope), which is also the likeliest cause of the remaining crash
 - [ ] Only then treat the drift ratio as a statement about the schemes
