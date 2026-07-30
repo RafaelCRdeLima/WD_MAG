@@ -14,7 +14,7 @@
 
    \title{Magnetized white dwarfs with mixed poloidal-toroidal fields}
 
-   \subtitle{Draft -- structure and core physics only}
+   \subtitle{Draft -- a certified $2\,M_\odot$ configuration}
 
    \author{TBD\inst{1}
           }
@@ -27,15 +27,43 @@
 
    \abstract
    % context
-   {TBD.}
+   {A white dwarf well above the Chandrasekhar mass requires support
+    beyond electron degeneracy. A strong internal magnetic field can
+    supply it, but a purely toroidal field has no exterior structure and
+    so no dipole for magnetic braking to act on.}
    % aims
-   {TBD.}
+   {We construct a $2\,M_\odot$ configuration carrying both components,
+    and ask what a poloidal component costs when it is added to a
+    toroidal-dominated equilibrium.}
    % methods
-   {TBD.}
+   {The toroidal field is solved self-consistently with the stellar
+    structure by a self-consistent field iteration under a cold
+    degenerate equation of state. A single solve carrying both components
+    is not available in barotropy, where the toroidal field is confined to
+    the closed-poloidal-line region and the reachable ratio is a few
+    percent, so the poloidal component is solved on the converged density
+    and imposed. Every configuration is gated on the virial error, on the
+    star fitting inside its domain, and on the central density staying
+    below the inverse-beta-decay threshold.}
    % results
-   {TBD.}
+   {The configuration reaches $M = 2.007\,M_\odot$ at
+    $\rho_c = 10^9$\,g\,cm$^{-3}$ with $E_{\mathrm{tor}}/|W| = 0.203$,
+    a virial error of $9.9\times10^{-5}$, and a mass converging
+    monotonically under mesh refinement. The field is strongly
+    toroidal-dominated, $B_{\mathrm{t}}/B_{\mathrm{p}} = 884$ in energy,
+    with a peak of $4.28\times10^{13}$\,G and an exterior dipole of
+    $5.9\times10^{10}$\,G. The virial error of the pair tracks the
+    imposed poloidal energy almost one for one, so a more balanced field
+    leaves the certified regime: at
+    $B_{\mathrm{t}}/B_{\mathrm{p}} = 8.8$ the virial error is twenty
+    times the acceptance threshold.}
    % conclusions
-   {}
+   {A $2\,M_\odot$ white dwarf with a strong toroidal field and an
+    exterior dipole is constructible and certifiable, at the cost of a
+    poloidal component carrying a tenth of a percent of the magnetic
+    energy. It is not shown to be stable: a field this toroidal is the
+    configuration most exposed to the Tayler instability, which an
+    axisymmetric calculation cannot test.}
 
    \keywords{white dwarfs -- stars: magnetic field -- magnetohydrodynamics (MHD) -- methods: numerical}
 
@@ -95,14 +123,16 @@ Figure~\ref{fig:eos} plots Eqs.~\ref{eq:pressure} and~\ref{eq:density}
 and shows where those limits actually apply. The transition is slow: the
 adiabatic index $\Gamma = \mathrm{d}\ln P/\mathrm{d}\ln\rho$ takes about
 four decades in density to fall from $5/3$ to $4/3$, and neither limit is
-a good description through most of that range. It also places the star
-used throughout Sect.~\ref{sec:results}. At its central density,
-$\rho_c = 9.9\times10^8$\,g\,cm$^{-3}$, the normalized Fermi momentum is
+a good description through most of that range. It also places the
+configuration of Sect.~\ref{sec:results}. At its central density,
+$\rho_c = 10^9$\,g\,cm$^{-3}$, the normalized Fermi momentum is
 $x = 8.0$ and $\Gamma = 1.343$ -- within $0.7\%$ of the relativistic
-limit. The core of that star therefore sits essentially at the marginal
-index, which is worth keeping in view when reading a mass or a radius
-from it: at $n \simeq 3$ the equilibrium is only weakly sensitive to
-$\rho_c$, and correspondingly delicate.
+limit. The core therefore sits essentially at the marginal index, which
+matters twice over here: at $n \simeq 3$ the equilibrium is only weakly
+sensitive to $\rho_c$ and correspondingly delicate, and it is also the
+regime in which magnetic support translates most directly into mass,
+since the magnetic energy scales with radius the same way the
+gravitational and internal energies do.
 
 \begin{figure}
 \centering
@@ -112,8 +142,8 @@ and~\ref{eq:density} for $\mu_e = 2$. Upper panel: $P(\rho)$ with the two
 polytropic limits, each normalized on the curve in the regime where it
 holds. Lower panel: the adiabatic index, which crosses from $5/3$ to
 $4/3$ over roughly four decades in density. The dashed vertical line marks the
-central density of the background star of Sect.~\ref{sec:results}, and
-the point its adiabatic index there. The shaded region lies above the
+central density of the configuration of Sect.~\ref{sec:results}, and the
+point its adiabatic index there. The shaded region lies above the
 inverse-beta-decay threshold for $\mu_e = 2$, where this equation of
 state no longer describes a white dwarf.}
 \label{fig:eos}
@@ -131,526 +161,242 @@ this threshold for the assumed composition.
 \section{Field equations}
 \label{sec:field-eq}
 
-Axisymmetric magnetohydrostatic equilibria with a poloidal field are
-governed by the Grad-Shafranov equation \citep{grad1958,shafranov1966}
-for the poloidal flux function $u(\varpi,z) = \varpi A_\varphi$, where
-$\varpi$ is the cylindrical radius and $A_\varphi$ the azimuthal
-component of the vector potential. The poloidal field components follow
-from $u$ as
+\subsection{The toroidal branch}
+
+For a barotropic star the magnetic force must derive from a potential if
+hydrostatic balance is to close as a Bernoulli integral. For an
+axisymmetric, purely azimuthal field
+$\mathbf{B}_{\mathrm{t}} = B_\varphi\,\hat{\mathbf{e}}_\varphi$ this
+restricts $B_\varphi$ to
+\begin{equation}
+B_\varphi = K \rho^m \varpi^{2m-1}, \qquad m \ge 1,
+\label{eq:fieldlaw}
+\end{equation}
+with $\varpi$ the cylindrical radius, $K$ the amplitude and $m$ the
+concentration towards the dense interior. The Lorentz force then follows
+from a potential, $\mathbf{f}_L/\rho = -\nabla M_{\mathrm{tor}}$ with
+\begin{equation}
+M_{\mathrm{tor}}(s) = \frac{m K^2}{4\pi(2m-1)}\, s^{\,2m-1},
+\qquad s \equiv \rho\varpi^2 ,
+\label{eq:mtor}
+\end{equation}
+which we verified symbolically for $m = 1, 3/2, 2, 3$. Hydrostatic
+equilibrium reduces to
+\begin{equation}
+H + \Phi + M_{\mathrm{tor}}(\rho\varpi^2) = C ,
+\label{eq:bernoulli}
+\end{equation}
+solved together with the Poisson equation for $\Phi$ and the equation of
+state of Sect.~\ref{sec:eos} by the self-consistent field iteration of
+\citet{hachisu1986}. Because $M_{\mathrm{tor}}$ depends on $\rho$, the
+density update is no longer a direct inversion of the equation of state
+but a per-point root find; the left-hand side is monotonic in $\rho$, so
+the root is unique and safely bracketed.
+
+\subsection{The poloidal component, and why it is imposed}
+\label{sec:poloidal}
+
+An axisymmetric poloidal field derives from a flux function
+$u(\varpi,z) = \varpi A_\varphi$,
 \begin{equation}
 B_\varpi = -\frac{1}{\varpi}\frac{\partial u}{\partial z}, \qquad
 B_z = \frac{1}{\varpi}\frac{\partial u}{\partial \varpi},
+\label{eq:poloidal}
 \end{equation}
-and the equilibrium (force balance combined with the Poisson equation
-for self-gravity) reduces to a single elliptic equation for $u$ sourced
-by the current distribution and, self-consistently, by $u$ itself
-through the poloidal current function $M(u)$.
+with $u$ obeying the Grad-Shafranov equation
+\citep{grad1958,shafranov1966} sourced by the current distribution, which
+we take linear in the flux.
 
-Following the SCF approach of \citet{hachisu1986}, extended to
-magnetized configurations, the poloidal current function is taken as
-linear in the flux, $M(u) = k_0\,u$, so that the Bernoulli integral
-governing hydrostatic balance reads
-\begin{equation}
-H + \Phi - M(u) = C,
-\label{eq:bernoulli}
-\end{equation}
-with $\Phi$ the gravitational potential and $C$ a constant fixed by the
-boundary condition at the stellar surface. Equation~\ref{eq:bernoulli}
-and the Grad-Shafranov equation are solved iteratively together with
-the Poisson equation for $\Phi$, alternating between an update of the
-density field (from the equation of state, Sect.~\ref{sec:eos}) and an
-update of the flux function $u$, until convergence.
+A single self-consistent solve carrying both components is not available
+in this formulation, and the obstruction is not a numerical one. In
+barotropy the toroidal function must depend on the flux alone,
+$\beta = \beta(u)$; since there is no current outside the star,
+$B_\varphi$ must vanish on every flux surface that reaches the surface,
+so the toroidal field is confined to the region of closed poloidal lines.
+The energy ratio reachable that way is a few percent, far from the
+toroidal-dominated configuration required below. We therefore solve the
+toroidal branch self-consistently for the structure, and impose the
+poloidal field on the converged density.
 
-A toroidal field confined within the last closed poloidal field line
-($u > u_c$) is added through a toroidal current function $\beta(u)$,
-parametrized as $\beta(u) = \zeta\,(u-u_c)^{m+1}$ with $m\ge1$, giving
-$B_\varphi = \beta(u)/\varpi$ inside the closed-field region and zero
-outside. A purely toroidal, non-mixed branch is also considered
-separately, with $B_\varphi = K\rho^m\varpi^{2m-1}$ derived directly
-from the Lorentz force (Maxwell stress tensor) rather than from a flux
-function; this branch requires no Grad-Shafranov solve, at the cost of
-being unable to represent a poloidal component. A genuinely
-self-consistent \emph{mixed} poloidal-toroidal equilibrium -- both
-components simultaneously present and mutually consistent within the
-same SCF solve -- is outside the scope of the axisymmetric formulation
-used here; Sect.~\ref{sec:braithwaite} describes how mixed
-configurations are instead obtained dynamically.
+That imposition has a price, and Sect.~\ref{sec:tradeoff} measures it:
+the imposed field's energy is precisely the term left unbalanced in the
+virial, so imposing a poloidal component carrying a fraction $x$ of the
+binding energy costs a virial error of about $x$. The poloidal component
+adopted here is small enough that this cost stays below the acceptance
+threshold, which is what makes the configuration certifiable at all.
 
 Purely toroidal and purely poloidal equilibria are each subject to a
 non-axisymmetric instability of azimuthal wavenumber $m=1$
-\citep{tayler1973,markey1973}, which the axisymmetric formulation of
-this section cannot, by construction, test for.
-
-%-------------------------------------------------------------------
-
-\section{Castro}
-\label{sec:castro}
-
-Dynamical (as opposed to SCF-equilibrium) evolution is carried out with
-Castro \citep{castro}, a massively parallel, block-structured
-adaptive-mesh-refinement (AMR) code for compressible astrophysical
-flows, built on the AMReX framework \citep{AMReX}. The hydrodynamics
-solver uses an unsplit corner-transport-upwind scheme \citep{ctu} with
-piecewise-parabolic reconstruction \citep{ppm}; self-gravity is
-included for isolated (non-periodic) configurations, and a
-constrained-transport magnetohydrodynamics (MHD) solver extends the
-same integrator to evolve a magnetic field while preserving
-$\nabla\!\cdot\!\mathbf{B}=0$ to machine precision by construction.
-Castro accepts an arbitrary equation of state and reaction network
-through the StarKiller Microphysics interface; for this work the
-network is reduced to a single inert species reproducing the assumed
-$\mu_e$, and the equation of state is the same zero-temperature
-degenerate electron gas of Sect.~\ref{sec:eos}, so that a star built in
-hydrostatic equilibrium by the SCF solver is evolved under the
-identical thermodynamic relation it was constructed with.
-
-Self-gravity for an isolated spherical mass distribution is obtained
-from Castro's monopole gravity solver, which integrates the enclosed
-mass along radial shells. Initial conditions are supplied to Castro as
-a one-dimensional radial density (and composition) profile, sampled
-onto the three-dimensional Cartesian AMR grid; the sampling itself
-(cell-volume averaging versus point sampling, and the alignment of the
-grid relative to the stellar center) has a measurable effect on how
-closely the discretized initial condition reproduces the target central
-density, which we account for when initializing a background star for
-dynamical evolution.
-
-%-------------------------------------------------------------------
-
-\section{The Braithwaite method}
-\label{sec:braithwaite}
-
-As noted in Sect.~\ref{sec:field-eq}, the axisymmetric SCF formulation
-cannot produce a genuinely self-consistent mixed poloidal-toroidal
-equilibrium, nor can it test the stability of any equilibrium against
-non-axisymmetric perturbations -- a serious limitation given that both
-purely poloidal and purely toroidal fields are themselves
-non-axisymmetrically unstable \citep{tayler1973,markey1973}. The
-resolution adopted here follows \citet{braithwaite2004} and
-\citet{braithwaite2006}: rather than constructing a mixed field and
-separately testing its stability, a \emph{random}, multi-scale magnetic
-field is seeded within an otherwise field-free, non-rotating background
-star (Sect.~\ref{sec:eos}) and allowed to relax dynamically under full
-three-dimensional, ideal MHD in Castro (Sect.~\ref{sec:castro}). Because
-the evolution is a genuine dynamical calculation and not an imposed
-equilibrium, any configuration that survives the relaxation is, by
-construction, stable to the perturbations sampled by the initial random
-field -- including non-axisymmetric ones the Grad-Shafranov formulation
-cannot represent at all.
-
-The random seed field is constructed as a vector potential $\mathbf{A}$
--- a superposition of Fourier-like modes spanning a band of length
-scales, with random amplitude, phase, and direction for each mode --
-multiplied by a smooth radial envelope that confines the field within
-the stellar volume before the magnetic field itself is formed as the
-discrete curl, $\mathbf{B} = \nabla\times\mathbf{A}$. Windowing the
-potential rather than the field is required for
-$\nabla\!\cdot\!\mathbf{B}=0$ to be preserved exactly: multiplying an
-already-divergence-free $\mathbf{B}$ by a confinement window after the
-curl has been taken would reintroduce a spurious divergence, whereas
-curling an already-windowed potential does not. The total seed field
-energy is calibrated, prior to relaxation, to a chosen fraction of the
-star's gravitational binding energy, $E_{\mathrm{mag}}/|W|$.
-
-Once released, the field is left free to evolve under the full MHD
-equations; no particular final poloidal-to-toroidal ratio is imposed.
-The relaxed configuration's toroidal fraction,
-$E_{\mathrm{tor}}/E_{\mathrm{mag}}$, is measured directly from the
-evolved field, and its dependence on the initial random seed
-(reproducibility across independent realizations of the random field,
-at fixed $E_{\mathrm{mag}}/|W|$) is examined empirically rather than
-assumed.
+\citep{tayler1973,markey1973}, which an axisymmetric formulation cannot
+test for. Sect.~\ref{sec:limitations} returns to this.
 
 %-------------------------------------------------------------------
 
 \section{Results}
 \label{sec:results}
 
-This section reports the results obtained so far with the procedure of
-Sect.~\ref{sec:braithwaite}, together with the numerical checks that
-establish the interval in which they are meaningful. All relaxations
-share the same non-rotating, initially field-free background star
-($\rho_c \simeq 10^9$\,g\,cm$^{-3}$, $\mu_e = 2$), built by the SCF
-solver of Sect.~\ref{sec:field-eq} to a virial error of
-$1.1\times10^{-4}$ and mapped onto a $64^3$ Cartesian grid, with one
-seed reproduced at $128^3$ as a resolution cross-check.
+\subsection{A certified $2\,M_\odot$ configuration}
+\label{sec:certified}
 
-\subsection{The measurement window}
-\label{sec:window}
-
-The MHD path of the code used here is not well-balanced: a star
-initialized in exact hydrostatic equilibrium does not remain exactly so
-on the discrete grid, and its central density drifts slowly away from
-the value it was constructed with. Waiting for the background star to
-settle is therefore not an available strategy, and the field
-diagnostics are instead measured inside a \emph{validity window} in
-time, bounded below by the relaxation of the seed field itself and
-above by the onset of structural drift of the star.
-
-The lower bound is set at $t/t_{\mathrm{dyn}} = 0.4$, by which time the
-measured toroidal fraction has left its initial transient and entered a
-quasi-steady band. The upper bound is the first sample at which the
-central density leaves a $\pm2\%$ band around its own $t=0$ value. For
-the background star used here this gives a window
-$t/t_{\mathrm{dyn}} \in [0.4, 1.13]$, and all measurements reported
-below fall inside it ($t/t_{\mathrm{dyn}} = 0.79$--$1.13$).
-
-Two independent checks support this choice. First, the same
-construction at $128^3$ never leaves the tighter $\pm1\%$ band over the
-entire baseline tested, $t/t_{\mathrm{dyn}} = 0.4$--$1.45$: the window
-is conservative rather than marginal, and becomes more so with
-resolution. Second, plotting the toroidal fraction against the central
-density rather than against time separates the two regimes cleanly --
-inside the window the two quantities are essentially uncorrelated,
-whereas past the upper bound they become strongly correlated
-($r \simeq 0.96$--$1.00$). Beyond the window the measured ratio is
-slaved to the drifting stellar structure and no longer reflects the
-dynamics of the field, which is precisely what the upper bound is
-constructed to exclude.
-
-The lower panel of Fig.~\ref{fig:window} shows why waiting is not an
-option: followed out to $t/t_{\mathrm{dyn}} = 16$, the field-free star
-does not converge to any value but wanders, from $-5\%$ near
-$t/t_{\mathrm{dyn}} = 5$ back through zero and up to $+8\%$ by the end
-of the run. There is no late-time plateau to wait for.
-
-The upper panel, however, carries a caveat that we consider the most
-important limitation of the measurements below, and it is visible in the
-same figure. The window was calibrated on a \emph{field-free} evolution.
-The seeded runs it is then applied to drift several times faster: at
-$t/t_{\mathrm{dyn}} = 1.13$, where the field-free star has moved by
-$-2\%$ by construction, the three extended seeded runs have moved by
-$-8\%$ to $-10\%$. The comparison is not an artifact of the damping
-schedule -- at these times both the field-free and the seeded runs are
-still inside their fully damped phase, before any ramp-off begins -- so
-the difference is attributable to the presence of the field. What it is
-\emph{not} possible to say from these runs is how much of that extra
-motion is the star's physical response to magnetic pressure in its core
-and how much is faster numerical drift. Either way, the operational
-consequence is the same and we state it plainly: the $\pm2\%$ criterion
-bounds the structural change of the calibration run, not of the runs
-being measured.
-
-\begin{figure}
-\centering
-\includegraphics[width=\columnwidth]{figures/window.pdf}
-\caption{Central density relative to its initial value. Upper panel: the
-field-free calibration run (thick) and the three extended seeded runs
-(thin), with the $\pm1\%$ and $\pm2\%$ bands, the crossings
-$X_{1\%} = 0.573$ and $X_{2\%} = 1.128$ that define the upper bound, and
-the resulting window shaded. The seeded runs leave the $\pm2\%$ band
-well before the window closes. Lower panel: the same field-free run over
-its full baseline -- the drift never settles.}
-\label{fig:window}
-\end{figure}
-
-\subsection{Divergence control}
-\label{sec:divb}
-
-The constrained-transport scheme is expected to preserve
-$\nabla\!\cdot\!\mathbf{B} = 0$ to machine precision, and this is
-verified on every measurement rather than assumed. The divergence must
-be evaluated on the interior of each grid patch: computed as a derived
-quantity without an extra ghost-cell layer, it reads one cell beyond
-the valid region and returns meaningless values at patch and domain
-boundaries, which we found to mimic a catastrophic growth of
-$|\nabla\!\cdot\!\mathbf{B}|$ that the field itself does not exhibit.
-Masking the two cells nearest any boundary, the maximum relative
-interior divergence stays in the range
-$5.3\times10^{-10}$--$8.5\times10^{-10}$ at $64^3$ and reaches
-$2.5\times10^{-9}$ at $128^3$. The mild increase with resolution is
-consistent with a finer grid resolving smaller-scale field structure at
-a fixed precision floor, not with a growing constraint violation.
-
-\subsection{The relaxed field is poloidal-dominated}
-\label{sec:seedstudy}
-
-Thirty relaxations were run from independent realizations of the random
-seed field described in Sect.~\ref{sec:braithwaite}, all calibrated to
-the same initial field strength $E_{\mathrm{mag}}/|W| = 0.15$: three
-batches of ten distinct seeds at $64^3$, plus one seed repeated at
-$128^3$. Table~\ref{tab:seeds} summarizes the measured toroidal
-fractions.
+Table~\ref{tab:config} reports the configuration this paper is about: a
+non-rotating white dwarf of $2.007\,M_\odot$ at
+$\rho_c = 10^9$\,g\,cm$^{-3}$, carrying a toroidal field with
+$E_{\mathrm{tor}}/|W| = 0.2026$ and a poloidal component imposed on top.
 
 \begin{table}
-\caption{Toroidal fraction of the relaxed field, measured inside the
-validity window of Sect.~\ref{sec:window}.}
-\label{tab:seeds}
+\caption{The adopted configuration. $\mu_e = 2$, $m = 1$, no rotation.}
+\label{tab:config}
 \centering
-\begin{tabular}{l c c}
+\begin{tabular}{l r}
 \hline\hline
-Batch & $n$ & $E_{\mathrm{tor}}/E_{\mathrm{mag}}$ \\
-\hline
-A ($64^3$)              & 10 & 0.317--0.370 \\
-B ($64^3$)              & 10 & 0.276--0.402 \\
-C ($64^3$)              & 10 & 0.280--0.388 \\
-Cross-check ($128^3$)   &  1 & 0.305 \\
-\hline
-All                     & 30 & 0.276--0.402 \\
+$\rho_c$ (g\,cm$^{-3}$)                        & $1.0\times10^{9}$ \\
+$M$ ($M_\odot$)                                & 2.007 \\
+$K$                                            & $3.245\times10^{-3}$ \\
+$E_{\mathrm{tor}}/|W|$                         & 0.2026 \\
+$B_{\varphi,\max}$ (G)                         & $4.275\times10^{13}$ \\
+$B_{\mathrm{pole}}$ (G)                        & $5.91\times10^{10}$ \\
+$B_{\mathrm{t}}/B_{\mathrm{p}}$ (energy)       & 884 \\
+$B_{\mathrm{t}}/B_{\mathrm{p}}$ (amplitude)    & 26.2 \\
+$E_{\mathrm{pol}}/E_{\mathrm{mag}}$            & $1.1\times10^{-3}$ \\
+VE                                             & $9.9\times10^{-5}$ \\
+$f_{\mathrm{pol}}$                             & 0.142 \\
 \hline
 \end{tabular}
 \end{table}
 
-Every one of the thirty measurements is poloidal-dominated,
-$E_{\mathrm{tor}}/E_{\mathrm{mag}} < 0.5$, with no exception in any
-batch or at either resolution, and the combined band is narrow,
-$[0.276, 0.402]$. Batch~A was run against a background star built
-before a refinement of the initial-condition sampling and batches~B
-and~C against the corrected one; the two constructions give the same
-band, so the result does not depend on that detail of the mapping.
-The resolution cross-check is consistent with the $64^3$ ensemble: the
-same seed gives $0.324$ at $64^3$ and $0.305$ at $128^3$, a shift small
-compared to the seed-to-seed spread.
+The mass gain is the whole point of the toroidal field: the same central
+density and composition without a field give $1.346\,M_\odot$, so the
+field is carrying $+49\%$. That gain is available at a central density
+well below the inverse-beta-decay threshold for $\mu_e = 2$
+($1.94\times10^{10}$\,g\,cm$^{-3}$, Sect.~\ref{sec:eos}), so the
+configuration is a white dwarf in the sense the equation of state can
+still describe.
 
-The relaxed configuration is thus mixed and poloidal-dominated, and no
-poloidal-to-toroidal ratio was imposed to make it so. Both purely
-poloidal and purely toroidal fields are unstable to non-axisymmetric
-perturbations \citep{tayler1973,markey1973}, and the surviving
-configurations are neither -- consistent with the picture of
-\citet{braithwaite2004} and \citet{braithwaite2006}, in which a stable
-stellar field must contain both components. We emphasize that this is a
-statement about the configuration reached within the validity window and
-sustained there, not about an asymptotic equilibrium: with the star
-itself drifting on a longer timescale (Sect.~\ref{sec:window}), the
-present calculation cannot follow the field to arbitrarily late times.
+The field is toroidal-dominated by a wide margin,
+$B_{\mathrm{t}}/B_{\mathrm{p}} = 884$ in energy and $26$ in amplitude.
+The two differ because energy goes as the square and the components
+occupy different volumes: the toroidal field is confined to the interior
+while the poloidal one extends through the star and beyond it. Calling
+this a mixed field is accurate but should not be read as balanced -- the
+poloidal component carries a tenth of a percent of the magnetic energy.
+What it does carry is the exterior structure, which the toroidal
+component cannot have at all: $B_\varphi$ vanishes with the density, so a
+purely toroidal star has no field outside it and no dipole for magnetic
+braking to act on. The poloidal component supplies a surface dipole of
+$5.9\times10^{10}$\,G.
 
-The spread within the band is a property of the individual seed, not
-sampling noise. Re-running seeds over a baseline four times longer than
-the measurement window preserves their rank ordering: had the spread
-been different realizations sampled at different phases of a common
-oscillation, extending the baseline would have scrambled that ordering.
-For this reason we report the ensemble as a band and as the per-seed
-values, and deliberately not as a mean with an error bar. What sets a
-given seed's value remains open. The natural candidate -- the net
-magnetic helicity of the initial random field, a quantity conserved
-under ideal MHD and the standard explanation for the endpoint of this
-kind of relaxation -- was tested directly and does not survive: a
-suggestive correlation at $n=4$ ($r \simeq -0.84$) collapsed to
-$r \simeq -0.33$, unstable under leave-one-out resampling, once the
-full batch of ten was included.
+One number worth stating next to the field strength. The critical field
+at which Landau quantization changes the electron equation of state is
+$B_c = m_e^2c^3/e\hbar = 4.414\times10^{13}$\,G, and the peak field here
+is $0.97\,B_c$ -- just below it. The equation of state used has no field
+dependence, so a configuration above $B_c$ would be inconsistent with its
+own microphysics; this one sits at the edge of that regime rather than
+inside it.
 
-\subsection{What the relaxation changes, and what it does not}
-\label{sec:evolution}
+\subsection{Convergence}
+\label{sec:convergence}
 
-The measurements above are single values, taken inside the window. The
-plotfiles of one full batch of ten seeds survived, which lets us follow
-both the ratio and the field energy through the relaxation rather than
-sampling them once (Fig.~\ref{fig:relaxation}), and the two behave
-completely differently.
+Figure~\ref{fig:convergence} shows the configuration under mesh
+refinement at fixed domain, halving $\Delta r$ four times. The mass
+converges monotonically with shrinking increments -- $0.15\%$, $0.04\%$,
+$0.01\%$ -- to $2.007\,M_\odot$, and $E_{\mathrm{tor}}/|W|$ is converged
+to four significant figures at every resolution beyond the coarsest.
 
-The toroidal fraction stays inside a narrow band, $0.26$--$0.41$, for the
-whole evolution. It is not merely poloidal-dominated at the measurement
-time: it never approaches $0.5$ at any point in any run, including
-$t = 0$. Individual seeds move within the band, in both directions, and
-settle to their own level well before the window opens.
+The virial error stays below the $10^{-3}$ acceptance threshold at all
+four resolutions, but it is not monotonic: it dips at the second
+resolution and settles near $10^{-4}$. We report this rather than
+smoothing it over, because it means the virial error at a single
+resolution is not an error estimate for this configuration; the mass
+convergence is. The same non-monotonicity appears at larger $K$ in this
+branch, where it does cross the threshold; here it does not.
 
-The magnetic energy, in contrast, falls by roughly an order of magnitude
-over the same interval, from $E_{\mathrm{mag}}/|W| = 0.021$--$0.040$ at
-$t = 0$ to $0.0018$--$0.0051$ by $t/t_{\mathrm{dyn}} \simeq 1.2$. That
-decay is resolution-limited, which we can show with the one seed run at
-both resolutions: measured at essentially the same time, seed 42 retains
-$E_{\mathrm{mag}}/|W| = 0.0135$ at $128^3$ against $0.0042$ at $64^3$, a
-factor $3.2$, while its toroidal fraction changes by only $6\%$
-($0.305$ against $0.324$). The energy left in the field at a given time
-is therefore a property of the grid as much as of the physics, and we do
-not report it as a measurement of anything; the ratio is the quantity
-that survives the resolution change, which is why it is the only one we
-quote. A convergence study of the decay rate itself would need more than
-the single $128^3$ run available here.
+The domain was sized by the criterion that the star's polar radius clear
+the boundary, $f_{\mathrm{pol}} = 0.142$ against the $0.2$ limit adopted
+for this branch, and the configuration is reached by continuation in $K$
+from the field-free solution, since direct solves at this amplitude do
+not converge.
 
 \begin{figure}
 \centering
-\includegraphics[width=\columnwidth]{figures/relaxation.pdf}
-\caption{Evolution of the ten seeds of one batch at $64^3$, with the
-validity window shaded. Upper panel: toroidal fraction, which stays
-within a narrow band well below $0.5$ throughout, with the isotropic
-value $1/3$ marked. Lower panel: magnetic energy, which falls by about
-an order of magnitude, and the same seed measured at both resolutions --
-the $128^3$ run retains $3.2$ times more field energy at the same time,
-so this decay is resolution-limited.}
-\label{fig:relaxation}
+\includegraphics[width=\columnwidth]{figures/convergence_2msun.pdf}
+\caption{Mesh convergence of the adopted configuration at fixed domain,
+labelled by radial resolution. Upper panel: the mass, converging
+monotonically to $2.007\,M_\odot$; the dashed line is the finest value.
+Lower panel: the virial error, which stays inside the acceptance band
+(shaded) at every resolution without being monotonic.}
+\label{fig:convergence}
 \end{figure}
 
-\subsection{The toroidal fraction does not move from its seeded value}
-\label{sec:noselection}
+\subsection{What the poloidal component costs}
+\label{sec:tradeoff}
 
-There is a further consequence of having the full time series, and it
-bounds the interpretation of the whole ensemble. A statistically
-isotropic random field puts, on average, one third of its energy into
-the azimuthal component by symmetry alone. The seed fields are
-constructed to be random and multi-scale, and they duly start there: for
-the batch of ten, the toroidal fraction at $t=0$ averages $0.342$, with
-a seed-to-seed scatter of $0.039$. The in-window values average
-$0.336$, with a scatter of $0.039$.
+The poloidal field is imposed rather than solved for, so it leaves the
+pair out of virial balance by its own energy. Figure~\ref{fig:tradeoff}
+measures that directly: as the poloidal amplitude is raised, the virial
+error of the combined configuration tracks $E_{\mathrm{pol}}/|W|$ almost
+one for one, and the pair leaves the certified band once the exterior
+dipole exceeds roughly $10^{11}$\,G.
 
-Figure~\ref{fig:paired} pairs the two per seed. Individual seeds move by
-up to $\pm0.065$, in both directions, but the paired change across the
-batch is $-0.006 \pm 0.012$, indistinguishable from zero at $n=10$, and
-both ensemble means sit on the isotropic value. Within the window
-accessible here, the relaxation does not drive the toroidal fraction
-anywhere: it leaves it, on average, where the random seed put it.
-
-This does not weaken the statement that the surviving configuration is
-mixed and poloidal-dominated -- that is measured, at every time, in every
-run. It does mean these calculations do not demonstrate the stronger
-claim they might be read as supporting, namely that the relaxation
-\emph{selects} a preferred poloidal-to-toroidal ratio. Demonstrating
-selection requires showing that the field is driven to a ratio it did not
-start at, and that is exactly what the accessible window is too short to
-show: with the energy still falling by an order of magnitude per
-dynamical time and only two to three plotfiles per run falling inside the
-window, the ensemble mean has neither the time nor the sampling to move.
-Extending the baseline requires closing the well-balancing gap of
-Sect.~\ref{sec:window} first, not running the present setup for longer.
+This sets the configuration adopted above. At
+$B_{\mathrm{t}}/B_{\mathrm{p}} = 884$ the virial error is
+$9.9\times10^{-5}$, an order of magnitude inside the threshold, and the
+exterior dipole is $5.9\times10^{10}$\,G. Reaching a more balanced field
+is possible but not certifiable by the standard applied here: at
+$B_{\mathrm{t}}/B_{\mathrm{p}} = 8.8$ the virial error is
+$2.3\times10^{-2}$, twenty times the threshold. A configuration in that
+range would have to be justified dynamically -- loaded into an
+evolutionary calculation and allowed to relax -- rather than presented as
+an equilibrium.
 
 \begin{figure}
 \centering
-\includegraphics[width=\columnwidth]{figures/paired.pdf}
-\caption{Toroidal fraction at $t=0$ and averaged inside the validity
-window, paired per seed, for the batch of ten. Blue lines increase, gray
-lines decrease; heavy bars are the ensemble means, and the dashed line is
-the isotropic value $1/3$. Individual seeds move; the ensemble mean does
-not.}
-\label{fig:paired}
+\includegraphics[width=\columnwidth]{figures/tradeoff_2msun.pdf}
+\caption{The cost of the poloidal component. Moving left to right, the
+imposed poloidal amplitude rises, the field becomes less
+toroidal-dominated, and the exterior dipole (upper axis) grows; the
+virial error of the pair rises with it and leaves the certified band
+(shaded). The circled point is the configuration of
+Table~\ref{tab:config}.}
+\label{fig:tradeoff}
 \end{figure}
 
-\subsection{The spatial structure of a relaxed field}
-\label{sec:structure}
+%-------------------------------------------------------------------
 
-The diagnostics above are volume integrals. Figures~\ref{fig:lines}
-and~\ref{fig:components} show what the field they integrate over actually
-looks like, for seed 20 at $t/t_{\mathrm{dyn}} = 0.83$ -- a plotfile
-inside the validity window, from the realization whose toroidal fraction
-($0.338$) is the closest in the batch to the ensemble mean, so the figures
-are representative rather than selected.
+\section{Limitations}
+\label{sec:limitations}
 
-The field fills the star rather than concentrating in a core or a shell,
-reaching $1.9\times10^{13}$\,G at its peak, and it is structured on scales
-well below the stellar radius -- the seed was multi-scale and the
-relaxation has not organized it into a single large-scale structure on the
-timescale accessible here.
+\paragraph{No stability test.} This is a two-dimensional axisymmetric
+equilibrium, certified to satisfy hydrostatic and virial balance and
+nothing more. A field this strongly toroidal is precisely the
+configuration subject to the Tayler $m=1$ instability
+\citep{tayler1973,markey1973}, which is non-axisymmetric and therefore
+invisible to this formulation by construction. The poloidal component
+adopted here is far too weak to be the stabilizing agent that a mixed
+field is supposed to provide. Whether this configuration survives a
+non-axisymmetric perturbation is open, and answering it requires a
+three-dimensional magnetohydrodynamic evolution.
 
-One caveat attaches to every toroidal fraction quoted in this paper, and
-is worth stating before the decomposition is used to look at anything.
-The background star is non-rotating and the seed field is random, so the
-$z$ axis about which poloidal and toroidal are separated is a bookkeeping
-choice, not a dynamically preferred direction. For a statistically
-isotropic field any axis gives one third, which is the same fact reported
-from the other side in Sect.~\ref{sec:noselection}.
+\paragraph{The poloidal component is not self-consistent.} It is solved
+on the converged toroidal density and imposed, for the reason given in
+Sect.~\ref{sec:poloidal}: barotropy does not deliver a strongly mixed
+equilibrium. The resulting virial error is small enough to certify, but
+the configuration is not a solution of a single set of equations carrying
+both components.
 
-Figure~\ref{fig:lines} follows the field lines themselves, integrated
-through each of the three fields from a common set of starting points, so
-that the panels differ only by which field is being followed. The
-connectivity is what the slices cannot show. Lines of the total field are
-tangled, reversing direction on scales well short of the stellar radius
-and filling the volume without organizing into anything larger -- the
-signature of a multi-scale seed that the accessible baseline has not had
-time to rearrange. Lines of the poloidal part are tangled in the same
-way, in meridional loops. Lines of the toroidal part, by contrast, are
-closed circles about the $z$ axis, and necessarily so: with
-$\mathbf{B}_{\mathrm{t}} = B_\varphi\,\hat{\mathbf{e}}_\varphi$ by
-construction, its field lines can only be circles. That panel is
-therefore not evidence of an organized toroidal structure -- what it
-carries is where the toroidal component is strong, and in which sense it
-circulates, not a topology the relaxation produced.
+\paragraph{The equation of state does not respond to the field.} At
+$0.97\,B_c$ the peak field is at the edge of the regime where Landau
+quantization modifies the degenerate electron gas, and the
+inverse-beta-decay threshold used to bound $\rho_c$ would itself shift
+with field \citep{das2014}. Neither effect is included. Staying below
+$B_c$ keeps the configuration self-consistent in this respect, but only
+barely, and it forecloses raising $K$ further at this central density.
 
-The drawn lines end because the integration was stopped at a fixed
-length, not because the field ends: $\nabla\!\cdot\!\mathbf{B} = 0$ leaves
-a field line with no beginning and no end. Following one line of the
-total field as far as it will go makes the point quantitatively -- it
-travels $60$ stellar radii of arc without leaving the star, ranging
-between $0.1$ and $1.25\,R_\star$ from where it started and never
-settling. It does not close, and closure is not what should be expected
-of it: in a three-dimensional field with no symmetry, field lines are
-generically chaotic, and a line that closes on itself is the non-generic
-case. The toroidal component is the exception precisely because its
-azimuthal form imposes the symmetry the total field lacks. That a single
-line samples the whole stellar volume in this way is the tangling of
-panel (a) measured rather than eyeballed, and it is what an unrelaxed
-multi-scale field looks like.
-
-Two numbers put the visual impression on a scale. Taking the $90$th
-percentile of $|\mathbf{B}|$ inside the star, $5.96\times10^{12}$\,G, as
-a common reference level, the total field exceeds it in $10.0\%$ of the
-stellar volume by construction, while the poloidal part exceeds it in
-$5.9\%$ and the toroidal part in $2.1\%$ -- a volume ratio of $2.8$
-between the two components at the same field strength.
-
-And one caveat that the integrated numbers hide. Poloidal dominance is a
-statement about volume-integrated energy, not a pointwise one: the median
-$|B_{\mathrm{p}}|/|B_{\mathrm{t}}|$ inside the star is $1.65$, but
-$|B_{\mathrm{t}}|$ exceeds $|B_{\mathrm{p}}|$ in $32\%$ of the stellar
-volume. The field is locally toroidal-dominated over a third of the star
-while remaining poloidal-dominated overall.
-
-\subsection{The two components, each in its own plane}
-\label{sec:components}
-
-Neither $\mathbf{B}_{\mathrm{t}}$ nor $\mathbf{B}_{\mathrm{p}}$ is
-solenoidal on its own -- only their sum is. For a field with no symmetry
-$\nabla\!\cdot\!\mathbf{B}_{\mathrm{t}} =
-\varpi^{-1}\partial B_\varphi/\partial\varphi \neq 0$, and
-$\nabla\!\cdot\!\mathbf{B}_{\mathrm{p}}$ is its negative. Measured on the
-grid with a common difference operator, the two carry about three times
-the divergence of the total field, whose own value is that operator's
-floor. Their integral curves may therefore begin and end, and drawing
-them as field lines misleads in a way the total field's do not. The
-toroidal component compounds this: $B_\varphi$ changes sign, and $39\%$
-of the interior lies within $1\%$ of its null surfaces, where an integral
-curve simply stalls.
-
-Figure~\ref{fig:components} therefore shows each component as what it is,
-in the plane where it lies whole. $\mathbf{B}_{\mathrm{t}}$ is contained
-in the equatorial plane, since $\hat{\mathbf{e}}_\varphi$ is horizontal
-there, and what it carries is a sign: panel (a) maps $B_\varphi$ with its
-zero contour, so the regions circulating one way and the other appear
-together with the null surfaces separating them. They are interleaved on
-scales of a few tenths of the stellar radius with no sense preferred --
-the pointwise picture of a toroidal fraction that averages to one third.
-$\mathbf{B}_{\mathrm{p}}$ is contained in any meridional plane, since at
-$y=0$ its components are exactly $(B_x, B_z)$; panel (b) draws its
-streamlines there, where they are genuine in-plane integral curves rather
-than a projection, over $|\mathbf{B}_{\mathrm{p}}|$. They close into small
-loops on that same scale, which is the poloidal counterpart of the same
-statement: structure at a few tenths of $R_\star$, and nothing organized
-at the scale of the star.
-
-
-\begin{figure*}
-\centering
-\includegraphics[width=\textwidth]{figures/fieldlines.pdf}
-\caption{Field lines of the total field and of its toroidal and poloidal
-parts, traced from a common set of starting points in the strong-field
-region, colored by the local field strength on a shared scale, with
-arrowheads giving the direction. The faint wireframe is the
-stellar surface. \emph{Each line is truncated at a fixed integration
-length, so its ends are a drawing choice and not a property of the
-field.} Lines of the total and poloidal fields are tangled on scales
-short of the stellar radius; lines of the toroidal component are closed
-circles about the $z$ axis by construction, so that panel shows where the
-toroidal field is strong rather than a structure the relaxation selected.}
-\label{fig:lines}
-\end{figure*}
-
-\begin{figure*}
-\centering
-\includegraphics[width=\textwidth]{figures/components.pdf}
-\caption{The two components of seed 20's relaxed field, each in the plane
-in which it lies entirely, cropped to just outside the stellar surface.
-(a) $B_\varphi$ in the equatorial plane, signed, with its zero contour --
-the null surfaces separating oppositely circulating regions -- and the
-in-plane streamlines of $\mathbf{B}_{\mathrm{t}}$. Those are concentric
-circles by construction, since $\mathbf{B}_{\mathrm{t}}$ is azimuthal;
-what their arrows add is the sense of circulation, read directly rather
-than decoded from the colour, reversing wherever $B_\varphi$ does.
-(b) $\mathbf{B}_{\mathrm{p}}$ in the meridional plane, as in-plane
-streamlines over its magnitude; there the streamline geometry is not
-fixed in advance and shows the poloidal topology. Both panels are masked
-to the stellar interior, outside which the field is at its numerical
-floor. Neither component is solenoidal by itself, which is why they are
-drawn this way rather than as three-dimensional field lines.}
-\label{fig:components}
-\end{figure*}
+\paragraph{Barotropy.} The star is described by a cold, temperature-independent
+equation of state, so it has no entropy stratification and no buoyancy
+restoring force. Stable magnetic equilibria in stars are usually argued
+to rely on stable stratification, which this model does not have; whether
+that is a limitation of the model or a statement about degenerate stars
+is beyond what these calculations can settle.
 
 \begin{acknowledgements}
 TBD.

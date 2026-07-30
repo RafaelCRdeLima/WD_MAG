@@ -37,7 +37,7 @@ C_GRID = "#e1e0d9"
 C_BAND = "#f2f1ec"
 
 MU_E = 2.0
-RHO_C_STAR = 1.0e9              # the configuration of Sect. 4
+RHO_C_STAR = 9.883938495e8      # the background star of Sect. 6
 
 plt.rcParams.update({
     "font.family": "serif",
