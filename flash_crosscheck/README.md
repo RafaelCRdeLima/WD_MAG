@@ -97,11 +97,37 @@ The image's `object/` is an existing CCSN build and is left alone -- work
 uses a separate `-objdir` on a mounted volume, or nothing survives the
 container.
 
+## Superseded: the polytrope route
+
+`make_polytrope.py` and the gamma-law design above were built first and are
+kept because the reasoning still applies if the Helmholtz route stalls. It
+was superseded on instruction: use the EOS most appropriate to a white
+dwarf that FLASH actually has, which is **Helmholtz**. See
+`make_wd_model.py` and `WDHydrostatic/`.
+
+The EOS-mismatch problem that motivated the polytrope was solved a
+different way: the star is integrated in HSE with the project's own ztwd
+EOS at a temperature low enough that Helmholtz's extra terms are
+negligible, and `make_wd_model.py` MEASURES that
+(`P_ion/P_deg = 9.8e-4`, `P_rad/P_deg = 1.2e-12` at `T = 1e7` K) instead of
+assuming it. That also removes the central-condensation caveat: the star
+is the real ztwd structure, validated to `0.026%` in mass against the
+production star.
+
 ## Status
 
-- [x] Polytrope generator, verified against Lane-Emden tabulated values
-- [x] `model_polytrope.dat` written
-- [ ] FLASH Simulation unit (reads the model, maps to 3D, self-gravity)
-- [ ] FLASH build in a separate objdir on a mounted volume
-- [ ] Castro side rebuilt with `EOS_DIR := gamma_law` on the same model
-- [ ] `rho_c(t)` comparison
+- [x] FLASH 4.8 extracted from the Docker image, patched, and built with
+      Helmholtz + Poisson/Multipole + unsplit hydro (`FLASH_CORE_PATCHES.md`)
+- [x] `WDHydrostatic` simulation unit; 1D ztwd model validated against the
+      production star (M to 0.026%)
+- [x] First run: 39 steps to `t/t_dyn = 0.773`, then a timestep collapse
+      and an out-of-table EOS state -- `flash_rhoc.csv`
+- [ ] **Blocker for any code comparison:** the Castro reference curve was
+      produced with global velocity damping active over `[0, 5 t_dyn]`
+      (`run_seed*.log`: "global damping active"), and this FLASH run has
+      none. The two are therefore not comparable as they stand, and the
+      measured difference cannot be attributed to the schemes. Either add
+      the equivalent damping to the FLASH problem or re-run Castro
+      undamped.
+- [ ] Attribute the timestep collapse: setup or FLASH
+- [ ] `rho_c(t)` comparison, once the runs are actually comparable

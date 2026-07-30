@@ -1,0 +1,60 @@
+# Configuration for a hydrostatic white dwarf in 3D.
+#
+# Purpose: find out whether FLASH holds a self-gravitating white dwarf in
+# hydrostatic equilibrium, or whether rho_c drifts the way it does in
+# Castro (docs/teoria.md Sec 6.8, paper Fig. 1). Field-free, no MHD, no
+# seed field -- that is deliberate: the drift is what bounds the
+# measurement window, so it is the thing to test first.
+#
+# EOS: Helmholtz. It is the appropriate white-dwarf EOS available in FLASH
+# (degenerate electrons at finite temperature, plus ions and radiation).
+# The 1D model handed in is a ztwd structure at a temperature low enough
+# that Helmholtz's extra terms are negligible -- flash_crosscheck/
+# make_wd_model.py measures that ratio (P_ion/P_deg ~ 1e-3) rather than
+# assuming it.
+
+REQUIRES Driver
+REQUIRES Grid
+REQUIRES physics/Hydro
+REQUIRES physics/Eos/EosMain/Helmholtz
+REQUIRES physics/Gravity/GravityMain/Poisson/Multipole
+REQUIRES Multispecies
+REQUESTS IO
+
+# Poisson/Multipole is 3D only, and so is the question being asked.
+USESETUPVARS nDim
+IF nDim != 3
+  SETUPERROR WDHydrostatic needs 3d for Poisson/Multipole. Use: ./setup WDHydrostatic -auto -3d
+ENDIF
+
+# One species, He4-like (A=4, Z=2), so mu_e = A/Z = 2 -- the same
+# composition as the Castro problem's mu2.net, so the two runs describe
+# the same star.
+SPECIES HE4
+
+D sim_modelFile     1D model file: comment lines start with '#', then rows of "r density temperature"
+PARAMETER sim_modelFile     STRING  "wd_model.dat"
+
+D sim_nSubZones     sub-sampling points per dimension when mapping the 1D model onto 3D cells
+PARAMETER sim_nSubZones     INTEGER 3       [1 to ]
+
+D sim_rhoAmbient    ambient density outside the star
+PARAMETER sim_rhoAmbient    REAL    1.0e-4  [0 to ]
+
+D sim_tempAmbient   ambient temperature outside the star
+PARAMETER sim_tempAmbient   REAL    1.0e7   [0 to ]
+
+D sim_abar          mean nucleon number of the single species
+PARAMETER sim_abar          REAL    4.0     [0 to ]
+
+D sim_zbar          mean charge of the single species
+PARAMETER sim_zbar          REAL    2.0     [0 to ]
+
+D sim_xctr          x of the stellar centre
+PARAMETER sim_xctr          REAL    0.0
+
+D sim_yctr          y of the stellar centre
+PARAMETER sim_yctr          REAL    0.0
+
+D sim_zctr          z of the stellar centre
+PARAMETER sim_zctr          REAL    0.0

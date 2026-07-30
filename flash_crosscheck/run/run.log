@@ -1,0 +1,122 @@
+ WARNING : Adaptive Grid did not find any refinement variables
+ Grid_init: resolution based on runtime params:
+  lrefine          dx              dy              dz
+      1      15312500.000    15312500.000    15312500.000
+ MaterialProperties initialized
+ Cosmology initialized
+ about to open file
+ [Eos_init] Cannot open helm_table.bdat!
+ [Eos_init] Trying old helm_table.dat!
+ Source terms initialized
+ [WDHydrostatic] model file: wd_model.dat
+ [WDHydrostatic] points read =         2048
+ [WDHydrostatic] r range     =    0.0000000000000000        848704895.71000004     
+ [WDHydrostatic] rho_c       =    988393849.50000000     
+ [WDHydrostatic] T (uniform) =    10000000.000000000     
+ [WDHydrostatic] abar, zbar  =    4.0000000000000000        2.0000000000000000     
+ [WDHydrostatic] nSubZones   =            3
+  iteration, no. not moved =            0           0
+ refined: total leaf blocks =          512
+ refined: total blocks =          512
+ [amr_morton_process]: Initializing surr_blks using standard orrery implementation
+ [gr_mpoleInit] using 223 moment array, 892 items                                                                                                                                                                                                                               
+  Finished with Grid_initDomain, no restart
+ Ready to call Hydro_init
+ Hydro initialized
+ Gravity initialized
+ Initial dt verified
+ *** Wrote checkpoint file to wd_hdf5_chk_0000 ****
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0000 ****
+ Initial plotfile written
+ Driver init all done
+       n          t         dt  (         x,          y,          z) |  dt_hydro  dt_Diff  
+       1 1.0000E-06 2.0000E-06  (-7.656E+06, -7.656E+06, -7.656E+06) |  9.569E-03 9.379E+43
+       2 3.0000E-06 4.0000E-06  (-7.656E+06, -7.656E+06, -7.656E+06) |  9.569E-03 9.379E+43
+       3 7.0000E-06 8.0000E-06  (-7.656E+06, -7.656E+06, -7.656E+06) |  9.569E-03 9.379E+43
+       4 1.5000E-05 1.6000E-05  (-7.656E+06, -7.656E+06, -7.656E+06) |  9.569E-03 9.379E+43
+       5 3.1000E-05 3.2000E-05  (-7.656E+06,  7.656E+06, -7.656E+06) |  9.569E-03 9.379E+43
+       6 6.3000E-05 6.4000E-05  ( 7.656E+06, -7.656E+06,  7.656E+06) |  9.568E-03 9.379E+43
+       7 1.2700E-04 1.2800E-04  ( 7.656E+06, -7.656E+06,  7.656E+06) |  9.568E-03 9.379E+43
+       8 2.5500E-04 2.5600E-04  ( 7.656E+06,  7.656E+06,  7.656E+06) |  9.566E-03 9.379E+43
+       9 5.1100E-04 5.1200E-04  (-7.656E+06,  7.656E+06, -7.656E+06) |  9.563E-03 9.379E+43
+      10 1.0230E-03 1.0240E-03  ( 7.656E+06, -7.656E+06,  7.656E+06) |  9.557E-03 9.379E+43
+      11 2.0470E-03 2.0480E-03  ( 7.656E+06, -7.656E+06,  7.656E+06) |  9.546E-03 9.379E+43
+      12 4.0950E-03 4.0960E-03  ( 7.656E+06, -7.656E+06,  7.656E+06) |  9.526E-03 9.379E+43
+      13 8.1910E-03 8.1920E-03  ( 7.656E+06,  7.656E+06,  7.656E+06) |  9.497E-03 9.379E+43
+      14 1.6383E-02 9.4678E-03  ( 7.656E+06, -7.656E+06,  7.656E+06) |  9.468E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0001 ****
+      15 2.5851E-02 9.4543E-03  (-7.656E+06, -7.656E+06, -7.656E+06) |  9.454E-03 9.379E+43
+      16 3.5305E-02 9.4468E-03  ( 7.656E+06,  7.656E+06, -7.656E+06) |  9.447E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0002 ****
+      17 4.4752E-02 9.4434E-03  (-7.656E+06,  7.656E+06, -7.656E+06) |  9.443E-03 9.379E+43
+      18 5.4195E-02 9.4427E-03  (-7.656E+06,  7.656E+06, -7.656E+06) |  9.443E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0003 ****
+      19 6.3638E-02 9.4437E-03  ( 7.656E+06,  7.656E+06,  7.656E+06) |  9.444E-03 9.379E+43
+      20 7.3082E-02 9.4457E-03  ( 7.656E+06, -7.656E+06,  7.656E+06) |  9.446E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0004 ****
+      21 8.2527E-02 9.4484E-03  ( 7.656E+06,  7.656E+06,  7.656E+06) |  9.448E-03 9.379E+43
+      22 9.1976E-02 9.4518E-03  ( 7.656E+06,  7.656E+06,  7.656E+06) |  9.452E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0005 ****
+      23 1.0143E-01 9.4562E-03  ( 7.656E+06,  7.656E+06, -7.656E+06) |  9.456E-03 9.379E+43
+      24 1.1088E-01 9.4616E-03  (-7.656E+06,  7.656E+06, -7.656E+06) |  9.462E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0006 ****
+      25 1.2035E-01 9.4677E-03  ( 7.656E+06, -7.656E+06,  7.656E+06) |  9.468E-03 9.379E+43
+      26 1.2981E-01 9.4744E-03  ( 7.656E+06,  7.656E+06,  7.656E+06) |  9.474E-03 9.379E+43
+      27 1.3929E-01 9.4814E-03  ( 7.656E+06,  7.656E+06,  7.656E+06) |  9.481E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0007 ****
+      28 1.4877E-01 9.4885E-03  ( 7.656E+06,  7.656E+06,  7.656E+06) |  9.488E-03 9.379E+43
+      29 1.5826E-01 9.4957E-03  ( 7.656E+06,  7.656E+06,  7.656E+06) |  9.496E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0008 ****
+      30 1.6775E-01 9.5030E-03  (-7.656E+06,  7.656E+06, -7.656E+06) |  9.503E-03 9.379E+43
+      31 1.7726E-01 9.5107E-03  ( 7.656E+06,  7.656E+06,  7.656E+06) |  9.511E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0009 ****
+      32 1.8677E-01 9.5188E-03  (-7.656E+06,  7.656E+06, -7.656E+06) |  9.519E-03 9.379E+43
+      33 1.9629E-01 9.5274E-03  (-7.656E+06,  7.656E+06,  7.656E+06) |  9.527E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0010 ****
+      34 2.0581E-01 9.5366E-03  ( 7.656E+06,  7.656E+06,  7.656E+06) |  9.537E-03 9.379E+43
+      35 2.1535E-01 7.1171E-03  (-1.455E+08,  2.067E+08, -1.455E+08) |  7.117E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0011 ****
+      36 2.2247E-01 2.8063E-08  (-2.220E+08,  8.422E+07, -1.148E+08) |  2.806E-08 9.379E+43
+      37 2.2247E-01 1.6412E-08  ( 8.422E+07,  2.220E+08,  1.148E+08) |  1.641E-08 9.379E+43
+      38 2.2247E-01 1.7725E-12  ( 8.422E+07, -1.148E+08, -2.220E+08) |  1.772E-12 9.379E+43
+      39 2.2247E-01 1.0000E-12  ( 1.148E+08,  2.220E+08,  8.422E+07) |  4.774E-15 9.379E+43
+ [eos_helm] Negative total pressure.
+   values: dens,temp:    141953836841.87936        978279556323.60095                      
+   values: abar,zbar:    4.0000000000000000        2.0000000000000000                      
+   coulomb coupling parameter Gamma:    3.0564380071185088E-003                            
+  Prad   2.30989E+33 Pion  2.88660E+30 Pele  -7.11726E+34 Pcoul -0.00000E+00               
+  Ptot   -6.88598E+34 df_d   -1.41279E+13                                                  
+ DRIVER_ABORT: [eos_helm] ERROR: negative total pressure.
+ [eos_helm] Negative total pressure.
+   values: dens,temp:    131810910891.28749        978279515001.34961                      
+   values: abar,zbar:    4.0000000000000000        2.0000000000000000                      
+   coulomb coupling parameter Gamma:    2.9818355292029241E-003                            
+  Prad   2.30989E+33 Pion  2.68035E+30 Pele  -7.61587E+34 Pcoul -0.00000E+00               
+  Ptot   -7.38461E+34 df_d   -1.75338E+13                                                  
+ DRIVER_ABORT: [eos_helm] ERROR: negative total pressure.
+ [eos_helm] Negative total pressure.
+   values: dens,temp:    89686412012.590103        1239379014406.3528                      
+   values: abar,zbar:    4.0000000000000000        2.0000000000000000                      
+   coulomb coupling parameter Gamma:    2.0701458106430082E-003                            
+  Prad   5.95054E+33 Pion  2.31051E+30 Pele  -1.76087E+35 Pcoul -0.00000E+00               
+  Ptot   -1.70134E+35 df_d   -8.75656E+13                                                  
+  
+ Driver_abort called. See log file for details.
+ Error message is [eos_helm] ERROR: negative total pressure.
+ Calling MPI_Abort() for shutdown in   2 seconds!
+ 
+ [eos_helm] Negative total pressure.
+   values: dens,temp:    203464540805.03839        978279510424.71069                      
+   values: abar,zbar:    4.0000000000000000        2.0000000000000000                      
+   coulomb coupling parameter Gamma:    3.4461127105165686E-003                            
+  Prad   2.30989E+33 Pion  4.13741E+30 Pele  -2.12806E+34 Pcoul -0.00000E+00               
+  Ptot   -1.89665E+34 df_d   -2.05620E+12                                                  
+ DRIVER_ABORT: [eos_helm] ERROR: negative total pressure.
+ [eos_helm] Negative total pressure.
+   values: dens,temp:    127472795640.64037        978279441031.12732                      
+   values: abar,zbar:    4.0000000000000000        2.0000000000000000                      
+   coulomb coupling parameter Gamma:    2.9487577891070238E-003                            
+  Prad   2.30989E+33 Pion  2.59213E+30 Pele  -7.73603E+34 Pcoul -0.00000E+00               
+  Ptot   -7.50478E+34 df_d   -1.90433E+13                                                  
+ DRIVER_ABORT: [eos_helm] ERROR: negative total pressure.
+Abort(1) on node 3 (rank 3 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 1) - process 3
