@@ -158,7 +158,55 @@ conclusion, the surface/vacuum treatment has to be fixed, because that is
 what is killing the run and it is also the most likely source of the extra
 drift.
 
+## The sponge fixed the crash but not the drift
+
+The first FLASH runs died at the star/vacuum interface, so the exterior
+sponge was ported next: `Castro_sponge.cpp`'s density-gated form with the
+`inputs.evolve` values (`upper = 1e5`, `lower = 1e4`,
+`timescale = 1e-4 s`), implicit update `(rho v) -> (rho v)/(1 + alpha f)`,
+alpha reaching ~95 at this timestep. That is the term that actually holds
+Castro's ambient in place; the global damping is 600x too slow to do it.
+
+It worked, for what it was aimed at. The run now reaches
+`t/t_dyn = 1.621`, past the `1.128` upper bound of the Castro validity
+window, where before it died at `0.876`.
+
+**It did not touch the drift.** Central density deviation, both codes
+damped, same law, same parameters, FLASH now also sponged:
+
+| `t/t_dyn` | FLASH | Castro |
+|---|---|---|
+| 0.442 | `-2.49%` | `-0.58%` |
+| 0.767 | `-5.49%` | `-1.43%` |
+| 1.131 | `-9.06%` | `-2.05%` |
+| 1.621 | `-14.90%` | `-2.71%` |
+
+At the window's upper bound FLASH is at `-9.06%` against Castro's
+`-2.05%`, a factor `4.4`, and slightly *worse* than the unsponged run at
+comparable times. So the interface was killing the run but was not the
+source of the excess drift. The drift is close to linear at about
+`-8%` per `t_dyn` against Castro's `-1.8%`.
+
+Two candidates remain, in order of suspicion:
+
+1. **The initial condition is not in equilibrium on the FLASH grid.** The
+   mapping lands `-4.7%` off the 1D central density, so the star starts
+   out of hydrostatic balance and relaxes. This is the same error class
+   Sec 6.6 diagnosed and fixed on the Castro side (half-shift geometry,
+   volume averaging), and none of that is ported here.
+2. **The ambient is `1 g/cm^3`**, four orders above Castro's floor, forced
+   by Helmholtz refusing to invert a harder vacuum. That is a lot of extra
+   exterior mass sitting on the surface. It is also the likeliest cause of
+   the *remaining* crash: at failure a shell has piled up to
+   `rho = 4e10` at `r = 2.7e8` cm, just outside `R = 2.46e8`, which looks
+   like material accumulating where the sponge switches off.
+
+Until (1) is fixed the drift ratio is not a statement about the schemes,
+because a star that starts out of balance will move regardless of the
+scheme integrating it.
+
 ## Status
+
 
 
 - [x] FLASH 4.8 extracted from the Docker image, patched, and built with
@@ -169,8 +217,12 @@ drift.
       and an out-of-table EOS state -- `flash_rhoc.csv`
 - [x] Equivalent damping added and the comparison made like-for-like:
       FLASH drifts ~3.5x more, and fails at `t/t_dyn = 0.876`
-- [ ] Fix the star/vacuum interface, which is where the run dies and the
-      likeliest source of the extra drift: raise/soften the ambient,
-      `eos_forceConstantInput`, an exterior sponge, or `use_hybridRiemann`
-- [ ] Port the Sec 6.6 mapping fix (the IC starts `-4.7%` off `rho_c`)
+- [x] Exterior sponge ported: the run now covers the whole validity window
+      (`1.621 t_dyn`), but the drift is unchanged -- the interface was not
+      the source of it
+- [ ] Port the Sec 6.6 mapping fix; the IC starts `-4.7%` off `rho_c`, so
+      the star is not in equilibrium on the grid before either code
+      touches it
+- [ ] Lower the ambient below `1 g/cm^3` (needs the Helmholtz inversion to
+      cope), which is also the likeliest cause of the remaining crash
 - [ ] Only then treat the drift ratio as a statement about the schemes

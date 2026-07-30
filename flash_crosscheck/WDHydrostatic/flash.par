@@ -87,6 +87,14 @@ sim_dampEndTdyn       = 20.0
 sim_dampRampStartTdyn = 18.0
 sim_tDyn              = 0.2879670
 
+# Exterior sponge, same values as Castro's inputs.evolve. alpha = dt/1e-4
+# reaches ~90 at the timestep this run takes, which the implicit form
+# handles; this is what stops the unsupported ambient free-falling onto the
+# surface and driving the EOS off its table.
+sim_spongeTimescale   = 1.0e-4
+sim_spongeUpperDens   = 1.0e5
+sim_spongeLowerDens   = 1.0e4
+
 # ---------------------------------------------------------- simulation
 sim_modelFile   = "wd_model.dat"
 sim_nSubZones   = 3

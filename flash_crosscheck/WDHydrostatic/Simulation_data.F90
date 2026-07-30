@@ -30,6 +30,9 @@ module Simulation_data
   real, save    :: sim_dampTimescaleTdyn, sim_dampEndTdyn
   real, save    :: sim_dampRampStartTdyn, sim_tDyn
 
+  ! exterior sponge, ported from Castro_sponge.cpp
+  real, save    :: sim_spongeTimescale, sim_spongeUpperDens, sim_spongeLowerDens
+
   ! the 1D model, radius-ordered
   integer, save :: sim_nPts
   real, save    :: sim_rTab(SIM_NPTS_MAX)

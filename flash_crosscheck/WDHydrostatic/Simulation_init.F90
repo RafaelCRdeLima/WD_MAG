@@ -45,6 +45,9 @@ subroutine Simulation_init()
   call RuntimeParameters_get('sim_dampEndTdyn',       sim_dampEndTdyn)
   call RuntimeParameters_get('sim_dampRampStartTdyn', sim_dampRampStartTdyn)
   call RuntimeParameters_get('sim_tDyn',              sim_tDyn)
+  call RuntimeParameters_get('sim_spongeTimescale', sim_spongeTimescale)
+  call RuntimeParameters_get('sim_spongeUpperDens', sim_spongeUpperDens)
+  call RuntimeParameters_get('sim_spongeLowerDens', sim_spongeLowerDens)
   call RuntimeParameters_get('smlrho',          sim_smallRho)
   call RuntimeParameters_get('smallt',          sim_smallT)
 
@@ -100,6 +103,9 @@ subroutine Simulation_init()
      print *, '[WDHydrostatic] damping: timescale/t_dyn = ', sim_dampTimescaleTdyn
      print *, '[WDHydrostatic] damping: ramp start, end (t_dyn) = ', &
               sim_dampRampStartTdyn, sim_dampEndTdyn
+     print *, '[WDHydrostatic] sponge: timescale = ', sim_spongeTimescale
+     print *, '[WDHydrostatic] sponge: dens lower, upper = ', &
+              sim_spongeLowerDens, sim_spongeUpperDens
   end if
 
 end subroutine Simulation_init

@@ -44,12 +44,35 @@
 !!   treatment as Castro's SrE = u . Sr. DENS and EINT unchanged means
 !!   PRES and TEMP are unchanged too, so no Eos call is needed.
 !!
+!!   SECOND TERM: the exterior sponge, ported from Castro_sponge.cpp.
+!!   The global damping above is not what keeps Castro's ambient in place --
+!!   the sponge is, and leaving it out is why the first FLASH runs died at
+!!   the star/vacuum interface. The ambient has no pressure support worth
+!!   speaking of, so it free-falls onto the star, arrives at near free-fall
+!!   speed, and dumps enough specific energy into near-empty cells to drive
+!!   the EOS off its table. Castro damps that with a density-gated sponge on
+!!   a timescale of 1e-4 s -- roughly 600 times more aggressive than the
+!!   global damping, and applied only where the density is low:
+!!
+!!     alpha  = dt / sponge_timescale
+!!     f      = 0                                   for rho > upper_density
+!!              0.5*(1 - cos(pi*(rho-upper)/(lower-upper)))
+!!                                                  for lower <= rho <= upper
+!!              1                                   for rho < lower_density
+!!     (rho v) -> (rho v) / (1 + alpha*f)
+!!
+!!   The update is implicit in exactly Castro's form, which is what makes it
+!!   stable at alpha ~ 90 (which is where dt/1e-4 lands here). Same
+!!   kinetic-energy-consistent energy treatment.
+!!
 !!***
 
 subroutine Simulation_adjustEvolution(blkcnt, blklst, nstep, dt, stime)
 
   use Simulation_data, ONLY : sim_dampTimescaleTdyn, sim_dampEndTdyn, &
-                              sim_dampRampStartTdyn, sim_tDyn, sim_meshMe
+                              sim_dampRampStartTdyn, sim_tDyn, sim_meshMe, &
+                              sim_spongeTimescale, sim_spongeUpperDens, &
+                              sim_spongeLowerDens
   use Grid_interface, ONLY : Grid_getBlkIndexLimits, Grid_getBlkPtr, &
                              Grid_releaseBlkPtr
 
@@ -68,23 +91,36 @@ subroutine Simulation_adjustEvolution(blkcnt, blklst, nstep, dt, stime)
   real, pointer, dimension(:,:,:,:) :: solnData
   integer :: b, i, j, k
   real :: tEnd, tRamp, rate, ramp, xr, fac, ekin
-
-  if (sim_dampTimescaleTdyn <= 0.0) return
+  real :: alpha, deltaRho, rho, sf, spFac
+  logical :: doDamp, doSponge
 
   tEnd  = sim_dampEndTdyn       * sim_tDyn
   tRamp = sim_dampRampStartTdyn * sim_tDyn
 
-  if (stime >= tEnd) return
+  doDamp = (sim_dampTimescaleTdyn > 0.0) .and. (stime < tEnd)
+  doSponge = (sim_spongeTimescale > 0.0) .and. &
+             (sim_spongeUpperDens > 0.0) .and. (sim_spongeLowerDens > 0.0)
 
-  rate = 1.0 / (sim_dampTimescaleTdyn * sim_tDyn)
+  if (.not. (doDamp .or. doSponge)) return
 
-  ramp = 1.0
-  if (stime > tRamp) then
-     xr = (stime - tRamp) / (tEnd - tRamp)
-     ramp = 0.5 * (1.0 + cos(PI * xr))
+  fac = 1.0
+  ramp = 0.0
+  if (doDamp) then
+     rate = 1.0 / (sim_dampTimescaleTdyn * sim_tDyn)
+     ramp = 1.0
+     if (stime > tRamp) then
+        xr = (stime - tRamp) / (tEnd - tRamp)
+        ramp = 0.5 * (1.0 + cos(PI * xr))
+     end if
+     fac = exp(-rate * ramp * dt)
   end if
 
-  fac = exp(-rate * ramp * dt)
+  alpha = 0.0
+  deltaRho = 1.0
+  if (doSponge) then
+     alpha = dt / sim_spongeTimescale
+     deltaRho = sim_spongeLowerDens - sim_spongeUpperDens
+  end if
 
   do b = 1, blkcnt
      call Grid_getBlkIndexLimits(blklst(b), blkLimits, blkLimitsGC)
@@ -94,9 +130,23 @@ subroutine Simulation_adjustEvolution(blkcnt, blklst, nstep, dt, stime)
         do j = blkLimits(LOW, JAXIS), blkLimits(HIGH, JAXIS)
            do i = blkLimits(LOW, IAXIS), blkLimits(HIGH, IAXIS)
 
-              solnData(VELX_VAR, i, j, k) = fac * solnData(VELX_VAR, i, j, k)
-              solnData(VELY_VAR, i, j, k) = fac * solnData(VELY_VAR, i, j, k)
-              solnData(VELZ_VAR, i, j, k) = fac * solnData(VELZ_VAR, i, j, k)
+              ! global damping, then the exterior sponge on top of it
+              spFac = 1.0
+              if (doSponge) then
+                 rho = solnData(DENS_VAR, i, j, k)
+                 if (rho > sim_spongeUpperDens) then
+                    sf = 0.0
+                 else if (rho >= sim_spongeLowerDens) then
+                    sf = 0.5 * (1.0 - cos(PI * (rho - sim_spongeUpperDens) / deltaRho))
+                 else
+                    sf = 1.0
+                 end if
+                 spFac = 1.0 / (1.0 + alpha * sf)
+              end if
+
+              solnData(VELX_VAR, i, j, k) = fac * spFac * solnData(VELX_VAR, i, j, k)
+              solnData(VELY_VAR, i, j, k) = fac * spFac * solnData(VELY_VAR, i, j, k)
+              solnData(VELZ_VAR, i, j, k) = fac * spFac * solnData(VELZ_VAR, i, j, k)
 
               ekin = 0.5 * (solnData(VELX_VAR, i, j, k)**2 &
                           + solnData(VELY_VAR, i, j, k)**2 &
@@ -111,8 +161,8 @@ subroutine Simulation_adjustEvolution(blkcnt, blklst, nstep, dt, stime)
   end do
 
   if (sim_meshMe == MASTER_PE .and. mod(nstep, 20) == 1) then
-     print *, '[WDHydrostatic] damping: t/t_dyn =', stime / sim_tDyn, &
-              ' ramp =', ramp, ' factor =', fac
+     print *, '[WDHydrostatic] t/t_dyn =', stime / sim_tDyn, &
+              ' damp factor =', fac, ' sponge alpha =', alpha
   end if
 
 end subroutine Simulation_adjustEvolution

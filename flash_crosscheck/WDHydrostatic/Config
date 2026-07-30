@@ -75,3 +75,17 @@ PARAMETER sim_dampRampStartTdyn  REAL  18.0  [0 to ]
 
 D sim_tDyn               the star's dynamical time, sqrt(R^3/GM), in seconds
 PARAMETER sim_tDyn               REAL  0.2879670  [0 to ]
+
+# Exterior sponge, ported from Castro_sponge.cpp with the wd_braithwaite
+# inputs.evolve values (do_sponge=1, upper=1e5, lower=1e4, timescale=1e-4).
+# This is what holds Castro's ambient in place; the global damping above is
+# 600x too slow to do it.
+
+D sim_spongeTimescale   sponge timescale in seconds; <= 0 disables the sponge
+PARAMETER sim_spongeTimescale   REAL  1.0e-4  [0 to ]
+
+D sim_spongeUpperDens   above this density there is no sponge damping
+PARAMETER sim_spongeUpperDens   REAL  1.0e5   [0 to ]
+
+D sim_spongeLowerDens   below this density the sponge is at full strength
+PARAMETER sim_spongeLowerDens   REAL  1.0e4   [0 to ]
