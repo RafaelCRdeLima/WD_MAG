@@ -230,3 +230,64 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def measure_winding(starts=(0.28, 0.50, 0.70)):
+    """Turns around the axis per meridional circuit, and the local
+    |B_phi|/|B_pol| along the same lines.
+
+    Written because the paper first claimed the winding number was the
+    amplitude ratio of the configuration table. It is not: that ratio is
+    max|B_phi| / max|B_pol| with the maxima taken at different places, a
+    global number, while the winding is a property of each flux surface.
+    Measured, the two disagree and move independently -- the local ratio
+    varies by nearly an order of magnitude across these surfaces while the
+    winding changes by less than a fifth.
+    """
+    from scipy.interpolate import RegularGridInterpolator as RGI
+
+    r, th, rho, H, u, Bphi, Br, Bth, Rstar = solve()
+    sin_t, cos_t = np.sin(th)[None, :], np.cos(th)[None, :]
+    Bvp, Bz = Br * sin_t + Bth * cos_t, Br * cos_t - Bth * sin_t
+    vp, zz, VP, ZZ, (H_m, u_m, bphi_m, bvp_m, bz_m) = to_meridional(
+        r, th, (H, u, Bphi, Bvp, Bz), 1.05 * Rstar)
+    inside = H_m > 0.0
+
+    # the O-point of the poloidal loops, the centre to measure angles from
+    k = np.unravel_index(np.argmax(np.where(inside, np.abs(u_m), -np.inf)),
+                         u_m.shape)
+    wO, zO = VP[k], ZZ[k]
+
+    def interp(A):
+        return RGI((vp, zz), A, bounds_error=False, fill_value=0.0)
+    f_w, f_z, f_f = interp(bvp_m), interp(bz_m), interp(bphi_m)
+
+    print(f"O-point at varpi = {wO:.4e}, z = {zO:.4e} cm")
+    print("  start/R    turns per circuit    mean local |B_phi|/|B_pol|")
+    for frac in starts:
+        w, z, phi = frac * Rstar, 0.0, 0.0
+        ds = 0.0015 * Rstar
+        prev = np.arctan2(z - zO, w - wO)
+        swept, ratios = 0.0, []
+        for _ in range(400000):
+            p = np.array([[w, z]])
+            bw, bz_, bf = f_w(p)[0], f_z(p)[0], f_f(p)[0]
+            b = np.hypot(np.hypot(bw, bz_), bf)
+            if b <= 0 or w <= 0:
+                break
+            bpol = np.hypot(bw, bz_)
+            if bpol > 0:
+                ratios.append(abs(bf) / bpol)
+            w += ds * bw / b
+            z += ds * bz_ / b
+            phi += ds * bf / (w * b)
+            ang = np.arctan2(z - zO, w - wO)
+            step = (ang - prev + np.pi) % (2 * np.pi) - np.pi
+            swept += step
+            prev = ang
+            if abs(swept) >= 2 * np.pi:
+                print(f"    {frac:.2f}          {abs(phi) / (2 * np.pi):8.1f}"
+                      f"              {np.mean(ratios):10.1f}")
+                break
+        else:
+            print(f"    {frac:.2f}          circuit did not close")
