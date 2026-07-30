@@ -517,9 +517,10 @@ def fig_components():
     rho_mer = np.asarray(d["slice_density"]).T
     ext = np.asarray(d["extent_cm"]) / 1e8
 
-    fig, (axe, axm) = plt.subplots(1, 2, figsize=(WIDE_IN * 0.78,
-                                                  WIDE_IN * 0.36),
-                                   gridspec_kw=dict(wspace=0.42))
+    # Full two-column width. Generated at the size it is placed at, rather
+    # than scaled up in LaTeX, which would enlarge the fonts with it.
+    fig, (axe, axm) = plt.subplots(1, 2, figsize=(WIDE_IN, WIDE_IN * 0.46),
+                                   gridspec_kw=dict(wspace=0.30))
 
     # --- (a) B_phi in the equatorial plane, signed -----------------------
     # Diverging: two hues with a neutral midpoint, symmetric limits, so the
@@ -555,8 +556,8 @@ def fig_components():
     axe.streamplot(gx, gy, btx, bty, color="#0b0b0b", linewidth=0.4,
                    density=1.7, arrowsize=0.55, zorder=4)
 
-    axe.set_title(r"(a) $B_\varphi$ in the equatorial plane", fontsize=7.5,
-                  pad=3)
+    axe.set_title(r"(a) $B_\varphi$ in the equatorial plane", fontsize=8.5,
+                  pad=4)
     axe.set_xlabel(r"$x$  ($10^8$ cm)", labelpad=1.5)
     axe.set_ylabel(r"$y$  ($10^8$ cm)", labelpad=1.0)
     cb = fig.colorbar(im, ax=axe, fraction=0.046, pad=0.02)
@@ -586,7 +587,7 @@ def fig_components():
     axm.contour(mx, mz, inside.astype(float), levels=[0.5],
                 colors="#0b0b0b", linewidths=0.7, zorder=4)
     axm.set_title(r"(b) $\mathbf{B}_{\rm p}$ in the meridional plane",
-                  fontsize=7.5, pad=3)
+                  fontsize=8.5, pad=4)
     axm.set_xlabel(r"$x$  ($10^8$ cm)", labelpad=1.5)
     axm.set_ylabel(r"$z$  ($10^8$ cm)", labelpad=1.0)
     cb2 = fig.colorbar(im2, ax=axm, fraction=0.046, pad=0.02)
