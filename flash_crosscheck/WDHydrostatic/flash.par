@@ -21,12 +21,21 @@ basenm      = "wd_"
 # ---------------------------------------------------------------- grid
 geometry = "cartesian"
 
-xmin = -4.90e8
-xmax =  4.90e8
-ymin = -4.90e8
-ymax =  4.90e8
-zmin = -4.90e8
-zmax =  4.90e8
+# Half-shift geometry (docs/teoria.md Sec 6.6). A symmetric domain is
+# vertex-centered: no grid point ever lands on the star's centre, so the
+# parabolic peak of a degenerate core is undersampled no matter how the
+# sampling is done. Castro measured -4.78% that way, and this problem
+# reproduced it (-4.7%). Shifting so a cell CENTRE sits exactly at r=0,
+#   dx = 2*half/n, prob_lo = -(n+1)/2*dx, prob_hi = prob_lo + n*dx,
+# takes Castro's offset to -1.16%. Same width (9.8e8), same dx
+# (1.53125e7), and identical to the bounds the production runs actually
+# used (their plotfile headers read -497656250 / 482343750).
+xmin = -4.9765625e8
+xmax =  4.8234375e8
+ymin = -4.9765625e8
+ymax =  4.8234375e8
+zmin = -4.9765625e8
+zmax =  4.8234375e8
 
 xl_boundary_type = "outflow"
 xr_boundary_type = "outflow"
@@ -97,7 +106,7 @@ sim_spongeLowerDens   = 1.0e4
 
 # ---------------------------------------------------------- simulation
 sim_modelFile   = "wd_model.dat"
-sim_nSubZones   = 3
+sim_nSubZones   = 8
 sim_rhoAmbient  = 1.0
 sim_tempAmbient = 1.0e7
 sim_abar        = 4.0

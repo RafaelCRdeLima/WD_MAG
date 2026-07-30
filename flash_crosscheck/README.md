@@ -205,7 +205,45 @@ Until (1) is fixed the drift ratio is not a statement about the schemes,
 because a star that starts out of balance will move regardless of the
 scheme integrating it.
 
+## The Sec 6.6 mapping fix ports over, and reproduces Castro's number
+
+The initial-condition defect turned out to be exactly what Sec 6.6
+diagnosed on the Castro side, and it is not a Castro quirk -- it is
+geometry, so it transfers unchanged. A symmetric domain is
+vertex-centered: no grid point lands on the star's centre, so the
+parabolic peak of a degenerate core is undersampled no matter how the
+sampling is done. Shifting the domain by half a cell puts a cell *centre*
+at `r = 0`:
+
+```
+dx      = 2*box_half_width / n_cell
+prob_lo = -(n_cell+1)/2 * dx
+prob_hi = prob_lo + n_cell*dx
+```
+
+which for `n_cell = 64`, `half = 4.90e8` gives
+`-4.9765625e8 .. 4.8234375e8` -- the bounds the Castro production runs
+actually used (their plotfile headers read `-497656250 / 482343750`; the
+mirror's `inputs.evolve` carries the unshifted template because
+`star_builder.py :: half_shift_domain()` applies the shift per run).
+
+Measured peak density at `t = 0`, against the 1D model's
+`rho_c = 9.883938e8`:
+
+| geometry | FLASH | Castro |
+|---|---|---|
+| symmetric, vertex-centered | `-4.70%` | `-4.78%` |
+| half-shift + volume average | **`-1.23%`** | **`-1.16%`** |
+
+Both columns agree to under a tenth of a percentage point, in two
+different codes. That is worth more than the numbers themselves: it says
+the Sec 6.6 chain was a real geometric defect and its fix is portable, and
+it means the FLASH initial condition now starts from the same quality of
+hydrostatic balance the Castro results were measured on. Volume averaging
+uses `sim_nSubZones = 8`, matching Castro's `nsub = 8` default.
+
 ## Status
+
 
 
 
@@ -220,9 +258,10 @@ scheme integrating it.
 - [x] Exterior sponge ported: the run now covers the whole validity window
       (`1.621 t_dyn`), but the drift is unchanged -- the interface was not
       the source of it
-- [ ] Port the Sec 6.6 mapping fix; the IC starts `-4.7%` off `rho_c`, so
-      the star is not in equilibrium on the grid before either code
-      touches it
+- [x] Sec 6.6 mapping fix ported: half-shift geometry plus `nsub = 8`
+      volume averaging takes the IC from `-4.70%` to `-1.23%`, against
+      Castro's `-1.16%`
+- [ ] Re-measure the drift from the corrected IC (run in progress)
 - [ ] Lower the ambient below `1 g/cm^3` (needs the Helmholtz inversion to
       cope), which is also the likeliest cause of the remaining crash
 - [ ] Only then treat the drift ratio as a statement about the schemes
