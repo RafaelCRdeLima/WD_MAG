@@ -322,7 +322,38 @@ code in general. It rests on Castro being the only one of the two that can
 currently run the configuration in which this measurement is possible at
 all.
 
+## Where the two fixes leave it
+
+| FLASH configuration | crash | drift at `1.128 t_dyn` | valid window |
+|---|---|---|---|
+| symmetric, ambient `1 g/cm^3`, legacy multipole | dies at `1.62 t_dyn` | `-9.03%` | no (`X_2% = 0.376`) |
+| symmetric, ambient `1e4`, `Multipole_new`, `eos_forceConstantInput` | **completes `4 t_dyn`** | `-12.78%` | no (`X_2% = 0.222`) |
+| half-shift, any | blocked by the multipole centre snapping | -- | -- |
+| *Castro, half-shift* | -- | `-2.05%` | **yes, `[0.4, 1.128]`** |
+
+**Fix 1 worked for what it targeted.** `Multipole_new` removed the
+potential spike at `r = 0` and restored the timestep.
+
+**Fix 2 traded the crash for drift.** Matching Castro's `small_dens = 1e4`
+(the ambient had been four orders *below* Castro's floor, not above it as
+previously recorded here) plus `eos_forceConstantInput` makes the run
+complete all `4 t_dyn` with a healthy timestep -- the terminal crash is
+gone. But the drift got worse, `-12.78%` against `-9.03%`, and `X_2%`
+moved the wrong way, from `0.376` to `0.222`. A denser ambient means more
+mass and pressure sitting on the surface, and FLASH does not handle that
+the way Castro's floor machinery does.
+
+**No FLASH configuration yields a valid measurement window.** The one
+geometry that produces a window in either code is half-shift, and that is
+blocked inside `Multipole_new`'s inner-zone binning (patch 5 in
+`FLASH_CORE_PATCHES.md`). Everything else is downstream of that.
+
+So the FLASH line closes here with a characterized negative result rather
+than an open question: the remaining work is specific, bounded, and
+inside the solver, and nothing short of it opens the window.
+
 ## Status
+
 
 
 
@@ -345,10 +376,14 @@ all.
       Castro's `-1.16%`
 - [x] Comparison done on matched (symmetric) geometry: Castro `-0.91%`
       against FLASH `-9.03%` at the window's upper bound
-- [ ] FLASH needs its own `r=0` treatment before it can use the half-shift
-      geometry: spurious central flow, `dt` throttled `100x`
-- [ ] Lower the FLASH ambient below `1 g/cm^3`, the likeliest remaining
-      contributor to both the excess drift and the terminal crash
+- [x] Fix 1: `Multipole_new` removes the `r=0` potential spike, `dt`
+      restored. Kept.
+- [x] Fix 2: ambient raised to Castro's `1e4` plus
+      `eos_forceConstantInput` -- the terminal crash is gone, the run
+      completes `4 t_dyn`, but the drift worsens to `-12.78%`
+- [ ] The only remaining route to a valid window: adapt
+      `Multipole_new`'s inner-zone binning to tolerate a zero-radius cell,
+      so the half-shift geometry can be used at all
 - [ ] Lower the ambient below `1 g/cm^3` (needs the Helmholtz inversion to
       cope), which is also the likeliest cause of the remaining crash
 - [ ] Only then treat the drift ratio as a statement about the schemes

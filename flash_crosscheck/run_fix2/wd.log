@@ -625,3 +625,749 @@ he4      0 constituents
  [ 07-30-2026  10:54:48.754 ] [Grid_fillGuardCells]: gcSet=----------------
  [ 07-30-2026  10:54:48.754 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
  [ 07-30-2026  10:54:48.768 ] [GRID gr_expandDomain]: iteration=2, create level=1
+ [ 07-30-2026  10:55:06.257 ] [GRID gr_expandDomain]: iteration=3, create level=1
+ [ 07-30-2026  10:55:24.918 ] memory: /proc vsize    (MiB):      271.64 (min)        271.70 (max)        271.65 (avg)
+ [ 07-30-2026  10:55:24.918 ] memory: /proc rss      (MiB):      140.86 (min)        141.75 (max)        141.35 (avg)
+ [ 07-30-2026  10:55:24.918 ] memory: /proc vsize    (MiB):      271.64 (min)        271.70 (max)        271.65 (avg)
+ [ 07-30-2026  10:55:24.918 ] memory: /proc rss      (MiB):      140.86 (min)        141.75 (max)        141.35 (avg)
+ [ 07-30-2026  10:55:24.918 ] [Hydro_init]: gcNeed=d-eefggggpstvvv-
+ [ 07-30-2026  10:55:24.919 ] [mpi_amr_comm_setup]: buffer_dim_send=230261, buffer_dim_recv=230261
+ [ 07-30-2026  10:55:25.172 ] memory: /proc vsize    (MiB):      271.89 (min)        271.96 (max)        271.90 (avg)
+ [ 07-30-2026  10:55:25.172 ] memory: /proc rss      (MiB):      141.46 (min)        142.29 (max)        141.84 (avg)
+ [ 07-30-2026  10:55:25.176 ] [IO_writeCheckpoint] open: type=checkpoint name=wd_hdf5_chk_0000
+ [ 07-30-2026  10:55:25.217 ] [IO_writeCheckpoint] close: type=checkpoint name=wd_hdf5_chk_0000
+ [ 07-30-2026  10:55:25.217 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0000
+ [ 07-30-2026  10:55:25.245 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0000
+ [ 07-30-2026  10:55:25.245 ] memory: /proc vsize    (MiB):      272.32 (min)        274.33 (max)        272.57 (avg)
+ [ 07-30-2026  10:55:25.245 ] memory: /proc rss      (MiB):      141.59 (min)        148.46 (max)        142.78 (avg)
+ [ 07-30-2026  10:55:25.245 ] [Driver_evolveFlash]: Entering evolution loop
+ [ 07-30-2026  10:55:25.245 ] step: n=1 t=0.000000E+00 dt=1.000000E-06
+ [ 07-30-2026  10:55:25.247 ] [hy_uhd_unsplit]: gcNeed=d-eefggggpstvvv-+Eos
+ [ 07-30-2026  10:55:25.248 ] [Grid_fillGuardCells]: gcSet=d-eefggggpstvvvh+Eos
+ [ 07-30-2026  10:55:25.248 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:26.091 ] [hy_uhd_unsplit]: gcWant[Pot]=--------g-------
+ [ 07-30-2026  10:55:26.099 ] [Grid_fillGuardCells]: gcSet[no doEos]=--------g-------+Eos
+ [ 07-30-2026  10:55:26.099 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:26.252 ] step: n=2 t=1.000000E-06 dt=2.000000E-06
+ [ 07-30-2026  10:55:26.255 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:27.056 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:27.166 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:55:27.226 ] step: n=3 t=3.000000E-06 dt=4.000000E-06
+ [ 07-30-2026  10:55:27.228 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:28.027 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:28.178 ] step: n=4 t=7.000000E-06 dt=8.000000E-06
+ [ 07-30-2026  10:55:28.181 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:28.988 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:29.101 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:55:29.166 ] step: n=5 t=1.500000E-05 dt=1.600000E-05
+ [ 07-30-2026  10:55:29.169 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:29.973 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:30.128 ] step: n=6 t=3.100000E-05 dt=3.200000E-05
+ [ 07-30-2026  10:55:30.131 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:30.958 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:31.070 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:55:31.127 ] step: n=7 t=6.300000E-05 dt=6.400000E-05
+ [ 07-30-2026  10:55:31.130 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:31.943 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:32.098 ] step: n=8 t=1.270000E-04 dt=1.280000E-04
+ [ 07-30-2026  10:55:32.101 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:32.906 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:33.026 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:55:33.084 ] step: n=9 t=2.550000E-04 dt=2.560000E-04
+ [ 07-30-2026  10:55:33.087 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:33.892 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:34.052 ] step: n=10 t=5.110000E-04 dt=5.120000E-04
+ [ 07-30-2026  10:55:34.054 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:34.860 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:34.979 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:55:35.037 ] step: n=11 t=1.023000E-03 dt=1.024000E-03
+ [ 07-30-2026  10:55:35.041 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:35.869 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:36.037 ] step: n=12 t=2.047000E-03 dt=2.048000E-03
+ [ 07-30-2026  10:55:36.039 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:36.854 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:36.983 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:55:37.040 ] step: n=13 t=4.095000E-03 dt=4.096000E-03
+ [ 07-30-2026  10:55:37.043 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:37.843 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:38.021 ] step: n=14 t=8.191000E-03 dt=8.192000E-03
+ [ 07-30-2026  10:55:38.023 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:38.825 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:38.960 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:55:39.018 ] step: n=15 t=1.638300E-02 dt=9.504187E-03
+ [ 07-30-2026  10:55:39.021 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:39.824 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:39.961 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0001
+ [ 07-30-2026  10:55:39.992 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0001
+ [ 07-30-2026  10:55:40.038 ] step: n=16 t=2.588719E-02 dt=9.503530E-03
+ [ 07-30-2026  10:55:40.040 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:40.846 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:40.991 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:55:41.052 ] step: n=17 t=3.539072E-02 dt=9.504457E-03
+ [ 07-30-2026  10:55:41.055 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:41.860 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:41.997 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0002
+ [ 07-30-2026  10:55:42.022 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0002
+ [ 07-30-2026  10:55:42.068 ] step: n=18 t=4.489517E-02 dt=9.506129E-03
+ [ 07-30-2026  10:55:42.071 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:42.876 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:43.012 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:55:43.071 ] step: n=19 t=5.440130E-02 dt=9.508340E-03
+ [ 07-30-2026  10:55:43.075 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:43.880 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:44.018 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0003
+ [ 07-30-2026  10:55:44.043 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0003
+ [ 07-30-2026  10:55:44.089 ] step: n=20 t=6.390964E-02 dt=9.511134E-03
+ [ 07-30-2026  10:55:44.092 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:44.897 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:45.034 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:55:45.094 ] step: n=21 t=7.342078E-02 dt=9.514482E-03
+ [ 07-30-2026  10:55:45.096 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:45.923 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:46.059 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0004
+ [ 07-30-2026  10:55:46.084 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0004
+ [ 07-30-2026  10:55:46.130 ] step: n=22 t=8.293526E-02 dt=9.518268E-03
+ [ 07-30-2026  10:55:46.133 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:46.920 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:47.056 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:55:47.112 ] step: n=23 t=9.245353E-02 dt=9.522334E-03
+ [ 07-30-2026  10:55:47.115 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:47.900 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:48.035 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0005
+ [ 07-30-2026  10:55:48.062 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0005
+ [ 07-30-2026  10:55:48.108 ] step: n=24 t=1.019759E-01 dt=9.526526E-03
+ [ 07-30-2026  10:55:48.112 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:48.897 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:49.032 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:55:49.094 ] step: n=25 t=1.115024E-01 dt=9.530724E-03
+ [ 07-30-2026  10:55:49.097 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:49.886 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:50.021 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0006
+ [ 07-30-2026  10:55:50.047 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0006
+ [ 07-30-2026  10:55:50.092 ] step: n=26 t=1.210331E-01 dt=9.534860E-03
+ [ 07-30-2026  10:55:50.096 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:50.881 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:51.016 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:55:51.080 ] step: n=27 t=1.305680E-01 dt=9.538913E-03
+ [ 07-30-2026  10:55:51.083 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:51.866 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:52.002 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0007
+ [ 07-30-2026  10:55:52.027 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0007
+ [ 07-30-2026  10:55:52.072 ] step: n=28 t=1.401069E-01 dt=9.542896E-03
+ [ 07-30-2026  10:55:52.075 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:52.860 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:52.995 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:55:53.057 ] step: n=29 t=1.496498E-01 dt=9.546838E-03
+ [ 07-30-2026  10:55:53.061 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:53.844 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:54.020 ] step: n=30 t=1.591966E-01 dt=9.550768E-03
+ [ 07-30-2026  10:55:54.024 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:54.814 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:54.949 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0008
+ [ 07-30-2026  10:55:54.974 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0008
+ [ 07-30-2026  10:55:54.975 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:55:55.035 ] step: n=31 t=1.687474E-01 dt=9.554707E-03
+ [ 07-30-2026  10:55:55.038 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:55.823 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:56.002 ] step: n=32 t=1.783021E-01 dt=9.558664E-03
+ [ 07-30-2026  10:55:56.004 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:56.791 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:56.926 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0009
+ [ 07-30-2026  10:55:56.951 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0009
+ [ 07-30-2026  10:55:56.951 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:55:57.011 ] step: n=33 t=1.878608E-01 dt=9.562640E-03
+ [ 07-30-2026  10:55:57.015 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:57.804 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:57.979 ] step: n=34 t=1.974234E-01 dt=9.566636E-03
+ [ 07-30-2026  10:55:57.982 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:58.768 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:58.905 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0010
+ [ 07-30-2026  10:55:58.930 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0010
+ [ 07-30-2026  10:55:58.930 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:55:58.990 ] step: n=35 t=2.069900E-01 dt=9.570649E-03
+ [ 07-30-2026  10:55:58.993 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:55:59.777 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:55:59.952 ] step: n=36 t=2.165607E-01 dt=9.574681E-03
+ [ 07-30-2026  10:55:59.955 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:00.746 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:00.880 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0011
+ [ 07-30-2026  10:56:00.906 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0011
+ [ 07-30-2026  10:56:00.906 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:00.973 ] step: n=37 t=2.261354E-01 dt=9.578740E-03
+ [ 07-30-2026  10:56:00.976 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:01.763 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:01.941 ] step: n=38 t=2.357141E-01 dt=9.582835E-03
+ [ 07-30-2026  10:56:01.944 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:02.731 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:02.866 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0012
+ [ 07-30-2026  10:56:02.891 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0012
+ [ 07-30-2026  10:56:02.891 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:02.958 ] step: n=39 t=2.452969E-01 dt=9.586972E-03
+ [ 07-30-2026  10:56:02.961 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:03.749 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:03.924 ] step: n=40 t=2.548839E-01 dt=9.591154E-03
+ [ 07-30-2026  10:56:03.928 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:04.713 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:04.850 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0013
+ [ 07-30-2026  10:56:04.875 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0013
+ [ 07-30-2026  10:56:04.875 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:04.942 ] step: n=41 t=2.644751E-01 dt=9.595380E-03
+ [ 07-30-2026  10:56:04.945 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:05.729 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:05.905 ] step: n=42 t=2.740704E-01 dt=9.599653E-03
+ [ 07-30-2026  10:56:05.908 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:06.692 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:06.827 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0014
+ [ 07-30-2026  10:56:06.852 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0014
+ [ 07-30-2026  10:56:06.852 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:06.913 ] step: n=43 t=2.836701E-01 dt=9.603973E-03
+ [ 07-30-2026  10:56:06.916 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:07.706 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:07.886 ] step: n=44 t=2.932741E-01 dt=9.608340E-03
+ [ 07-30-2026  10:56:07.889 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:08.673 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:08.807 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0015
+ [ 07-30-2026  10:56:08.832 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0015
+ [ 07-30-2026  10:56:08.832 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:08.893 ] step: n=45 t=3.028824E-01 dt=9.612752E-03
+ [ 07-30-2026  10:56:08.896 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:09.685 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:09.862 ] step: n=46 t=3.124952E-01 dt=9.617208E-03
+ [ 07-30-2026  10:56:09.865 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:10.649 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:10.784 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0016
+ [ 07-30-2026  10:56:10.809 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0016
+ [ 07-30-2026  10:56:10.809 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:10.878 ] step: n=47 t=3.221124E-01 dt=9.621708E-03
+ [ 07-30-2026  10:56:10.880 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:11.665 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:11.841 ] step: n=48 t=3.317341E-01 dt=9.626251E-03
+ [ 07-30-2026  10:56:11.844 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:12.633 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:12.771 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0017
+ [ 07-30-2026  10:56:12.795 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0017
+ [ 07-30-2026  10:56:12.796 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:12.863 ] step: n=49 t=3.413603E-01 dt=9.630835E-03
+ [ 07-30-2026  10:56:12.866 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:13.651 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:13.828 ] step: n=50 t=3.509912E-01 dt=9.635460E-03
+ [ 07-30-2026  10:56:13.831 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:14.620 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:14.755 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0018
+ [ 07-30-2026  10:56:14.780 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0018
+ [ 07-30-2026  10:56:14.780 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:14.847 ] step: n=51 t=3.606266E-01 dt=9.640125E-03
+ [ 07-30-2026  10:56:14.850 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:15.638 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:15.816 ] step: n=52 t=3.702667E-01 dt=9.644828E-03
+ [ 07-30-2026  10:56:15.820 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:16.602 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:16.737 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:16.799 ] step: n=53 t=3.799116E-01 dt=9.649569E-03
+ [ 07-30-2026  10:56:16.802 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:17.589 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:17.724 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0019
+ [ 07-30-2026  10:56:17.751 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0019
+ [ 07-30-2026  10:56:17.796 ] step: n=54 t=3.895611E-01 dt=9.654345E-03
+ [ 07-30-2026  10:56:17.799 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:18.587 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:18.724 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:18.780 ] step: n=55 t=3.992155E-01 dt=9.659155E-03
+ [ 07-30-2026  10:56:18.783 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:19.569 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:19.704 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0020
+ [ 07-30-2026  10:56:19.729 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0020
+ [ 07-30-2026  10:56:19.774 ] step: n=56 t=4.088746E-01 dt=9.663999E-03
+ [ 07-30-2026  10:56:19.776 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:20.568 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:20.703 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:20.765 ] step: n=57 t=4.185386E-01 dt=9.668876E-03
+ [ 07-30-2026  10:56:20.767 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:21.557 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:21.693 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0021
+ [ 07-30-2026  10:56:21.718 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0021
+ [ 07-30-2026  10:56:21.764 ] step: n=58 t=4.282075E-01 dt=9.673784E-03
+ [ 07-30-2026  10:56:21.767 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:22.549 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:22.684 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:22.745 ] step: n=59 t=4.378813E-01 dt=9.678724E-03
+ [ 07-30-2026  10:56:22.748 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:23.536 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:23.671 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0022
+ [ 07-30-2026  10:56:23.696 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0022
+ [ 07-30-2026  10:56:23.742 ] step: n=60 t=4.475600E-01 dt=9.683696E-03
+ [ 07-30-2026  10:56:23.745 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:24.528 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:24.665 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:24.721 ] step: n=61 t=4.572437E-01 dt=9.688699E-03
+ [ 07-30-2026  10:56:24.724 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:25.511 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:25.646 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0023
+ [ 07-30-2026  10:56:25.671 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0023
+ [ 07-30-2026  10:56:25.716 ] step: n=62 t=4.669324E-01 dt=9.693733E-03
+ [ 07-30-2026  10:56:25.719 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:26.504 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:26.638 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:26.701 ] step: n=63 t=4.766262E-01 dt=9.698798E-03
+ [ 07-30-2026  10:56:26.704 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:27.489 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:27.624 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0024
+ [ 07-30-2026  10:56:27.652 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0024
+ [ 07-30-2026  10:56:27.699 ] step: n=64 t=4.863250E-01 dt=9.703894E-03
+ [ 07-30-2026  10:56:27.702 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:28.485 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:28.620 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:28.682 ] step: n=65 t=4.960289E-01 dt=9.709021E-03
+ [ 07-30-2026  10:56:28.685 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:29.477 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:29.613 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0025
+ [ 07-30-2026  10:56:29.637 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0025
+ [ 07-30-2026  10:56:29.684 ] [IO_writeCheckpoint] open: type=checkpoint name=wd_hdf5_chk_0001
+ [ 07-30-2026  10:56:29.724 ] [IO_writeCheckpoint] close: type=checkpoint name=wd_hdf5_chk_0001
+ [ 07-30-2026  10:56:29.724 ] step: n=66 t=5.057379E-01 dt=9.714178E-03
+ [ 07-30-2026  10:56:29.726 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:30.513 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:30.649 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:30.711 ] step: n=67 t=5.154520E-01 dt=9.719366E-03
+ [ 07-30-2026  10:56:30.714 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:31.499 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:31.634 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0026
+ [ 07-30-2026  10:56:31.659 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0026
+ [ 07-30-2026  10:56:31.704 ] step: n=68 t=5.251714E-01 dt=9.724583E-03
+ [ 07-30-2026  10:56:31.707 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:32.494 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:32.629 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:32.685 ] step: n=69 t=5.348960E-01 dt=9.729830E-03
+ [ 07-30-2026  10:56:32.688 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:33.476 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:33.611 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0027
+ [ 07-30-2026  10:56:33.636 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0027
+ [ 07-30-2026  10:56:33.683 ] step: n=70 t=5.446258E-01 dt=9.735106E-03
+ [ 07-30-2026  10:56:33.686 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:34.468 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:34.602 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:34.664 ] step: n=71 t=5.543609E-01 dt=9.740411E-03
+ [ 07-30-2026  10:56:34.667 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:35.457 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:35.592 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0028
+ [ 07-30-2026  10:56:35.617 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0028
+ [ 07-30-2026  10:56:35.662 ] step: n=72 t=5.641013E-01 dt=9.745743E-03
+ [ 07-30-2026  10:56:35.665 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:36.449 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:36.584 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:36.641 ] step: n=73 t=5.738471E-01 dt=9.751103E-03
+ [ 07-30-2026  10:56:36.644 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:37.430 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:37.565 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0029
+ [ 07-30-2026  10:56:37.590 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0029
+ [ 07-30-2026  10:56:37.635 ] step: n=74 t=5.835982E-01 dt=9.756489E-03
+ [ 07-30-2026  10:56:37.638 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:38.422 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:38.559 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:38.622 ] step: n=75 t=5.933547E-01 dt=9.761901E-03
+ [ 07-30-2026  10:56:38.624 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:39.409 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:39.543 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0030
+ [ 07-30-2026  10:56:39.568 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0030
+ [ 07-30-2026  10:56:39.614 ] step: n=76 t=6.031166E-01 dt=9.767338E-03
+ [ 07-30-2026  10:56:39.617 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:40.404 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:40.538 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:40.594 ] step: n=77 t=6.128839E-01 dt=9.772800E-03
+ [ 07-30-2026  10:56:40.597 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:41.384 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:41.521 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0031
+ [ 07-30-2026  10:56:41.546 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0031
+ [ 07-30-2026  10:56:41.591 ] step: n=78 t=6.226567E-01 dt=9.778285E-03
+ [ 07-30-2026  10:56:41.594 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:42.379 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:42.513 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:42.569 ] step: n=79 t=6.324350E-01 dt=9.783793E-03
+ [ 07-30-2026  10:56:42.572 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:43.358 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:43.492 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0032
+ [ 07-30-2026  10:56:43.517 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0032
+ [ 07-30-2026  10:56:43.563 ] step: n=80 t=6.422188E-01 dt=9.789324E-03
+ [ 07-30-2026  10:56:43.565 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:44.348 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:44.484 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:44.541 ] step: n=81 t=6.520081E-01 dt=9.794876E-03
+ [ 07-30-2026  10:56:44.543 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:45.327 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:45.462 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0033
+ [ 07-30-2026  10:56:45.487 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0033
+ [ 07-30-2026  10:56:45.532 ] step: n=82 t=6.618030E-01 dt=9.800450E-03
+ [ 07-30-2026  10:56:45.535 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:46.324 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:46.458 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:46.521 ] step: n=83 t=6.716034E-01 dt=9.806044E-03
+ [ 07-30-2026  10:56:46.524 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:47.310 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:47.447 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0034
+ [ 07-30-2026  10:56:47.472 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0034
+ [ 07-30-2026  10:56:47.517 ] step: n=84 t=6.814095E-01 dt=9.811658E-03
+ [ 07-30-2026  10:56:47.520 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:48.309 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:48.443 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:48.501 ] step: n=85 t=6.912211E-01 dt=9.817290E-03
+ [ 07-30-2026  10:56:48.504 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:49.290 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:49.425 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0035
+ [ 07-30-2026  10:56:49.450 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0035
+ [ 07-30-2026  10:56:49.496 ] step: n=86 t=7.010384E-01 dt=9.822942E-03
+ [ 07-30-2026  10:56:49.499 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:50.286 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:50.420 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:50.478 ] step: n=87 t=7.108614E-01 dt=9.828611E-03
+ [ 07-30-2026  10:56:50.481 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:51.264 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:51.400 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0036
+ [ 07-30-2026  10:56:51.424 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0036
+ [ 07-30-2026  10:56:51.470 ] step: n=88 t=7.206900E-01 dt=9.834298E-03
+ [ 07-30-2026  10:56:51.472 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:52.260 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:52.395 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:52.451 ] step: n=89 t=7.305243E-01 dt=9.840002E-03
+ [ 07-30-2026  10:56:52.454 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:53.238 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:53.373 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0037
+ [ 07-30-2026  10:56:53.398 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0037
+ [ 07-30-2026  10:56:53.444 ] step: n=90 t=7.403643E-01 dt=9.845723E-03
+ [ 07-30-2026  10:56:53.447 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:54.231 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:54.366 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:54.422 ] step: n=91 t=7.502100E-01 dt=9.851458E-03
+ [ 07-30-2026  10:56:54.425 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:55.212 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:55.349 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0038
+ [ 07-30-2026  10:56:55.374 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0038
+ [ 07-30-2026  10:56:55.420 ] step: n=92 t=7.600615E-01 dt=9.857208E-03
+ [ 07-30-2026  10:56:55.423 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:56.208 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:56.343 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:56.399 ] step: n=93 t=7.699187E-01 dt=9.862972E-03
+ [ 07-30-2026  10:56:56.402 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:57.189 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:57.365 ] step: n=94 t=7.797817E-01 dt=9.868750E-03
+ [ 07-30-2026  10:56:57.367 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:58.152 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:58.289 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0039
+ [ 07-30-2026  10:56:58.314 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0039
+ [ 07-30-2026  10:56:58.314 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:56:58.375 ] step: n=95 t=7.896504E-01 dt=9.874541E-03
+ [ 07-30-2026  10:56:58.378 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:56:59.163 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:56:59.339 ] step: n=96 t=7.995249E-01 dt=9.880344E-03
+ [ 07-30-2026  10:56:59.342 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:00.135 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:00.269 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0040
+ [ 07-30-2026  10:57:00.294 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0040
+ [ 07-30-2026  10:57:00.294 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:57:00.355 ] step: n=97 t=8.094053E-01 dt=9.886159E-03
+ [ 07-30-2026  10:57:00.357 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:01.142 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:01.320 ] step: n=98 t=8.192914E-01 dt=9.891984E-03
+ [ 07-30-2026  10:57:01.323 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:02.110 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:02.244 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0041
+ [ 07-30-2026  10:57:02.269 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0041
+ [ 07-30-2026  10:57:02.270 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:57:02.336 ] step: n=99 t=8.291834E-01 dt=9.897820E-03
+ [ 07-30-2026  10:57:02.339 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:03.126 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:03.302 ] step: n=100 t=8.390813E-01 dt=9.903666E-03
+ [ 07-30-2026  10:57:03.305 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:04.090 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:04.225 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0042
+ [ 07-30-2026  10:57:04.252 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0042
+ [ 07-30-2026  10:57:04.253 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:57:04.320 ] step: n=101 t=8.489849E-01 dt=9.909520E-03
+ [ 07-30-2026  10:57:04.323 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:05.107 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:05.283 ] step: n=102 t=8.588944E-01 dt=9.915383E-03
+ [ 07-30-2026  10:57:05.286 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:06.080 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:06.215 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0043
+ [ 07-30-2026  10:57:06.240 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0043
+ [ 07-30-2026  10:57:06.240 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:57:06.306 ] step: n=103 t=8.688098E-01 dt=9.921254E-03
+ [ 07-30-2026  10:57:06.309 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:07.092 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:07.270 ] step: n=104 t=8.787311E-01 dt=9.927131E-03
+ [ 07-30-2026  10:57:07.272 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:08.058 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:08.193 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0044
+ [ 07-30-2026  10:57:08.218 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0044
+ [ 07-30-2026  10:57:08.218 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:57:08.285 ] step: n=105 t=8.886582E-01 dt=9.933016E-03
+ [ 07-30-2026  10:57:08.288 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:09.079 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:09.255 ] step: n=106 t=8.985912E-01 dt=9.938906E-03
+ [ 07-30-2026  10:57:09.258 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:10.042 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:10.176 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0045
+ [ 07-30-2026  10:57:10.201 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0045
+ [ 07-30-2026  10:57:10.201 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:57:10.269 ] step: n=107 t=9.085301E-01 dt=9.944802E-03
+ [ 07-30-2026  10:57:10.271 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:11.055 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:11.231 ] step: n=108 t=9.184749E-01 dt=9.950703E-03
+ [ 07-30-2026  10:57:11.234 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:12.023 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:12.160 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0046
+ [ 07-30-2026  10:57:12.185 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0046
+ [ 07-30-2026  10:57:12.185 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:57:12.246 ] step: n=109 t=9.284256E-01 dt=9.956609E-03
+ [ 07-30-2026  10:57:12.249 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:13.033 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:13.210 ] step: n=110 t=9.383822E-01 dt=9.962519E-03
+ [ 07-30-2026  10:57:13.213 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:14.000 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:14.136 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0047
+ [ 07-30-2026  10:57:14.160 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0047
+ [ 07-30-2026  10:57:14.161 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:57:14.221 ] step: n=111 t=9.483448E-01 dt=9.968433E-03
+ [ 07-30-2026  10:57:14.224 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:15.007 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:15.186 ] step: n=112 t=9.583132E-01 dt=9.974351E-03
+ [ 07-30-2026  10:57:15.188 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:15.973 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:16.108 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0048
+ [ 07-30-2026  10:57:16.133 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0048
+ [ 07-30-2026  10:57:16.133 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:57:16.193 ] step: n=113 t=9.682875E-01 dt=9.980272E-03
+ [ 07-30-2026  10:57:16.196 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:16.986 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:17.163 ] step: n=114 t=9.782678E-01 dt=9.986196E-03
+ [ 07-30-2026  10:57:17.165 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:17.952 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:18.089 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0049
+ [ 07-30-2026  10:57:18.114 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0049
+ [ 07-30-2026  10:57:18.114 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:57:18.175 ] step: n=115 t=9.882540E-01 dt=9.992122E-03
+ [ 07-30-2026  10:57:18.178 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:18.968 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:19.144 ] step: n=116 t=9.982461E-01 dt=9.998050E-03
+ [ 07-30-2026  10:57:19.147 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:19.937 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:20.072 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0050
+ [ 07-30-2026  10:57:20.097 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0050
+ [ 07-30-2026  10:57:20.097 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:57:20.164 ] [IO_writeCheckpoint] open: type=checkpoint name=wd_hdf5_chk_0002
+ [ 07-30-2026  10:57:20.204 ] [IO_writeCheckpoint] close: type=checkpoint name=wd_hdf5_chk_0002
+ [ 07-30-2026  10:57:20.204 ] step: n=117 t=1.008244E+00 dt=1.000000E-02
+ [ 07-30-2026  10:57:20.207 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:20.995 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:21.172 ] step: n=118 t=1.018244E+00 dt=1.000000E-02
+ [ 07-30-2026  10:57:21.175 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:21.961 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:22.097 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0051
+ [ 07-30-2026  10:57:22.122 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0051
+ [ 07-30-2026  10:57:22.122 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:57:22.189 ] step: n=119 t=1.028244E+00 dt=1.000000E-02
+ [ 07-30-2026  10:57:22.192 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:22.977 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:23.153 ] step: n=120 t=1.038244E+00 dt=1.000000E-02
+ [ 07-30-2026  10:57:23.156 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:23.944 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:24.081 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0052
+ [ 07-30-2026  10:57:24.106 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0052
+ [ 07-30-2026  10:57:24.107 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:57:24.173 ] step: n=121 t=1.048244E+00 dt=1.000000E-02
+ [ 07-30-2026  10:57:24.176 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:24.962 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:25.138 ] step: n=122 t=1.058244E+00 dt=1.000000E-02
+ [ 07-30-2026  10:57:25.141 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:25.931 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:26.066 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0053
+ [ 07-30-2026  10:57:26.091 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0053
+ [ 07-30-2026  10:57:26.091 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:57:26.152 ] step: n=123 t=1.068244E+00 dt=1.000000E-02
+ [ 07-30-2026  10:57:26.155 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:26.939 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:27.117 ] step: n=124 t=1.078244E+00 dt=1.000000E-02
+ [ 07-30-2026  10:57:27.120 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:27.906 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:28.042 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0054
+ [ 07-30-2026  10:57:28.068 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0054
+ [ 07-30-2026  10:57:28.068 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:57:28.134 ] step: n=125 t=1.088244E+00 dt=1.000000E-02
+ [ 07-30-2026  10:57:28.137 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:28.926 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:29.102 ] step: n=126 t=1.098244E+00 dt=1.000000E-02
+ [ 07-30-2026  10:57:29.105 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:29.891 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:30.026 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0055
+ [ 07-30-2026  10:57:30.054 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0055
+ [ 07-30-2026  10:57:30.054 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:57:30.115 ] step: n=127 t=1.108244E+00 dt=1.000000E-02
+ [ 07-30-2026  10:57:30.118 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:30.903 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:31.079 ] step: n=128 t=1.118244E+00 dt=1.000000E-02
+ [ 07-30-2026  10:57:31.082 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:31.873 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:32.008 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0056
+ [ 07-30-2026  10:57:32.033 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0056
+ [ 07-30-2026  10:57:32.033 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:57:32.094 ] step: n=129 t=1.128244E+00 dt=1.000000E-02
+ [ 07-30-2026  10:57:32.097 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:32.884 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:33.062 ] step: n=130 t=1.138244E+00 dt=1.000000E-02
+ [ 07-30-2026  10:57:33.065 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:33.847 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:33.982 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0057
+ [ 07-30-2026  10:57:34.007 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0057
+ [ 07-30-2026  10:57:34.008 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:57:34.068 ] step: n=131 t=1.148244E+00 dt=1.000000E-02
+ [ 07-30-2026  10:57:34.072 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  10:57:34.857 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  10:57:35.034 ] [Driver_evolveFlash]: Exiting evolution loop
+ [ 07-30-2026  10:57:35.034 ] [IO_writeCheckpoint] open: type=checkpoint name=wd_hdf5_chk_0003
+ [ 07-30-2026  10:57:35.074 ] [IO_writeCheckpoint] close: type=checkpoint name=wd_hdf5_chk_0003
+ [ 07-30-2026  10:57:35.074 ] [IO_writePlotfile] open: type=plotfile name=wd_forced_hdf5_plt_cnt_0000
+ [ 07-30-2026  10:57:35.099 ] [IO_writePlotfile] close: type=plotfile name=wd_forced_hdf5_plt_cnt_0000
+ [ 07-30-2026  10:57:35.100 ] memory: /proc vsize    (MiB):      272.39 (min)        281.75 (max)        273.56 (avg)
+ [ 07-30-2026  10:57:35.100 ] memory: /proc rss      (MiB):      150.89 (min)        165.36 (max)        153.23 (avg)
+ ==============================================================================
+ perf_summary: code performance summary for process            0
+                      beginning : 07-30-2026  10:54:31
+                         ending : 07-30-2026  10:57:35
+   seconds in monitoring period :              183.246
+      number of evolution steps :                  131
+ ------------------------------------------------------------------------------
+ accounting unit                       time sec  num calls   secs avg  time pct
+ ------------------------------------------------------------------------------
+ initialization                         53.391      1          53.391    29.136
+  eos                                    0.074      3           0.025     0.040
+  guardcell Barrier                     16.571      3           5.524     9.043
+  guardcell internal                     0.046      3           0.015     0.025
+   amr_guardcell                         0.043      3           0.014     0.024
+  gravity Barrier                        0.000      1           0.000     0.000
+  gravity                                0.034      1           0.034     0.018
+   Multipole Solver                      0.028      1           0.028     0.015
+    gr_mpoleMoments                      0.004      1           0.004     0.002
+    gr_mpoleCollectMoments               0.005      1           0.005     0.003
+    gr_mpolePotentials                   0.006      1           0.006     0.003
+  writeCheckpoint                        0.042      1           0.042     0.023
+   restrictAll                           0.000      1           0.000     0.000
+  writePlotfile                          0.028      1           0.028     0.015
+ writeCheckpoint                         0.040      1           0.040     0.022
+  restrictAll                            0.000      1           0.000     0.000
+ writePlotfile                           0.025      1           0.025     0.014
+ evolution                             129.789      1         129.789    70.828
+  cosmology                              0.000    262           0.000     0.000
+  Hydro                                110.899    131           0.847    60.519
+   hydro_unsplit                       110.899    131           0.847    60.519
+    Head                                 4.725    131           0.036     2.578
+     guardcell Barrier                   0.096    131           0.001     0.053
+     guardcell internal                  4.628    131           0.035     2.525
+      amr_guardcell                      4.217    131           0.032     2.301
+      eos gc                             0.004    131           0.000     0.002
+    RiemannState                        23.837   8384           0.003    13.008
+    getFaceFlux                          1.802   8384           0.000     0.983
+    unsplitUpdate                        1.915  16768           0.000     1.045
+    conserveFluxes                      54.660    131           0.417    29.829
+    tail                                20.029    131           0.153    10.930
+     guardcell Barrier                   1.033    131           0.008     0.564
+     guardcell internal                  1.182    131           0.009     0.645
+      amr_guardcell                      1.182    131           0.009     0.645
+     gravity Barrier                     7.529    131           0.057     4.109
+     gravity                             4.175    131           0.032     2.278
+      Multipole Solver                   3.500    131           0.027     1.910
+       gr_mpoleMoments                   0.364    131           0.003     0.199
+       gr_mpoleCollectMoment             0.617    131           0.005     0.337
+       gr_mpolePotentials                0.843    131           0.006     0.460
+  Diffuse                                0.000    131           0.000     0.000
+  sourceTerms                            0.000    131           0.000     0.000
+  Particles_advance                      0.000    131           0.000     0.000
+  diagnostics                            0.000    131           0.000     0.000
+  IO_output                             11.751    262           0.045     6.413
+   diagnostics                          10.202    262           0.039     5.567
+   plotfile                              1.462     57           0.026     0.798
+    restrictAll                          0.001     57           0.000     0.000
+    writePlotfile                        1.453     57           0.025     0.793
+   checkpointing                         0.082      2           0.041     0.045
+    writeCheckpoint                      0.081      2           0.041     0.044
+  Grid_updateRefinement                  1.153    131           0.009     0.629
+   tree                                  1.153    130           0.009     0.629
+    markRefineDerefine                   0.251     65           0.004     0.137
+     guardcell Barrier                   0.000     65           0.000     0.000
+     guardcell internal                  0.250     65           0.004     0.137
+      amr_guardcell                      0.250     65           0.004     0.136
+    amr_refine_derefine                  0.830     65           0.013     0.453
+    updateData                           0.001     65           0.000     0.001
+   updateParticleRefinement              0.000     65           0.000     0.000
+  Driver_computeDt                       5.703    131           0.044     3.112
+ ==============================================================================
+ ==============================================================================
+ perf_summary: code performance summary statistics
+                      beginning : 07-30-2026  10:54:31
+                         ending : 07-30-2026  10:57:35
+   seconds in monitoring period :              183.246
+      number of evolution steps :                  131
+ ------------------------------------------------------------------------------
+ accounting unit                  max/proc (s)  min/proc (s) avg/proc (s)   num calls
+ ------------------------------------------------------------------------------
+ initialization                         53.391        53.391       53.391           1
+  eos                                    0.154         0.071        0.114           3
+  guardcell Barrier                     16.614         0.000        8.730           3
+  guardcell internal                     0.199         0.046        0.122           3
+   amr_guardcell                         0.190         0.043        0.116           3
+  gravity Barrier                        0.000         0.000        0.000           1
+  gravity                                0.041         0.033        0.037           1
+   Multipole Solver                      0.028         0.025        0.026           1
+    gr_mpoleMoments                      0.009         0.004        0.006           1
+    gr_mpoleCollectMoments               0.005         0.000        0.003           1
+    gr_mpolePotentials                   0.014         0.006        0.010           1
+  writeCheckpoint                        0.042         0.042        0.042           1
+   restrictAll                           0.000         0.000        0.000           1
+  writePlotfile                          0.028         0.028        0.028           1
+ writeCheckpoint                         0.040         0.040        0.040           1
+  restrictAll                            0.000         0.000        0.000           1
+ writePlotfile                           0.025         0.025        0.025           1
+ evolution                             129.789       129.789      129.789           1
+  cosmology                              0.000         0.000        0.000         262
+  Hydro                                120.806       110.728      115.752         131
+   hydro_unsplit                       120.806       110.728      115.752         131
+    Head                                22.112         4.725       13.383         131
+     guardcell Barrier                   0.110         0.002        0.054         131
+     guardcell internal                 22.107         4.628       13.328         131
+      amr_guardcell                     20.678         4.217       12.394         131
+      eos gc                             0.009         0.004        0.006         131
+    RiemannState                        54.921        23.837       39.506        8384
+    getFaceFlux                          4.466         1.780        3.096        8384
+    unsplitUpdate                        6.516         1.894        4.180       16768
+    conserveFluxes                      54.660         0.112       27.344         131
+    tail                                22.524        19.842       21.222         131
+     guardcell Barrier                   1.034         0.004        0.521         131
+     guardcell internal                  4.466         1.182        2.834         131
+      amr_guardcell                      4.465         1.182        2.833         131
+     gravity Barrier                     7.530         0.018        3.827         131
+     gravity                             5.204         4.173        4.687         131
+      Multipole Solver                   3.500         3.050        3.278         131
+       gr_mpoleMoments                   0.946         0.364        0.640         131
+       gr_mpoleCollectMoment             0.617         0.034        0.341         131
+       gr_mpolePotentials                1.872         0.842        1.355         131
+  Diffuse                                0.000         0.000        0.000         131
+  sourceTerms                            0.000         0.000        0.000         131
+  Particles_advance                      0.000         0.000        0.000         131
+  diagnostics                            0.000         0.000        0.000         131
+  IO_output                             11.944         1.758        6.862         262
+   diagnostics                          10.387         0.201        5.306         262
+   plotfile                              1.462         1.443        1.446          57
+    restrictAll                          0.001         0.001        0.001          57
+    writePlotfile                        1.453         1.439        1.441          57
+   checkpointing                         0.082         0.081        0.081           2
+    writeCheckpoint                      0.081         0.081        0.081           2
+  Grid_updateRefinement                  1.181         1.153        1.167         131
+   tree                                  1.181         1.153        1.167         130
+    markRefineDerefine                   1.030         0.232        0.563          65
+     guardcell Barrier                   0.000         0.000        0.000          65
+     guardcell internal                  1.028         0.231        0.562          65
+      amr_guardcell                      1.028         0.231        0.561          65
+    amr_refine_derefine                  0.848         0.051        0.518          65
+    updateData                           0.002         0.001        0.002          65
+   updateParticleRefinement              0.000         0.000        0.000          65
+  Driver_computeDt                       5.703         5.668        5.683         131
+ ==============================================================================
+ [ 07-30-2026  10:57:35.103 ] LOGFILE_END: FLASH run complete.
