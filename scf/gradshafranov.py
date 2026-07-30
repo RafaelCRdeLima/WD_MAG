@@ -47,6 +47,62 @@ def assoc_legendre_matrix(mu, lmax):
     return P1
 
 
+def _inner_terms(S, r, lmax):
+    """r^-l * int_0^r S_l(r') r'^(l+1) dr', para l = 1..lmax simultaneamente.
+
+    REVISADO (mesmo transbordo de ponto flutuante que poisson.py levou na
+    Sec 6.2c, achado aqui ao varrer k0 para cima: o ramo poloidal parava de
+    convergir em E_pol/|W| ~ 0.018 com "overflow encountered in multiply"
+    nesta linha). A forma original montava r'^(l+1) e r^-l SEPARADAMENTE
+    antes de dividir -- em raios estelares (~1e8-1e9 cm) r'^17 ja' e' ~1e146
+    e a soma cumulativa transborda, e mesmo quando nao transborda os dois
+    fatores absolutos ficam separados por centenas de ordens de grandeza e
+    perdem algarismos em silencio.
+
+    Reescrito como recursao avancando em r, carregando o termo ja'
+    normalizado por r_i^-l e avancando por uma razao (r_{i-1}/r_i)^l <= 1 --
+    nenhuma potencia absoluta de r e' formada. Matematicamente identico,
+    so' muda a ordem das operacoes.
+
+    NAO e' copia literal de poisson.py: la' o expoente e' l+1 e aqui e' l,
+    porque Delta* nao usa a substituicao chi = r*Phi_l do Laplaciano escalar
+    (ver o ATENCAO no topo deste modulo -- essa confusao de expoentes ja'
+    produziu um bug real neste arquivo)."""
+    nr = len(r)
+    l_arr = np.arange(1, lmax + 1)
+    T1 = np.zeros((lmax, nr))          # T1[:, i] = r[i]^-l * D_l(r[i])
+    for i in range(1, nr):
+        ratio = r[i - 1] / r[i] if r[i] > 0 else 0.0
+        ratio_pow = ratio ** l_arr     # (lmax,), sempre <= 1
+        dr_i = r[i] - r[i - 1]
+        increment = 0.5 * (S[:, i - 1] * r[i - 1] * ratio_pow + S[:, i] * r[i]) * dr_i
+        T1[:, i] = T1[:, i - 1] * ratio_pow + increment
+    return T1
+
+
+def _outer_terms(S, r, lmax):
+    """r^(l+1) * int_r^rmax S_l(r') r'^(-l) dr', para l = 1..lmax.
+
+    Espelho de _inner_terms, recuando em r a partir de r_max. Uma diferenca
+    em relacao ao caso escalar: aqui o integrando e' S(r') * r * (r/r')^l,
+    com o prefator r sendo o PONTO DE AVALIACAO e nao r'. Trocar a base de
+    r_{i+1} para r_i multiplica esse prefator por r_i/r_{i+1} alem da razao
+    (r_i/r_{i+1})^l do integrando, de modo que o fator de transporte leva
+    expoente l+1 enquanto o incremento leva l. Em poisson.py os dois levam
+    o mesmo expoente, porque la' o r' fica dentro da integral."""
+    nr = len(r)
+    l_arr = np.arange(1, lmax + 1)
+    T2 = np.zeros((lmax, nr))          # T2[:, i] = r[i]^(l+1) * E_l(r[i])
+    for i in range(nr - 2, -1, -1):
+        ratio = r[i] / r[i + 1] if r[i + 1] > 0 else 0.0
+        ratio_pow = ratio ** l_arr          # <= 1, para o integrando
+        carry = ratio_pow * ratio           # (r_i/r_{i+1})^(l+1), <= 1
+        dr_i = r[i + 1] - r[i]
+        increment = 0.5 * r[i] * (S[:, i] + S[:, i + 1] * ratio_pow) * dr_i
+        T2[:, i] = T2[:, i + 1] * carry + increment
+    return T2
+
+
 def solve_gradshafranov(source, r, theta, lmax=16):
     """Resolve Delta* u = source por funcao de Green radial + P_l^1.
 
@@ -66,23 +122,10 @@ def solve_gradshafranov(source, r, theta, lmax=16):
         integrand = source * P1[idx][None, :]
         S_l[idx] = norm * np.trapezoid(integrand, theta, axis=1)
 
-    u_l = np.zeros((lmax, nr))
-    for idx, l in enumerate(range(1, lmax + 1)):
-        f = S_l[idx]
-        inner = f * r ** (l + 1)
-        D_l = np.concatenate(([0.0], np.cumsum(
-            0.5 * (inner[1:] + inner[:-1]) * np.diff(r))))
-        with np.errstate(divide="ignore", invalid="ignore"):
-            r_pow_outer = np.where(r > 0, r ** (-l), 0.0)
-        outer_int = f * r_pow_outer
-        rev_cum = np.concatenate(([0.0], np.cumsum(
-            0.5 * (outer_int[1:] + outer_int[:-1]) * np.diff(r))))
-        E_l = rev_cum[-1] - rev_cum
-
-        with np.errstate(divide="ignore", invalid="ignore"):
-            term1 = np.where(r > 0, D_l / r ** l, 0.0)
-        term2 = E_l * r ** (l + 1)
-        u_l[idx] = -(term1 + term2) / (2 * l + 1)
+    T1 = _inner_terms(S_l, r, lmax)
+    T2 = _outer_terms(S_l, r, lmax)
+    l_arr = np.arange(1, lmax + 1)[:, None]
+    u_l = -(T1 + T2) / (2 * l_arr + 1)
 
     sin_theta = np.sin(theta)
     u = np.einsum("lr,lt->rt", u_l, P1) * sin_theta[None, :]
