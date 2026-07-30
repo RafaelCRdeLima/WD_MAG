@@ -228,6 +228,96 @@ $4\%$, not that it is empty.
 
 %-------------------------------------------------------------------
 
+\section{Is there room for it? The confinement and the Landau limit}
+\label{sec:room}
+
+Two questions decide whether the construction is worth building: whether
+it can give a toroidal field larger than the poloidal one, and whether it
+keeps the mass high. The first is about the source, which non-barotropy
+frees. The second is about the confinement, which it does not.
+
+The difficulty is quantitative. The certified $2\,M_\odot$ configuration
+carries $E_{\mathrm{tor}}/|W| = 0.203$ with $B_\varphi = K\rho\varpi$,
+which is non-zero everywhere the density is. A mixed equilibrium must fit
+the same energy into the closed-line region alone, and less volume at the
+same energy means a larger peak field -- against a configuration that
+already peaks at $4.28\times10^{13}$\,G, or $0.97\,B_c$ with
+$B_c = m_e^2c^3/e\hbar = 4.414\times10^{13}$\,G. There is almost no
+headroom before a field-independent equation of state stops describing
+its own star.
+
+We therefore ask, on the density of that configuration, what a confined
+$\beta(u)$ of the form (\ref{eq:betaform}) with $\zeta = 1$ would cost.
+Since $E_{\mathrm{tor}}$ is quadratic in $\beta_0$, the amplitude that
+reproduces $E_{\mathrm{tor}}/|W| = 0.203$ follows by scaling, and the
+question becomes what peak field it implies. Table~\ref{tab:room} gives
+the answer over three decades of poloidal amplitude.
+
+\begin{table*}
+\caption{What a confined toroidal field costs, at fixed
+$E_{\mathrm{tor}}/|W| = 0.203$, on the density of the certified
+$2\,M_\odot$ configuration. Ratios $B_{\mathrm{t}}/B_{\mathrm{p}}$ are of
+peak amplitudes, $E_{\mathrm{t}}/E_{\mathrm{p}}$ of energies.}
+\label{tab:room}
+\centering
+\begin{tabular}{l l l l l l l l}
+\hline\hline
+$k_0$ & $B_{\mathrm{pole}}$ (G) & closed vol. &
+$\max|B_\varphi|$ (G) & $/B_c$ & $\max|\mathbf{B}_{\mathrm{p}}|$ (G) &
+$/B_c$ & $B_{\mathrm{t}}/B_{\mathrm{p}}$ \\
+\hline
+$10^{-13}$        & $5.9\times10^{10}$ & $37.2\%$ & $1.58\times10^{13}$ & $0.36$ & $1.63\times10^{12}$ & $0.04$ & $9.7$ \\
+$3\times10^{-13}$ & $1.8\times10^{11}$ & $37.2\%$ & $1.58\times10^{13}$ & $0.36$ & $4.90\times10^{12}$ & $0.11$ & $3.2$ \\
+$10^{-12}$        & $5.9\times10^{11}$ & $37.2\%$ & $1.58\times10^{13}$ & $0.36$ & $1.63\times10^{13}$ & $0.37$ & $1.0$ \\
+$3\times10^{-12}$ & $1.8\times10^{12}$ & $37.2\%$ & $1.58\times10^{13}$ & $0.36$ & $4.90\times10^{13}$ & $1.11$ & $0.3$ \\
+$10^{-11}$        & $5.9\times10^{12}$ & $37.2\%$ & $1.58\times10^{13}$ & $0.36$ & $1.63\times10^{14}$ & $3.70$ & $0.1$ \\
+\hline
+\end{tabular}
+\end{table*}
+
+Three results, and the first two are favourable.
+
+The confinement is cheaper than the space argument suggests. Reproducing
+$E_{\mathrm{tor}}/|W| = 0.203$ inside $37\%$ of the volume needs a peak of
+$1.58\times10^{13}$\,G, which is $0.36\,B_c$ -- \emph{below} the
+$0.97\,B_c$ the space-filling $K\rho\varpi$ field reaches. Confining the
+field does not price the mass out; it buys headroom, because the confined
+$\zeta = 1$ profile is flatter across its region than $K\rho\varpi$ is
+across the star, and peak field at fixed energy is set by how peaked the
+profile is, not only by how much volume it has.
+
+The ratio is a free parameter over a useful range. At the poloidal
+amplitude the companion paper adopts, the confined configuration has
+$B_{\mathrm{t}}/B_{\mathrm{p}} = 9.7$ in amplitude and
+$E_{\mathrm{t}}/E_{\mathrm{p}} = 884$ in energy; raising $k_0$ by a decade
+brings the amplitudes to parity, and both peaks are then still only
+$0.36$ and $0.37$ of $B_c$. A configuration with comparable poloidal and
+toroidal fields at $2\,M_\odot$ is not excluded by the Landau limit.
+
+What runs out first is the poloidal side, and this is where the
+competition actually lives. At $k_0 = 3\times10^{-12}$ the poloidal peak
+reaches $1.11\,B_c$ and the equation of state no longer describes the
+star it is being used on. The usable window is an exterior dipole from
+$\sim6\times10^{10}$ to $\sim10^{12}$\,G. We had expected the competition
+to run through the closed-line volume instead -- more escaping flux, a
+larger $u_s$, a smaller closed region -- and it does not: that volume
+holds at $37.2\%$ across the whole sweep, because a constant $M'(u) = k_0$
+makes the Grad--Shafranov source linear in $k_0$, so $u$ and $u_s$ scale
+together and the geometry is invariant.
+
+\subsection{What this does not show}
+
+It is a scoping calculation, on a fixed density, and it establishes only
+that the energy budget and the field strengths are mutually compatible.
+It does not exhibit an equilibrium. The argument that the mass survives
+rests on the virial relation containing $E_{\mathrm{mag}}$ as a whole
+rather than its distribution, so that a redistribution of the same
+magnetic energy leaves the global balance unchanged -- which is sound to
+first order and is exactly what the next section has to verify rather
+than assume.
+
+%-------------------------------------------------------------------
+
 \section{The non-barotropic construction}
 \label{sec:nonbarotropic}
 
