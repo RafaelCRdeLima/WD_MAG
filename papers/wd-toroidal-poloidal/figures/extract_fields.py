@@ -56,11 +56,14 @@ SLICE_RES = 256
 # in the same structure, with a fixed RNG seed so the figure is
 # reproducible. Same seed points for all three panels, so the panels
 # differ only by which field is being followed.
-N_LINES = 12
+N_LINES = 8
 SEED_PCTILE = 85
 MIN_SEED_SEP_CM = 1.05e8
 RNG_SEED = 7
-MAX_STEPS = 200            # per direction; long enough to show structure
+MAX_STEPS = 250            # per direction, for the 3D view: long enough to
+                           # show structure, short enough that a single line
+                           # can still be followed by eye
+WANDER_STEPS = 4000        # one long line per field, for the wander curve
 
 OUT = HERE / "fields3d.npz"
 
@@ -93,6 +96,7 @@ def main():
 
     total, pol, tor = sl.decompose(vg["B_x"], vg["B_y"], vg["B_z"],
                                    origin, spacing, dims)
+    r_star_pre = fr.estimate_star_radius(rho, tuple(spacing))
     vectors = {"Bmag": total, "Bp": pol, "Bt": tor}
 
     mag_total = np.linalg.norm(total, axis=-1)
@@ -123,6 +127,27 @@ def main():
             [0] + [len(ln) for ln in lines])
         print(f"  lines {key}: {len(lines)}, "
               f"{np.mean([len(x) for x in lines]):.0f} points each")
+
+        # One long line, for the quantitative wander curve. The 3D view
+        # cannot show both an individual line's topology and how far it
+        # travels -- at the length where the wandering becomes visible the
+        # panel is a solid ball. So the distance-from-seed against
+        # arc-length is measured here and plotted in 2D instead.
+        longline = sl.trace(field, [seeds[0]], origin, spacing, dims, inside,
+                            max_steps=WANDER_STEPS)
+        if longline:
+            ln = longline[0]
+            # The seed sits where trace() inserted it, which is len(back),
+            # NOT the midpoint -- the two branches stop independently, so
+            # slicing at len(ln)//2 lands on the wrong point whenever they
+            # differ in length.
+            k = int(np.argmin(np.linalg.norm(ln - np.asarray(seeds[0]), axis=1)))
+            fwd = ln[k:]
+            seg = np.linalg.norm(np.diff(fwd, axis=0), axis=1)
+            store[f"wander_{key}_arc"] = np.concatenate([[0.0], np.cumsum(seg)])
+            store[f"wander_{key}_dist"] = np.linalg.norm(fwd - fwd[0], axis=1)
+            print(f"    long line: {len(fwd)} pts, arc = "
+                  f"{store[f'wander_{key}_arc'][-1] / r_star_pre:.1f} R_star")
 
     # Volume statistics quoted in the text, computed here so the numbers
     # and the figure cannot drift apart.
