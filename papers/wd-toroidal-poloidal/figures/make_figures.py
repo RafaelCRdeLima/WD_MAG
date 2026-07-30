@@ -389,18 +389,13 @@ def fig_fieldlines():
     fig = plt.figure(figsize=(WIDE_IN, WIDE_IN * 0.38))
     # Explicit column for the colorbar: letting it steal space from the 3D
     # axes puts it on top of the wander panel.
-    # Colourbar horizontal, under the three 3D panels. Any vertical
-    # placement puts its tick labels and its own axis label into the wander
-    # panel's y-axis label; a 3D axis's get_position() returns the whole
-    # subplot slot, which is much wider than the visible box, so hand
-    # placement from it lands inside the neighbour.
-    gs = fig.add_gridspec(2, 4, width_ratios=[1, 1, 1, 0.72],
-                          height_ratios=[1, 0.075],
+    # Colourbar horizontal, under the three panels: a vertical one at the
+    # right puts its tick labels into the neighbouring axis.
+    gs = fig.add_gridspec(2, 3, height_ratios=[1, 0.075],
                           left=0.01, right=0.985, bottom=0.13, top=0.96,
-                          wspace=0.30, hspace=0.05)
+                          wspace=0.02, hspace=0.05)
     axes = [fig.add_subplot(gs[0, i], projection="3d") for i in range(3)]
     cax = fig.add_subplot(gs[1, 0:3])
-    axw = fig.add_subplot(gs[0:2, 3])
 
     # A faint wireframe at the stellar surface, for scale.
     u = np.linspace(0, 2 * np.pi, 37)
@@ -450,33 +445,6 @@ def fig_fieldlines():
     axes[0].set_xlabel(r"$x$ ($10^8$ cm)", fontsize=6.5, labelpad=-8)
     axes[0].set_ylabel(r"$y$", fontsize=6.5, labelpad=-8)
     axes[0].set_zlabel(r"$z$", fontsize=6.5, labelpad=-8)
-
-    # (d) how far a line actually travels. The 3D panels are truncated at a
-    # fixed integration length -- their ends are a drawing choice, not
-    # physics -- so the wandering is shown here instead, where it is legible.
-    # Total field only. The poloidal line stays inside a region of ~0.3
-    # R_star and its curve is a flat band; the toroidal tracer oscillates
-    # between two neighbouring states rather than following a circle, so
-    # neither curve says anything the reader can use, and plotting them
-    # would only invite the eye to compare three things of which two are
-    # artifacts.
-    r_star = meta["r_star_cm"] / 1e8
-    arc = np.asarray(d["wander_Bmag_arc"]) / 1e8 / r_star
-    dist = np.asarray(d["wander_Bmag_dist"]) / 1e8 / r_star
-    axw.plot(arc, dist, color=C_FIELD, linewidth=0.7, zorder=3)
-    axw.axhline(1.0, color=C_MUTED, linewidth=0.7, linestyle=(0, (4, 3)),
-                zorder=1)
-    axw.text(0.5, 1.03, "stellar radius", fontsize=6, color=C_MUTED)
-    style_axes(axw)
-    axw.set_xlabel("arc length along the line " r"($R_\star$)", fontsize=7,
-                   labelpad=1.5)
-    axw.set_ylabel("distance from start " r"($R_\star$)", fontsize=7,
-                   labelpad=1.5)
-    axw.tick_params(labelsize=6, pad=1.5)
-    axw.set_xlim(0, 70)
-    axw.set_ylim(0, 1.55)
-    axw.set_title(r"(d) one $|\mathbf{B}|$ line, followed far", fontsize=7,
-                  pad=3, color=C_MUTED)
 
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     cb = fig.colorbar(sm, cax=cax, orientation="horizontal")
