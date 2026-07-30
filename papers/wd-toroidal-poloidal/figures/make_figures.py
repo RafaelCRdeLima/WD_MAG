@@ -543,6 +543,18 @@ def fig_components():
                 colors="#0b0b0b", linewidths=0.35, alpha=0.55, zorder=2)
     axe.contour(gx, gy, (rho_eq > rho_floor).astype(float), levels=[0.5],
                 colors="#0b0b0b", linewidths=0.7, zorder=3)
+    # In-plane vectors of B_t: purely azimuthal, B_phi * e_phi with
+    # e_phi = (-y, x)/varpi. Their geometry is fixed by construction --
+    # concentric circles -- so what the arrows add is the sense of
+    # circulation, read directly instead of decoded from the colour.
+    X, Y = np.meshgrid(gx, gy)
+    varpi = np.sqrt(X**2 + Y**2)
+    safe = np.where(varpi > 0, varpi, 1.0)
+    btx = np.where(inside_eq, bt * (-Y / safe), np.nan)
+    bty = np.where(inside_eq, bt * (X / safe), np.nan)
+    axe.streamplot(gx, gy, btx, bty, color="#0b0b0b", linewidth=0.4,
+                   density=1.7, arrowsize=0.55, zorder=4)
+
     axe.set_title(r"(a) $B_\varphi$ in the equatorial plane", fontsize=7.5,
                   pad=3)
     axe.set_xlabel(r"$x$  ($10^8$ cm)", labelpad=1.5)
@@ -584,6 +596,12 @@ def fig_components():
 
     for ax in (axe, axm):
         ax.set_aspect("equal")
+        # Cropped to just outside the star (R = 2.46e8 cm): the vacuum
+        # carries nothing and only shrinks the part that does.
+        ax.set_xlim(-3.0, 3.0)
+        ax.set_ylim(-3.0, 3.0)
+        ax.set_xticks([-2, 0, 2])
+        ax.set_yticks([-2, 0, 2])
         ax.tick_params(labelsize=6.5, pad=1.5)
         for s_ in ax.spines.values():
             s_.set_color(C_MUTED)
