@@ -1,0 +1,8 @@
+# 2 Msun toroidal star (rho_c=1.000e+09, K=0.003245, m=1) with an
+# imposed poloidal field. M=2.0072 Msun, VE_toroidal=1.305e-04,
+# E_tor/|W|=0.2026, B_tor_max=4.2751e+13 G
+k0,E_pol_over_W,E_pol_over_Emag,B_pole_G,VE_total,certified
+1.000000e-13,2.291446e-04,1.129683e-03,5.912811e+10,9.860532e-05,True
+3.000000e-13,2.062301e-03,1.007609e-02,1.773843e+11,1.931762e-03,False
+6.000000e-13,8.249205e-03,3.912177e-02,3.547687e+11,8.118666e-03,False
+1.000000e-12,2.291446e-02,1.016050e-01,5.912811e+11,2.278392e-02,False
