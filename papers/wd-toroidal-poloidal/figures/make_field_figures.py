@@ -20,9 +20,21 @@ rather than by interpolating onto a Cartesian grid: it keeps the field
 lines on their flux surfaces by construction, and u along a traced line is
 a free check on the integration, reported below.
 
-The field is toroidal-dominated with B_t/B_p = 26 in amplitude, so a line
-winds about 26 times around the axis per poloidal circuit -- a tightly
-wound helix on a nested torus, which is what the figure has to show.
+The field is toroidal-dominated, so a line is a tightly wound helix on a
+nested torus: the drawn ones wind 17 to 19 times around the axis per
+meridional circuit. That winding is a property of each flux surface and is
+NOT the amplitude ratio B_t/B_p of the table, which is a ratio of two
+maxima taken at different places in the star.
+
+Which surfaces exist is set by the flux at the stellar surface. Along the
+equator u rises from 0 on the axis to u_axis at the O-point and then falls
+to 0.775 u_axis at the surface -- it does not return to zero. Surfaces
+above that value are closed tori inside the star; below it they intersect
+the surface and their lines leave the star, where rho and hence B_phi
+vanish and the line stops winding. The lines here are seeded by FLUX
+inside the closed region, not by radius: equally spaced radii land on
+unequally spaced surfaces, straddle the separatrix, and mix the two
+families in one picture without saying so.
 """
 
 import sys
@@ -164,11 +176,32 @@ def main():
     f_bphi = RGI((vp, zz), bphi_m, bounds_error=False, fill_value=0.0)
     f_u = RGI((vp, zz), u_m, bounds_error=False, fill_value=0.0)
 
-    def trace(vp0, z0, nstep=26000, ds=None):
-        ds = ds or 0.0025 * Rstar
+    # The magnetic axis: the O-point of the poloidal field, where u peaks.
+    # It is what labels the flux surfaces, and what the lines wind around.
+    k_o = np.unravel_index(
+        np.argmax(np.where(inside, np.abs(u_m), -np.inf)), u_m.shape)
+    w_axis, z_axis, u_axis = VP[k_o], ZZ[k_o], u_m[k_o]
+
+    def seed_at_flux(frac):
+        """Equatorial radius outside the magnetic axis carrying u = frac*u_axis.
+
+        Seeding by flux rather than by radius is the point: u labels the
+        surfaces, radius does not. Equally spaced radii land on unequally
+        spaced -- and non-monotonic -- surfaces, because a radius inside the
+        axis and one outside it can carry the same flux."""
+        w_end = vp[inside[:, np.argmin(np.abs(zz))]].max()
+        ws = np.linspace(w_axis, w_end, 4000)
+        us = f_u(np.stack([ws, np.zeros_like(ws)], axis=-1)) / u_axis
+        return float(np.interp(frac, us[::-1], ws[::-1]))
+
+    def trace(vp0, z0, max_step=400000, ds=None):
+        """One full meridional circuit, so the lines are comparable objects."""
+        ds = ds or 0.0015 * Rstar
         w, z, ph = vp0, z0, 0.0
         pts, mags = [], []
-        for _ in range(nstep):
+        prev = np.arctan2(z - z_axis, w - w_axis)
+        swept = 0.0
+        for _ in range(max_step):
             p = np.array([[w, z]])
             bw, bz_, bf = f_bvp(p)[0], f_bz(p)[0], f_bphi(p)[0]
             b = np.sqrt(bw * bw + bz_ * bz_ + bf * bf)
@@ -179,26 +212,46 @@ def main():
             w += ds * bw / b
             z += ds * bz_ / b
             ph += ds * bf / (w * b)
-        return np.array(pts), np.array(mags)
+            ang = np.arctan2(z - z_axis, w - w_axis)
+            swept += (ang - prev + np.pi) % (2 * np.pi) - np.pi
+            prev = ang
+            if abs(swept) >= 2 * np.pi:
+                break
+        return np.array(pts), np.array(mags), abs(ph) / (2 * np.pi)
 
     fig = plt.figure(figsize=(WIDE_IN * 0.62, WIDE_IN * 0.42))
     ax3 = fig.add_subplot(111, projection="3d")
-    starts = [(0.28, 0.0), (0.50, 0.0), (0.70, 0.0)]
-    norm = None
-    for i, (fw, fz) in enumerate(starts):
-        line, mag = trace(fw * Rstar, fz * Rstar)
+    # Only surfaces above the separatrix are closed tori. On the equator u
+    # runs 0 at the axis, up to u_axis, then DOWN to 0.775 u_axis at the
+    # stellar surface -- it does not return to zero, so surfaces below that
+    # value intersect the surface and their lines leave the star. Seed inside
+    # the closed region; drawing an open line beside closed ones without
+    # saying so is what made the first version of this figure confusing.
+    fluxes = [0.97, 0.90, 0.80]
+    print(f"  magnetic axis at varpi = {w_axis / S8:.3f}e8 cm")
+    drawn = []
+    for frac in fluxes:
+        w0 = seed_at_flux(frac)
+        line, mag, turns = trace(w0, 0.0)
         if len(line) < 10:
             continue
-        u0 = f_u(np.array([[fw * Rstar, fz * Rstar]]))[0]
+        u0 = f_u(np.array([[w0, 0.0]]))[0]
         uu = f_u(np.stack([np.sqrt(line[:, 0]**2 + line[:, 1]**2),
                            line[:, 2]], axis=-1))
         drift = np.max(np.abs(uu - u0)) / max(abs(u0), 1e-30)
-        print(f"  line {i}: {len(line)} pts, |u| drift along it = {drift:.2e}")
+        print(f"  u/u_axis = {frac:.2f}: seed varpi = {w0 / S8:.3f}e8 cm, "
+              f"{turns:.1f} turns/circuit, |u| drift = {drift:.2e}")
+        drawn.append((frac, line, mag, turns))
+
+    # one colour scale across all lines, or the strength comparison between
+    # surfaces is lost
+    norm = plt.Normalize(min(m.min() for _, _, m, _ in drawn),
+                         max(m.max() for _, _, m, _ in drawn))
+    cmap = LinearSegmentedColormap.from_list("b", BLUES[1:])
+    for frac, line, mag, turns in drawn:
         segs = np.stack([line[:-1] / S8, line[1:] / S8], axis=1)
-        if norm is None:
-            norm = plt.Normalize(mag.min(), mag.max())
-        lc = Line3DCollection(segs, cmap=LinearSegmentedColormap.from_list(
-            "b", BLUES[1:]), norm=norm, linewidths=0.55, zorder=3)
+        lc = Line3DCollection(segs, cmap=cmap, norm=norm, linewidths=0.55,
+                              zorder=3)
         lc.set_array(0.5 * (mag[:-1] + mag[1:]))
         ax3.add_collection3d(lc)
 
@@ -223,6 +276,21 @@ def main():
     ax3.set_xlabel(r"$x$ ($10^8$ cm)", fontsize=7, labelpad=-6)
     ax3.set_ylabel(r"$y$", fontsize=7, labelpad=-6)
     ax3.set_zlabel(r"$z$", fontsize=7, labelpad=-6)
+
+    # say what distinguishes the three lines, since it is a choice
+    rows = "\n".join(
+        rf"$u/u_{{\rm axis}}={f:.2f}$:  {t:.1f} turns"
+        for f, _, _, t in drawn)
+    ax3.text2D(0.015, 0.985, "one meridional circuit each\n" + rows,
+               transform=ax3.transAxes, fontsize=6.2, color=C_MUTED,
+               va="top", ha="left", linespacing=1.5)
+
+    sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+    cb = fig.colorbar(sm, ax=ax3, fraction=0.028, pad=0.02)
+    cb.set_label(r"$|\mathbf{B}|$  (G)", fontsize=7.5)
+    cb.outline.set_linewidth(0.5)
+    cb.ax.tick_params(labelsize=6.5, width=0.5, length=2, pad=1.5)
+
     fig.savefig(HERE / "field_lines_3d.pdf")
     plt.close(fig)
     print("wrote field_lines_3d.pdf")
