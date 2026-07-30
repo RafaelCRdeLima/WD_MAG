@@ -26,6 +26,10 @@ module Simulation_data
   real, save    :: sim_xctr, sim_yctr, sim_zctr
   real, save    :: sim_smallRho, sim_smallT
 
+  ! global velocity damping, mirroring Castro's problem_source.H
+  real, save    :: sim_dampTimescaleTdyn, sim_dampEndTdyn
+  real, save    :: sim_dampRampStartTdyn, sim_tDyn
+
   ! the 1D model, radius-ordered
   integer, save :: sim_nPts
   real, save    :: sim_rTab(SIM_NPTS_MAX)

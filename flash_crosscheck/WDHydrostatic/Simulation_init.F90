@@ -41,6 +41,10 @@ subroutine Simulation_init()
   call RuntimeParameters_get('sim_xctr',        sim_xctr)
   call RuntimeParameters_get('sim_yctr',        sim_yctr)
   call RuntimeParameters_get('sim_zctr',        sim_zctr)
+  call RuntimeParameters_get('sim_dampTimescaleTdyn', sim_dampTimescaleTdyn)
+  call RuntimeParameters_get('sim_dampEndTdyn',       sim_dampEndTdyn)
+  call RuntimeParameters_get('sim_dampRampStartTdyn', sim_dampRampStartTdyn)
+  call RuntimeParameters_get('sim_tDyn',              sim_tDyn)
   call RuntimeParameters_get('smlrho',          sim_smallRho)
   call RuntimeParameters_get('smallt',          sim_smallT)
 
@@ -92,6 +96,10 @@ subroutine Simulation_init()
      print *, '[WDHydrostatic] T (uniform) = ', sim_tempTab(1)
      print *, '[WDHydrostatic] abar, zbar  = ', sim_abar, sim_zbar
      print *, '[WDHydrostatic] nSubZones   = ', sim_nSubZones
+     print *, '[WDHydrostatic] t_dyn       = ', sim_tDyn
+     print *, '[WDHydrostatic] damping: timescale/t_dyn = ', sim_dampTimescaleTdyn
+     print *, '[WDHydrostatic] damping: ramp start, end (t_dyn) = ', &
+              sim_dampRampStartTdyn, sim_dampEndTdyn
   end if
 
 end subroutine Simulation_init

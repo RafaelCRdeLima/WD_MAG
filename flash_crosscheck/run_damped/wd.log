@@ -1,0 +1,819 @@
+ FLASH log file:  07-30-2026  00:23:03.793    Run number:  1
+ ==============================================================================
+ Number of MPI tasks:                  8
+ MPI version:                          5
+ MPI subversion:                       0
+ Dimensionality:                       3
+ Max Number of Blocks/Proc:          200
+ Number x zones:                       8
+ Number y zones:                       8
+ Number z zones:                       8
+ Setup stamp:     Thu Jul 30 00:22:25 2026
+ Build stamp:     Thu Jul 30 00:22:38 2026
+ System info:     Linux d84a3df79a8f 6.14.0-37-generic #37~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu
+ Version:         FLASH 4.8                                                                       
+ Build directory: /opt/FLASH4.8/objdir_wd
+ Setup syntax:    /opt/FLASH4.8/bin/setup.py WDHydrostatic -auto -3d -site=wd_docker -objdir=objdir_wd
+ f compiler flags: /opt/micromamba/envs/flash_gcc12/bin/mpif90 -ggdb -c -O2 -fdefault-real-8 -fdefault-double-8 -Wuninitialized -fallow-argument-mismatch -DMAXBLOCKS=200 -DNXB=8 -DNYB=8 -DNZB=8 -DN_DIM=3
+ c compiler flags:    /opt/micromamba/envs/flash_gcc12/bin/mpicc -I/opt/micromamba/envs/flash_gcc12/include -DH5_USE_16_API -ggdb -c -O2 -Wuninitialized -D_FORTIFY_SOURCE=2 -DMAXBLOCKS=200 -DNXB=8 -DNYB=8 -DNZB=8 -DN_DIM=3
+ ==============================================================================
+ Comment:  hydrostatic white dwarf, Helmholtz EOS, field-free
+ ==============================================================================
+ FLASH Units used:
+   Driver/DriverMain/Unsplit
+   Driver/localAPI
+   Grid/GridBoundaryConditions
+   Grid/GridMain/paramesh/interpolation/Paramesh4/prolong
+   Grid/GridMain/paramesh/interpolation/prolong
+   Grid/GridMain/paramesh/paramesh4/Paramesh4dev/PM4_package/headers
+   Grid/GridMain/paramesh/paramesh4/Paramesh4dev/PM4_package/mpi_source
+   Grid/GridMain/paramesh/paramesh4/Paramesh4dev/PM4_package/source
+   Grid/GridMain/paramesh/paramesh4/Paramesh4dev/PM4_package/utilities/multigrid
+   Grid/GridMain/paramesh/paramesh4/Paramesh4dev/flash_avoid_orrery
+   Grid/GridSolvers/Multipole
+   Grid/localAPI
+   IO/IOMain/hdf5/serial/PM
+   IO/localAPI
+   Multispecies/MultispeciesMain
+   PhysicalConstants/PhysicalConstantsMain
+   RuntimeParameters/RuntimeParametersMain
+   Simulation/SimulationMain/WDHydrostatic
+   flashUtilities/contiguousConversion
+   flashUtilities/general
+   flashUtilities/interpolation/oneDim
+   flashUtilities/nameValueLL
+   flashUtilities/sorting/quicksort
+   flashUtilities/system/memoryUsage/legacy
+   monitors/Logfile/LogfileMain
+   monitors/Timers/TimersMain/MPINative
+   physics/Diffuse/DiffuseMain
+   physics/Diffuse/localAPI
+   physics/Eos/EosMain/Helmholtz/SpeciesBased
+   physics/Eos/localAPI
+   physics/Gravity/GravityMain/Poisson/Multipole
+   physics/Hydro/HydroMain/unsplit/Hydro_Unsplit
+   physics/Hydro/localAPI
+   physics/materialProperties/Conductivity/ConductivityMain/Constant
+   physics/materialProperties/Conductivity/localAPI
+ ==============================================================================
+ RuntimeParameters:
+                                                                               
+ ==============================================================================
+bndpriorityone              =          1
+bndprioritythree            =          3
+bndprioritytwo              =          2
+checkpointfileintervalstep  =          0
+checkpointfilenumber        =          0
+dr_abortpause               =          2
+dr_dtminbelowaction         =          1
+dr_numposdefvars            =          4
+drift_break_inst            =          0
+drift_trunc_mantissa        =          2
+drift_verbose_inst          =          0
+eos_entrelescalechoice      =          6
+eos_loglevel                =        700
+eos_maxnewton               =        100 [CHANGED]
+fileformatversion           =          9
+forcedplotfilenumber        =          0
+gp_radius                   =          2
+gr_lrefmaxtimevalue_1       =         -1
+gr_lrefmaxtimevalue_10      =         -1
+gr_lrefmaxtimevalue_11      =         -1
+gr_lrefmaxtimevalue_12      =         -1
+gr_lrefmaxtimevalue_13      =         -1
+gr_lrefmaxtimevalue_14      =         -1
+gr_lrefmaxtimevalue_15      =         -1
+gr_lrefmaxtimevalue_16      =         -1
+gr_lrefmaxtimevalue_17      =         -1
+gr_lrefmaxtimevalue_18      =         -1
+gr_lrefmaxtimevalue_19      =         -1
+gr_lrefmaxtimevalue_2       =         -1
+gr_lrefmaxtimevalue_20      =         -1
+gr_lrefmaxtimevalue_3       =         -1
+gr_lrefmaxtimevalue_4       =         -1
+gr_lrefmaxtimevalue_5       =         -1
+gr_lrefmaxtimevalue_6       =         -1
+gr_lrefmaxtimevalue_7       =         -1
+gr_lrefmaxtimevalue_8       =         -1
+gr_lrefmaxtimevalue_9       =         -1
+gr_pmrpdivergencefree       =          1
+gr_pmrpifaceoff             =          0
+gr_pmrpl2p5d                =          0
+gr_pmrpmaxblocks            =         -1
+gr_pmrpmflags               =          1
+gr_pmrpnboundaries          =          6
+gr_pmrpndim                 =          3
+gr_pmrpnedgevar1            =         -1
+gr_pmrpnfacevar             =         -1
+gr_pmrpnfielddivf           =         -1
+gr_pmrpnfluxvar             =         -1
+gr_pmrpnguard               =         -1
+gr_pmrpnguardwork           =         -1
+gr_pmrpnvar                 =         -1
+gr_pmrpnvarwork             =          1
+gr_pmrpnvarcorn             =          0
+gr_pmrpnvaredge             =          0
+gr_pmrpnxb                  =         -1
+gr_pmrpnyb                  =         -1
+gr_pmrpnzb                  =         -1
+gr_restrictallmethod        =          3
+gr_sanitizedatamode         =          1
+gr_sanitizeverbosity        =          5
+hy_3torder                  =         -1
+hydrocomputedtoption        =         -1
+iprocs                      =          1
+interpol_order              =          2
+irenorm                     =          0
+jprocs                      =          1
+kprocs                      =          1
+lrefine_del                 =          0
+lrefine_max                 =          1
+lrefine_min                 =          1
+lrefine_min_init            =          1
+max_particles_per_blk       =        100
+memory_stat_freq            =     100000
+meshcopycount               =          1
+min_particles_per_blk       =          1
+mpole_lmax                  =          0
+mpole_scaletype1            =          1
+mpole_scaletype2            =          1
+mpole_scaletype3            =          1
+mpole_subsample             =          1
+nbegin                      =          1
+nblockx                     =          8 [CHANGED]
+nblocky                     =          8 [CHANGED]
+nblockz                     =          8 [CHANGED]
+nend                        =     200000 [CHANGED]
+nrefs                       =          2
+nsteptotalsts               =          5
+order                       =          2
+outputsplitnum              =          1
+plotfileintervalstep        =          0
+plotfilenumber              =          0
+refine_var_count            =          4
+rolling_checkpoint          =      10000
+sim_nsubzones               =          3
+sweeporder                  =        123
+transorder                  =          1
+wr_integrals_freq           =          1
+limitedslopebeta            =                 0.100E+01
+poskappa1                   =                 0.400E+00
+poskappa2                   =                 0.400E+00
+cfl                         =                 0.500E+00 [CHANGED]
+checkpointfileintervaltime  =                 0.500E+00 [CHANGED]
+checkpointfileintervalz     =                 0.180+309
+cond_constantcross          =                 0.000E+00
+cond_constantisochoric      =                 0.000E+00
+cond_constantparallel       =                 0.000E+00
+cond_constantperpendicular  =                 0.000E+00
+cvisc                       =                 0.100E+00
+derefine_cutoff_1           =                 0.200E+00
+derefine_cutoff_2           =                 0.200E+00
+derefine_cutoff_3           =                 0.200E+00
+derefine_cutoff_4           =                 0.200E+00
+diff_eleflcoef              =                 0.100E+01
+diff_ionflcoef              =                 0.100E+01
+diff_magflcoef              =                 0.100E+01
+diff_scalefactthermsatempdiff =                 0.100E+01
+diff_scalefactthermsatime   =                 0.100E+01
+diffusion_cutoff_density    =                 0.100E-29
+dr_dtmincontinue            =                 0.000E+00
+dr_posdefdtfactor           =                 0.100E+01
+dr_tstepslowstartfactor     =                 0.100E+00
+dt_diff_factor              =                 0.800E+00
+dtinit                      =                 0.100E-05 [CHANGED]
+dtmax                       =                 0.100E-01 [CHANGED]
+dtmin                       =                 0.100E-11 [CHANGED]
+eintswitch                  =                 0.000E+00
+eos_coulombmult             =                 0.000E+00 [CHANGED]
+eos_fluffdens               =                 0.000E+00
+eos_mfaspeciesa             =                 0.100E+01
+eos_mfaspeciesz             =                 0.100E+01
+eos_mfbspeciesa             =                 0.100E+01
+eos_mfbspeciesz             =                 0.100E+01
+eos_singlespeciesa          =                 0.100E+01
+eos_singlespeciesz          =                 0.100E+01
+eos_tolerance               =                 0.100E-07
+gamma                       =                 0.167E+01
+gammaa                      =                 0.167E+01
+gammab                      =                 0.167E+01
+gp_elldel                   =                 0.120E+02
+gp_sigdel                   =                 0.200E+01
+gr_lrefinemaxredlogbase     =                 0.100E+02
+gr_lrefinemaxredradiusfact  =                 0.000E+00
+gr_lrefinemaxredtref        =                 0.000E+00
+gr_lrefinemaxredtimescale   =                 0.100E+01
+gr_lrefmaxtime_1            =                -0.100E+01
+gr_lrefmaxtime_10           =                -0.100E+01
+gr_lrefmaxtime_11           =                -0.100E+01
+gr_lrefmaxtime_12           =                -0.100E+01
+gr_lrefmaxtime_13           =                -0.100E+01
+gr_lrefmaxtime_14           =                -0.100E+01
+gr_lrefmaxtime_15           =                -0.100E+01
+gr_lrefmaxtime_16           =                -0.100E+01
+gr_lrefmaxtime_17           =                -0.100E+01
+gr_lrefmaxtime_18           =                -0.100E+01
+gr_lrefmaxtime_19           =                -0.100E+01
+gr_lrefmaxtime_2            =                -0.100E+01
+gr_lrefmaxtime_20           =                -0.100E+01
+gr_lrefmaxtime_3            =                -0.100E+01
+gr_lrefmaxtime_4            =                -0.100E+01
+gr_lrefmaxtime_5            =                -0.100E+01
+gr_lrefmaxtime_6            =                -0.100E+01
+gr_lrefmaxtime_7            =                -0.100E+01
+gr_lrefmaxtime_8            =                -0.100E+01
+gr_lrefmaxtime_9            =                -0.100E+01
+hy_cflfallbackfactor        =                 0.900E+00
+hy_fpresinmomflux           =                 0.100E+01
+hybridorderkappa            =                 0.000E+00
+larget                      =                 0.100E+21
+mpole_r12                   =                 0.000E+00
+mpole_r23                   =                 0.100E+01
+mpole_rscale1               =                 0.100E+01
+mpole_rscale2               =                 0.100E+01
+mpole_rscale3               =                 0.100E+01
+nusts                       =                 0.100E+00
+plotfileintervaltime        =                 0.200E-01 [CHANGED]
+plotfileintervalz           =                 0.180+309
+point_mass                  =                 0.000E+00
+point_mass_rsoft            =                 0.000E+00
+refine_cutoff_1             =                 0.800E+00
+refine_cutoff_2             =                 0.800E+00
+refine_cutoff_3             =                 0.800E+00
+refine_cutoff_4             =                 0.800E+00
+refine_filter_1             =                 0.100E-01
+refine_filter_2             =                 0.100E-01
+refine_filter_3             =                 0.100E-01
+refine_filter_4             =                 0.100E-01
+rss_limit                   =                -0.100E+01
+sim_abar                    =                 0.400E+01
+sim_dampendtdyn             =                 0.200E+02
+sim_damprampstarttdyn       =                 0.180E+02
+sim_damptimescaletdyn       =                 0.200E+00
+sim_rhoambient              =                 0.100E+01 [CHANGED]
+sim_tdyn                    =                 0.288E+00
+sim_tempambient             =                 0.100E+08
+sim_xctr                    =                 0.000E+00
+sim_yctr                    =                 0.000E+00
+sim_zbar                    =                 0.200E+01
+sim_zctr                    =                 0.000E+00
+small                       =                 0.100E-09
+smalle                      =                 0.100E-09
+smallp                      =                 0.100E-09
+smallt                      =                 0.100E+06 [CHANGED]
+smallu                      =                 0.100E-09
+smallx                      =                 0.100E-09
+smlrho                      =                 0.100E-01 [CHANGED]
+tinitial                    =                 0.000E+00
+tiny                        =                 0.100E-15
+tmax                        =                 0.115E+01 [CHANGED]
+tstep_change_factor         =                 0.200E+01
+wall_clock_checkpoint       =                 0.432E+05
+wall_clock_time_limit       =                 0.605E+06
+x_refine_center             =                 0.000E+00
+xmax                        =                 0.490E+09 [CHANGED]
+xmin                        =                -0.490E+09 [CHANGED]
+y_refine_center             =                 0.000E+00
+ymax                        =                 0.490E+09 [CHANGED]
+ymin                        =                -0.490E+09 [CHANGED]
+zfinal                      =                 0.000E+00
+zinitial                    =                -0.100E+01
+z_refine_center             =                 0.000E+00
+zmax                        =                 0.490E+09 [CHANGED]
+zmin                        =                -0.490E+09 [CHANGED]
+riemannsolver               = HLLC                          
+unitsystem                  = none                          
+basenm                      = wd_                            [CHANGED]
+diff_eleflmode              = fl_none                       
+diff_elexlboundarytype      = neumann                       
+diff_elexrboundarytype      = neumann                       
+diff_eleylboundarytype      = neumann                       
+diff_eleyrboundarytype      = neumann                       
+diff_elezlboundarytype      = neumann                       
+diff_elezrboundarytype      = neumann                       
+diff_ionflmode              = fl_none                       
+diff_ionxlboundarytype      = neumann                       
+diff_ionxrboundarytype      = neumann                       
+diff_ionylboundarytype      = neumann                       
+diff_ionyrboundarytype      = neumann                       
+diff_ionzlboundarytype      = neumann                       
+diff_ionzrboundarytype      = neumann                       
+diff_magflmode              = fl_none                       
+diff_magxxlboundarytype     = neumann                       
+diff_magxxrboundarytype     = neumann                       
+diff_magxylboundarytype     = neumann                       
+diff_magxyrboundarytype     = neumann                       
+diff_magxzlboundarytype     = neumann                       
+diff_magxzrboundarytype     = neumann                       
+diff_magyxlboundarytype     = neumann                       
+diff_magyxrboundarytype     = neumann                       
+diff_magyylboundarytype     = neumann                       
+diff_magyyrboundarytype     = neumann                       
+diff_magyzlboundarytype     = neumann                       
+diff_magyzrboundarytype     = neumann                       
+diff_magzxlboundarytype     = neumann                       
+diff_magzxrboundarytype     = neumann                       
+diff_magzylboundarytype     = neumann                       
+diff_magzyrboundarytype     = neumann                       
+diff_magzzlboundarytype     = neumann                       
+diff_magzzrboundarytype     = neumann                       
+dr_posdefvar_1              = none                          
+dr_posdefvar_2              = none                          
+dr_posdefvar_3              = none                          
+dr_posdefvar_4              = none                          
+entropyfixmethod            = HARTENHYMAN                   
+eosmode                     = dens_ie                       
+eosmodeinit                 = dens_ie                       
+geometry                    = cartesian                     
+gr_pmrpoutputdir            = ./                            
+grav_boundary_type          = isolated                      
+hy_eosmodegc                = see eosMode                   
+log_file                    = wd.log                         [CHANGED]
+output_directory            =                               
+pc_unitsbase                = CGS                           
+plot_grid_var_1             = none                          
+plot_grid_var_10            = none                          
+plot_grid_var_11            = none                          
+plot_grid_var_12            = none                          
+plot_grid_var_2             = none                          
+plot_grid_var_3             = none                          
+plot_grid_var_4             = none                          
+plot_grid_var_5             = none                          
+plot_grid_var_6             = none                          
+plot_grid_var_7             = none                          
+plot_grid_var_8             = none                          
+plot_grid_var_9             = none                          
+plot_var_1                  = dens                           [CHANGED]
+plot_var_10                 = none                          
+plot_var_11                 = none                          
+plot_var_12                 = none                          
+plot_var_13                 = none                          
+plot_var_14                 = none                          
+plot_var_15                 = none                          
+plot_var_16                 = none                          
+plot_var_2                  = temp                           [CHANGED]
+plot_var_3                  = pres                           [CHANGED]
+plot_var_4                  = none                          
+plot_var_5                  = none                          
+plot_var_6                  = none                          
+plot_var_7                  = none                          
+plot_var_8                  = none                          
+plot_var_9                  = none                          
+prof_file                   = profile.dat                   
+refine_var_1                = none                          
+refine_var_2                = none                          
+refine_var_3                = none                          
+refine_var_4                = none                          
+run_comment                 = hydrostatic white dwarf, Helmh [CHANGED]
+run_number                  = 1                             
+sim_modelfile               = wd_model.dat                  
+slopelimiter                = vanLeer                       
+stats_file                  = flash.dat                     
+wenomethod                  = WENO5                         
+xl_boundary_type            = outflow                        [CHANGED]
+xr_boundary_type            = outflow                        [CHANGED]
+yl_boundary_type            = outflow                        [CHANGED]
+yr_boundary_type            = outflow                        [CHANGED]
+zl_boundary_type            = outflow                        [CHANGED]
+zr_boundary_type            = outflow                        [CHANGED]
+eosforriemann               =  F
+addthermalflux              =  T
+allowdtstsdominate          =  F
+alwayscomputeuservars       =  T
+alwaysrestrictcheckpoint    =  T
+appendparrestart            =  F
+charlimiting                =  T
+chkguardcellsinput          =  F
+chkguardcellsoutput         =  F
+conserveangmom              =  F
+converttoconsvdformeshcalls =  F
+converttoconsvdinmeshinterp =  T
+corners                     =  F
+diff_anisocondforele        =  F
+diff_doanisomagdiff         =  F
+diff_domagdiff              =  F
+diff_usecrosscond           =  F
+diff_useelecond             =  F
+diff_useioncond             =  F
+dr_printtsteploc            =  T
+dr_shortenlaststepbeforetmax =  F
+dr_useposdefcomputedt       =  F
+drift_tuples                =  F
+eachprocwritesownabortlog   =  F
+eachprocwritessummary       =  F
+earlyblockdistadjustment    =  T
+enablemaskedgcfill          =  T
+entropy                     =  F
+eos_coulombabort            =  F [CHANGED]
+eos_forceconstantinput      =  F
+flux_correct                =  T
+geometryoverride            =  F
+gr_bcenableapplymixedgds    =  T
+gr_lrefinemaxbytime         =  F
+gr_lrefinemaxreddobylogr    =  F
+gr_lrefinemaxreddobytime    =  F
+gr_pmrpadvancealllevels     =  F
+gr_pmrpamrerrorchecking     =  F
+gr_pmrpcartesianpm          =  F
+gr_pmrpconserve             =  F
+gr_pmrpconsvfluxdensities   =  T
+gr_pmrpconsvfluxes          =  F
+gr_pmrpcurvilinear          =  F
+gr_pmrpcurvilinearconserve  =  F
+gr_pmrpcylindricalpm        =  F
+gr_pmrpdiagonals            =  T
+gr_pmrpedgevalue            =  T
+gr_pmrpedgevalueinteg       =  F
+gr_pmrpemptycells           =  F
+gr_pmrpforceconsistency     =  T
+gr_pmrplsingularline        =  F
+gr_pmrpnopermanentguardcells =  F
+gr_pmrppolarpm              =  F
+gr_pmrppredcorr             =  F
+gr_pmrpsphericalpm          =  F
+gr_pmrptimingmpi            =  F
+gr_pmrptimingmpix           =  F
+gr_pmrpvardt                =  F
+grav_temporal_extrp         =  F
+grav_unjunkpden             =  T
+hy_fallbacklowercfl         =  F
+hy_fullspecmsfluxhandling   =  T
+hy_usefluxeqn               =  F
+ignoreforcedplot            =  F
+initializeparticleatrestart =  F
+io_writemscalarintegrals    =  F
+mpole_3daxisymmetric        =  F
+mpole_dumpmoments           =  F
+mpole_usematrixmpi          =  F
+octant                      =  F
+plotfilegridquantitydp      =  F
+plotfilemetadatadp          =  F
+quadrant                    =  F
+reducegcellfills            =  F
+refine_on_particle_count    =  F
+res_addanomres              =  F
+restart                     =  F
+shockdetect                 =  F
+shocklowercfl               =  F
+summaryoutputonly           =  F
+threadblocklistbuild        =  F
+threaddriverblocklist       =  F
+threaddriverwithinblock     =  F
+threadeoswithinblock        =  F
+threadhydroblocklist        =  F
+threadhydrowithinblock      =  F
+threadraytracebuild         =  F
+threadwithinblockbuild      =  F
+typematchedxfer             =  T
+unbiased_geometry           =  F
+updategravity               =  T
+updatehydrofluxes           =  T
+useburn                     =  F
+usecircuit                  =  F
+usecollectivehdf5           =  T
+useconductivity             =  T
+usecool                     =  F
+usecosmology                =  F
+usedeleptonize              =  F
+usediffuse                  =  T
+usediffusecomputedtspecies  =  T
+usediffusecomputedttherm    =  T
+usediffusecomputedtvisc     =  T
+usediffusecomputedtmagnetic =  T
+usediffusespecies           =  T
+usediffusetherm             =  T
+useenergydeposition         =  F
+useexplicitviscosity        =  T
+useflame                    =  F
+usegravity                  =  T
+useheat                     =  F
+useheatexchange             =  F
+usehydro                    =  T
+useincompns                 =  F
+useionize                   =  F
+uselegacylabels             =  T
+usemagneticresistivity      =  F
+usemassdiffusivity          =  F
+useopacity                  =  F
+useparticles                =  F
+useplasmastate              =  F
+usepolytrope                =  F
+useprimordialchemistry      =  F
+useprotonemission           =  F
+useprotonimaging            =  F
+useradtrans                 =  F
+useraytrace                 =  F
+usests                      =  F
+usestsfordiffusion          =  F
+usestir                     =  F
+usethomsonscattering        =  F
+usetreeray                  =  F
+useturb                     =  T
+useviscosity                =  F
+usexrayimaging              =  F
+use_3dfullctu               =  T
+use_pospreserv              =  F
+use_auxeinteqn              =  T
+use_avisc                   =  F
+use_cma_advection           =  F
+use_cma_flattening          =  F
+use_flash_surr_blks_fill    =  T
+use_flattening              =  F
+use_gravhalfupdate          =  T
+use_hybridorder             =  F
+use_reduced_orrery          =  T
+use_steepening              =  F
+use_upwindtvd               =  F
+writestatsummary            =  T
+                                                                               
+ ==============================================================================
+                                                                               
+ Known units of measurement:
+                                                                               
+              Unit                          CGS Value                Base Unit
+  1                  cm                     1.0000                           cm
+  2                   s                     1.0000                            s
+  3                   g                     1.0000                            g
+  4                   K                     1.0000                            K
+  5                 esu                     1.0000                          esu
+  6                 mol                     1.0000                          mol
+  7                   m                     100.00                           cm
+  8                  km                    1.00000E+05                       cm
+  9                  pc                    3.08568E+18                       cm
+ 10                 kpc                    3.08568E+21                       cm
+ 11                 Mpc                    3.08568E+24                       cm
+ 12                 Gpc                    3.08568E+27                       cm
+ 13                Rsun                    6.96000E+10                       cm
+ 14                  AU                    1.49598E+13                       cm
+ 15                  yr                    3.15569E+07                        s
+ 16                 Myr                    3.15569E+13                        s
+ 17                 Gyr                    3.15569E+16                        s
+ 18                  kg                     1000.0                            g
+ 19                Msun                    1.98892E+33                        g
+ 20                 amu                    1.66054E-24                        g
+ 21             keV/c^2                    1.60218E-09                        g
+ 22                  eV                     11605.                            K
+ 23                   C                    2.99792E+09                      esu
+ 24                LFLY                    3.08568E+24                       cm
+ 25                TFLY                    2.05759E+17                        s
+ 26                MFLY                    9.88470E+45                        g
+ 27            clLength                    3.08568E+24                       cm
+ 28              clTime                    3.15569E+16                        s
+ 29              clMass                    1.98892E+48                        g
+ 30              clTemp                    1.16045E+07                        K
+-----------End of Units--------------------
+                                                                               
+ Known physical constants:
+                                                                               
+    Constant Name       Constant Value   cm       s        g        K        esu      mol
+  1              Newton    6.67408E-08   3.0     -2.0     -1.0      0.0      0.0      0.0    
+  2      speed of light    2.99792E+10   1.0     -1.0      0.0      0.0      0.0      0.0    
+  3              Planck    6.62607E-27   2.0     -1.0      1.0      0.0      0.0      0.0    
+  4     electron charge    4.80320E-10   0.0      0.0      0.0      0.0      1.0      0.0    
+  5       electron mass    9.10938E-28   0.0      0.0      1.0      0.0      0.0      0.0    
+  6         proton mass    1.67262E-24   0.0      0.0      1.0      0.0      0.0      0.0    
+  7      fine-structure    7.29735E-03   0.0      0.0      0.0      0.0      0.0      0.0    
+  8            Avogadro    6.02214E+23   0.0      0.0      0.0      0.0      0.0     -1.0    
+  9           Boltzmann    1.38065E-16   2.0     -2.0      1.0     -1.0      0.0      0.0    
+ 10  ideal gas constant    8.31446E+07   2.0     -2.0      1.0     -1.0      0.0     -1.0    
+ 11                Wien    0.28978       1.0      0.0      0.0      1.0      0.0      0.0    
+ 12    Stefan-Boltzmann    5.67037E-05   0.0     -3.0      1.0     -4.0      0.0      0.0    
+ 13  Radiation Constant    7.56572E-15  -1.0     -2.0      1.0     -4.0      0.0      0.0    
+ 14                  pi     3.1416       0.0      0.0      0.0      0.0      0.0      0.0    
+ 15                   e     2.7183       0.0      0.0      0.0      0.0      0.0      0.0    
+ 16               Euler    0.57722       0.0      0.0      0.0      0.0      0.0      0.0    
+ ==============================================================================
+                                                                               
+ Multifluid database contents:
+                                                                               
+Initially defined values of species:
+Name     Index          Total   Positive  Neutral   Negative  bind Ener Gamma   eosType
+he4         16       4.00E+00  2.00E+00 -9.99E+02  2.00E+00 -9.99E+02  1.67E+00  -999
+
+Name     Index  OpacityLowTemp  Zmin    Subtype ZFreeTableFile                   EnerTableFile                    PresTableFile
+he4         16       0.00E+00 -9.99E+02    -999 -none-                           -none-                           -none-                          
+
+Species Constituents
+he4      0 constituents
+                                                                               
+ ==============================================================================
+ [ 07-30-2026  00:23:03.867 ] [gr_initGeometry] checking BCs for idir: 1
+ [ 07-30-2026  00:23:03.867 ] [gr_initGeometry] checking BCs for idir: 2
+ [ 07-30-2026  00:23:03.867 ] [gr_initGeometry] checking BCs for idir: 3
+ WARNING : Adaptive Grid did not find any variable to refine
+ [ 07-30-2026  00:23:04.034 ] [GRID amr_refine_derefine]: initiating refinement
+ [ 07-30-2026  00:23:04.034 ] [GRID amr_refine_derefine]: redist. phase.  tot blks requested: 512
+ [GRID amr_refine_derefine] min blks 64    max blks 64    tot blks 512
+ [GRID amr_refine_derefine] min leaf blks 64    max leaf blks 64    tot leaf blks 512
+ [ 07-30-2026  00:23:04.036 ] [GRID amr_refine_derefine]: refinement complete
+ [ 07-30-2026  00:23:04.042 ] [GRID gr_expandDomain]: iteration=1, create level=1
+ [ 07-30-2026  00:23:04.687 ] [Grid_markRefineDerefine]: gcArgs=----------------+Eos
+ [ 07-30-2026  00:23:04.691 ] [Grid_fillGuardCells]: gcSet=----------------
+ [ 07-30-2026  00:23:04.691 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:04.700 ] [GRID gr_expandDomain]: iteration=2, create level=1
+ [ 07-30-2026  00:23:05.360 ] [GRID gr_expandDomain]: iteration=3, create level=1
+ [ 07-30-2026  00:23:06.011 ] [gr_mpoleInit] Potential and Moment subsampling set to: 1
+ [ 07-30-2026  00:23:06.011 ] [gr_mpoleInit]: using 223 moment array, 892 items
+ [mpole_moments] Using looped mpi_allreduce
+ [ 07-30-2026  00:23:06.011 ] memory: /proc vsize    (MiB):      271.54 (min)        271.60 (max)        271.54 (avg)
+ [ 07-30-2026  00:23:06.011 ] memory: /proc rss      (MiB):      140.85 (min)        141.54 (max)        141.21 (avg)
+ [ 07-30-2026  00:23:06.012 ] memory: /proc vsize    (MiB):      271.54 (min)        271.60 (max)        271.54 (avg)
+ [ 07-30-2026  00:23:06.012 ] memory: /proc rss      (MiB):      140.97 (min)        141.54 (max)        141.23 (avg)
+ [ 07-30-2026  00:23:06.012 ] [Hydro_init]: gcNeed=d-eefggggpstvvv-
+ [ 07-30-2026  00:23:06.012 ] [mpi_amr_comm_setup]: buffer_dim_send=230261, buffer_dim_recv=230261
+ [ 07-30-2026  00:23:06.150 ] memory: /proc vsize    (MiB):      271.79 (min)        271.85 (max)        271.80 (avg)
+ [ 07-30-2026  00:23:06.150 ] memory: /proc rss      (MiB):      141.07 (min)        141.89 (max)        141.54 (avg)
+ [ 07-30-2026  00:23:06.154 ] [IO_writeCheckpoint] open: type=checkpoint name=wd_hdf5_chk_0000
+ [ 07-30-2026  00:23:06.206 ] [IO_writeCheckpoint] close: type=checkpoint name=wd_hdf5_chk_0000
+ [ 07-30-2026  00:23:06.206 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0000
+ [ 07-30-2026  00:23:06.234 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0000
+ [ 07-30-2026  00:23:06.234 ] memory: /proc vsize    (MiB):      272.21 (min)        274.18 (max)        272.46 (avg)
+ [ 07-30-2026  00:23:06.235 ] memory: /proc rss      (MiB):      141.20 (min)        148.56 (max)        142.51 (avg)
+ [ 07-30-2026  00:23:06.235 ] [Driver_evolveFlash]: Entering evolution loop
+ [ 07-30-2026  00:23:06.235 ] step: n=1 t=0.000000E+00 dt=1.000000E-06
+ [ 07-30-2026  00:23:06.237 ] [hy_uhd_unsplit]: gcNeed=d-eefggggpstvvv-+Eos
+ [ 07-30-2026  00:23:06.237 ] [Grid_fillGuardCells]: gcSet=d-eefggggpstvvvh+Eos
+ [ 07-30-2026  00:23:06.237 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:06.966 ] [hy_uhd_unsplit]: gcWant[Pot]=--------g-------
+ [ 07-30-2026  00:23:06.966 ] [Grid_fillGuardCells]: gcSet[no doEos]=--------g-------+Eos
+ [ 07-30-2026  00:23:06.966 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:07.057 ] step: n=2 t=1.000000E-06 dt=2.000000E-06
+ [ 07-30-2026  00:23:07.059 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:07.766 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:07.831 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:07.864 ] step: n=3 t=3.000000E-06 dt=4.000000E-06
+ [ 07-30-2026  00:23:07.867 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:08.576 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:08.666 ] step: n=4 t=7.000000E-06 dt=8.000000E-06
+ [ 07-30-2026  00:23:08.668 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:09.400 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:09.465 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:09.499 ] step: n=5 t=1.500000E-05 dt=1.600000E-05
+ [ 07-30-2026  00:23:09.501 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:10.222 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:10.310 ] step: n=6 t=3.100000E-05 dt=3.200000E-05
+ [ 07-30-2026  00:23:10.312 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:11.044 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:11.109 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:11.143 ] step: n=7 t=6.300000E-05 dt=6.400000E-05
+ [ 07-30-2026  00:23:11.144 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:11.861 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:11.954 ] step: n=8 t=1.270000E-04 dt=1.280000E-04
+ [ 07-30-2026  00:23:11.956 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:12.661 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:12.730 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:12.763 ] step: n=9 t=2.550000E-04 dt=2.560000E-04
+ [ 07-30-2026  00:23:12.766 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:13.484 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:13.578 ] step: n=10 t=5.110000E-04 dt=5.120000E-04
+ [ 07-30-2026  00:23:13.580 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:14.302 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:14.372 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:14.409 ] step: n=11 t=1.023000E-03 dt=1.024000E-03
+ [ 07-30-2026  00:23:14.411 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:15.132 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:15.275 ] step: n=12 t=2.047000E-03 dt=2.048000E-03
+ [ 07-30-2026  00:23:15.277 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:15.998 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:16.125 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:16.162 ] step: n=13 t=4.095000E-03 dt=4.096000E-03
+ [ 07-30-2026  00:23:16.164 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:16.886 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:17.045 ] step: n=14 t=8.191000E-03 dt=8.192000E-03
+ [ 07-30-2026  00:23:17.047 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:17.757 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:17.838 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:17.872 ] step: n=15 t=1.638300E-02 dt=9.474142E-03
+ [ 07-30-2026  00:23:17.873 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:18.586 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:18.667 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0001
+ [ 07-30-2026  00:23:18.697 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0001
+ [ 07-30-2026  00:23:18.721 ] step: n=16 t=2.585714E-02 dt=9.463377E-03
+ [ 07-30-2026  00:23:18.723 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:19.462 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:19.603 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:19.636 ] step: n=17 t=3.532052E-02 dt=9.457837E-03
+ [ 07-30-2026  00:23:19.638 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:20.350 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:20.490 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0002
+ [ 07-30-2026  00:23:20.520 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0002
+ [ 07-30-2026  00:23:20.545 ] step: n=18 t=4.477836E-02 dt=9.455222E-03
+ [ 07-30-2026  00:23:20.547 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:21.278 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:21.359 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:21.392 ] step: n=19 t=5.423358E-02 dt=9.454279E-03
+ [ 07-30-2026  00:23:21.394 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:22.124 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:22.204 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0003
+ [ 07-30-2026  00:23:22.232 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0003
+ [ 07-30-2026  00:23:22.256 ] step: n=20 t=6.368786E-02 dt=9.454243E-03
+ [ 07-30-2026  00:23:22.258 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:22.990 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:23.130 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:23.163 ] step: n=21 t=7.314210E-02 dt=9.454656E-03
+ [ 07-30-2026  00:23:23.165 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:23.899 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:23.981 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0004
+ [ 07-30-2026  00:23:24.011 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0004
+ [ 07-30-2026  00:23:24.036 ] step: n=22 t=8.259676E-02 dt=9.455361E-03
+ [ 07-30-2026  00:23:24.038 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:24.754 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:24.835 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:24.873 ] step: n=23 t=9.205212E-02 dt=9.456368E-03
+ [ 07-30-2026  00:23:24.875 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:25.601 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:25.742 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0005
+ [ 07-30-2026  00:23:25.772 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0005
+ [ 07-30-2026  00:23:25.797 ] step: n=24 t=1.015085E-01 dt=9.457704E-03
+ [ 07-30-2026  00:23:25.798 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:26.518 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:26.658 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:26.692 ] step: n=25 t=1.109662E-01 dt=9.459339E-03
+ [ 07-30-2026  00:23:26.694 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:27.417 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:27.499 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0006
+ [ 07-30-2026  00:23:27.529 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0006
+ [ 07-30-2026  00:23:27.554 ] step: n=26 t=1.204255E-01 dt=9.461183E-03
+ [ 07-30-2026  00:23:27.555 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:28.282 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:28.362 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:28.401 ] step: n=27 t=1.298867E-01 dt=9.463127E-03
+ [ 07-30-2026  00:23:28.402 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:29.135 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:29.299 ] step: n=28 t=1.393498E-01 dt=9.465087E-03
+ [ 07-30-2026  00:23:29.301 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:30.030 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:30.111 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0007
+ [ 07-30-2026  00:23:30.139 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0007
+ [ 07-30-2026  00:23:30.139 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:30.173 ] step: n=29 t=1.488149E-01 dt=9.467024E-03
+ [ 07-30-2026  00:23:30.175 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:30.903 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:31.010 ] step: n=30 t=1.582819E-01 dt=9.468944E-03
+ [ 07-30-2026  00:23:31.012 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:31.778 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:31.859 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0008
+ [ 07-30-2026  00:23:31.889 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0008
+ [ 07-30-2026  00:23:31.889 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:31.923 ] step: n=31 t=1.677509E-01 dt=9.470883E-03
+ [ 07-30-2026  00:23:31.925 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:32.633 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:32.740 ] step: n=32 t=1.772218E-01 dt=9.472880E-03
+ [ 07-30-2026  00:23:32.742 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:33.463 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:33.545 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0009
+ [ 07-30-2026  00:23:33.576 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0009
+ [ 07-30-2026  00:23:33.576 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:33.610 ] step: n=33 t=1.866947E-01 dt=9.474967E-03
+ [ 07-30-2026  00:23:33.612 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:34.341 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:34.447 ] step: n=34 t=1.961696E-01 dt=9.477158E-03
+ [ 07-30-2026  00:23:34.450 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:35.175 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:35.257 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0010
+ [ 07-30-2026  00:23:35.287 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0010
+ [ 07-30-2026  00:23:35.287 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:35.321 ] step: n=35 t=2.056468E-01 dt=9.479454E-03
+ [ 07-30-2026  00:23:35.323 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:36.058 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:36.187 ] step: n=36 t=2.151262E-01 dt=5.782890E-03
+ [ 07-30-2026  00:23:36.189 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:36.919 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:37.001 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0011
+ [ 07-30-2026  00:23:37.025 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0011
+ [ 07-30-2026  00:23:37.026 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:37.059 ] step: n=37 t=2.209091E-01 dt=8.717235E-03
+ [ 07-30-2026  00:23:37.061 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:37.788 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:37.894 ] step: n=38 t=2.296264E-01 dt=9.483216E-03
+ [ 07-30-2026  00:23:37.896 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:38.601 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:38.683 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:38.716 ] step: n=39 t=2.391096E-01 dt=9.490983E-03
+ [ 07-30-2026  00:23:38.718 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:39.440 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:39.523 ] [IO_writePlotfile] open: type=plotfile name=wd_hdf5_plt_cnt_0012
+ [ 07-30-2026  00:23:39.548 ] [IO_writePlotfile] close: type=plotfile name=wd_hdf5_plt_cnt_0012
+ [ 07-30-2026  00:23:39.573 ] step: n=40 t=2.486006E-01 dt=3.745917E-03
+ [ 07-30-2026  00:23:39.575 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:40.305 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:40.385 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:40.418 ] step: n=41 t=2.523465E-01 dt=7.763161E-07
+ [ 07-30-2026  00:23:40.420 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:41.150 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:41.242 ] step: n=42 t=2.523473E-01 dt=1.346391E-08
+ [ 07-30-2026  00:23:41.244 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:41.979 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:42.052 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:42.085 ] step: n=43 t=2.523473E-01 dt=3.658609E-12
+ [ 07-30-2026  00:23:42.087 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:42.812 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:42.901 ] step: n=44 t=2.523473E-01 dt=1.000000E-12
+ [ 07-30-2026  00:23:42.903 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:43.613 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:43.678 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  00:23:43.711 ] step: n=45 t=2.523473E-01 dt=1.000000E-12
+ [ 07-30-2026  00:23:43.713 ] [mpi_amr_comm_setup]: buffer_dim_send=216373, buffer_dim_recv=216373
+ [ 07-30-2026  00:23:44.443 ] [mpi_amr_comm_setup]: buffer_dim_send=21941, buffer_dim_recv=21941
+ [ 07-30-2026  00:23:44.455 ] [DRIVER_ABORT]: Driver_abort() called by PE           0
+ [ 07-30-2026  00:23:44.455 ] abort_message: [eos_helmholtz] Error: too many iterations in Helmholtz Eos

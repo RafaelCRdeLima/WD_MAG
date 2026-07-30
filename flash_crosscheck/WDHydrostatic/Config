@@ -58,3 +58,20 @@ PARAMETER sim_yctr          REAL    0.0
 
 D sim_zctr          z of the stellar centre
 PARAMETER sim_zctr          REAL    0.0
+
+# Global velocity damping, the equivalent of Castro's problem_source.H.
+# The Castro reference curve was produced with damping over [0, 20 t_dyn]
+# ramping off from 18 t_dyn (its run log states exactly that), so these
+# defaults reproduce that run and not the seeded runs' [0, 5] window.
+
+D sim_dampTimescaleTdyn  damping timescale in units of t_dyn; <= 0 disables damping
+PARAMETER sim_dampTimescaleTdyn  REAL  0.2   [0 to ]
+
+D sim_dampEndTdyn        time in t_dyn at which damping stops entirely
+PARAMETER sim_dampEndTdyn        REAL  20.0  [0 to ]
+
+D sim_dampRampStartTdyn  time in t_dyn at which the smooth ramp-off begins
+PARAMETER sim_dampRampStartTdyn  REAL  18.0  [0 to ]
+
+D sim_tDyn               the star's dynamical time, sqrt(R^3/GM), in seconds
+PARAMETER sim_tDyn               REAL  0.2879670  [0 to ]

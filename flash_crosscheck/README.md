@@ -114,7 +114,52 @@ assuming it. That also removes the central-condensation caveat: the star
 is the real ztwd structure, validated to `0.026%` in mass against the
 production star.
 
+## Result with equivalent damping
+
+`WDHydrostatic/Simulation_adjustEvolution.F90` reproduces Castro's
+`problem_source.H`: global velocity damping on every cell,
+`rate = 1/(0.2 t_dyn)`, cosine ramp-off, kinetic-energy-consistent energy
+update, with the reference run's window (`[0, 20 t_dyn]`, ramp from 18) so
+damping is fully on throughout. Two deliberate differences, both in the
+file's header: it is operator-split (FLASH's driver has no in-hydro source
+hook, so it goes through `Simulation_adjustEvolution`, which the driver
+calls every step for exactly this) and the per-step decay is `exp(-r dt)`
+rather than Castro's explicit `1 - r dt`.
+
+Central density deviation, both damped, same law, same parameters:
+
+| `t/t_dyn` | FLASH | Castro |
+|---|---|---|
+| 0.418 | `-1.02%` | `-0.49%` |
+| 0.583 | `-2.64%` | `-1.03%` |
+| 0.767 | `-4.63%` | `-1.43%` |
+| 0.863 | `-5.63%` | `-1.61%` |
+
+**FLASH drifts about 3.5x more than Castro at the same `t/t_dyn`, and then
+fails at `t/t_dyn = 0.876`** -- timestep collapse to `1e-12` with the EOS
+driven off-table. The failing cell sits at `r = 2.7e8` cm, just outside
+`R = 2.46e8`: the star/vacuum interface, not the interior. Data in
+`flash_rhoc_damped.csv` (undamped first attempt in `flash_rhoc.csv`).
+
+**This does not support migrating, but it is not a fair fight either.**
+The Castro setup carries real tuning this FLASH setup does not: the
+discretization chain of Sec 6.6 (half-shift geometry, volume averaging),
+the gravity `r=0` patch of Sec 6.7, and floors tuned over many runs. This
+FLASH problem is a first attempt whose choices were made to get it to run
+at all -- ambient at `1 g/cm^3` (four orders above Castro's, forced by
+Helmholtz refusing to invert a harder vacuum), Coulomb correction off,
+`mpole_lmax = 0`, no exterior sponge -- and whose initial mapping already
+lands `-4.7%` off the 1D central density, the same class of error Sec 6.6
+fixed on the Castro side.
+
+So the honest reading: on the question that motivated this, *does another
+code hold the star better*, the first answer is no. Before that becomes a
+conclusion, the surface/vacuum treatment has to be fixed, because that is
+what is killing the run and it is also the most likely source of the extra
+drift.
+
 ## Status
+
 
 - [x] FLASH 4.8 extracted from the Docker image, patched, and built with
       Helmholtz + Poisson/Multipole + unsplit hydro (`FLASH_CORE_PATCHES.md`)
@@ -122,12 +167,10 @@ production star.
       production star (M to 0.026%)
 - [x] First run: 39 steps to `t/t_dyn = 0.773`, then a timestep collapse
       and an out-of-table EOS state -- `flash_rhoc.csv`
-- [ ] **Blocker for any code comparison:** the Castro reference curve was
-      produced with global velocity damping active over `[0, 5 t_dyn]`
-      (`run_seed*.log`: "global damping active"), and this FLASH run has
-      none. The two are therefore not comparable as they stand, and the
-      measured difference cannot be attributed to the schemes. Either add
-      the equivalent damping to the FLASH problem or re-run Castro
-      undamped.
-- [ ] Attribute the timestep collapse: setup or FLASH
-- [ ] `rho_c(t)` comparison, once the runs are actually comparable
+- [x] Equivalent damping added and the comparison made like-for-like:
+      FLASH drifts ~3.5x more, and fails at `t/t_dyn = 0.876`
+- [ ] Fix the star/vacuum interface, which is where the run dies and the
+      likeliest source of the extra drift: raise/soften the ambient,
+      `eos_forceConstantInput`, an exterior sponge, or `use_hybridRiemann`
+- [ ] Port the Sec 6.6 mapping fix (the IC starts `-4.7%` off `rho_c`)
+- [ ] Only then treat the drift ratio as a statement about the schemes

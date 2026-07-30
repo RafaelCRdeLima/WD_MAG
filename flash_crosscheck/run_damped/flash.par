@@ -1,0 +1,99 @@
+# Hydrostatic white dwarf, field-free, 3D.
+#
+# Deliberately matched to the Castro wd_braithwaite run so that a
+# difference in rho_c(t) is a difference between the schemes and not
+# between two different problems:
+#   domain      +-4.90e8 cm, same as inputs.evolve
+#   resolution  64^3 single level (nblockx*nxb = 8*8), as amr.n_cell = 64
+#   gravity     monopole only (mpole_lmax = 0), as Castro's monopole solver
+#   boundaries  outflow, as Castro's lo_bc/hi_bc = 2
+#   composition A = 4, Z = 2 (mu_e = 2), as mu2.net
+#   star        the same 1D ztwd structure, M = 1.3461 Msun
+#
+# t_dyn = 0.2879670 s for this model (sqrt(R^3/GM), the same definition as
+# seed_field.H:85). tmax below is 4 t_dyn, which covers the validity window
+# the Castro measurements are confined to (0.4 - 1.128 t_dyn) with margin.
+
+run_comment = "hydrostatic white dwarf, Helmholtz EOS, field-free"
+log_file    = "wd.log"
+basenm      = "wd_"
+
+# ---------------------------------------------------------------- grid
+geometry = "cartesian"
+
+xmin = -4.90e8
+xmax =  4.90e8
+ymin = -4.90e8
+ymax =  4.90e8
+zmin = -4.90e8
+zmax =  4.90e8
+
+xl_boundary_type = "outflow"
+xr_boundary_type = "outflow"
+yl_boundary_type = "outflow"
+yr_boundary_type = "outflow"
+zl_boundary_type = "outflow"
+zr_boundary_type = "outflow"
+
+# Single level on purpose: Castro's MHD is single-level only, so the
+# comparison has to be single level to be a comparison.
+lrefine_min = 1
+lrefine_max = 1
+nblockx = 8
+nblocky = 8
+nblockz = 8
+
+# ---------------------------------------------------------------- time
+tmax    = 1.151868
+nend    = 200000
+dtinit  = 1.0e-6
+dtmin   = 1.0e-12
+dtmax   = 1.0e-2
+cfl     = 0.5
+
+# ------------------------------------------------------------------ IO
+checkpointFileIntervalTime = 0.5
+plotFileIntervalTime       = 0.02
+plot_var_1 = "dens"
+plot_var_2 = "temp"
+plot_var_3 = "pres"
+
+# ------------------------------------------------------------- physics
+useGravity        = .true.
+grav_boundary_type = "isolated"
+mpole_lmax        = 0
+
+# Coulomb correction off: it drives the total pressure negative in the cold
+# ambient, and the ztwd model handed in has no Coulomb term either, so
+# disabling it brings the evolved EOS CLOSER to the initial condition.
+eos_coulombMult   = 0.0
+eos_coulombAbort  = .false.
+eos_maxNewton     = 100
+
+# floors; smlrho must stay below the ambient density
+smlrho = 1.0e-2
+smallt = 1.0e5
+smallp = 1.0e-10
+smalle = 1.0e-10
+smallu = 1.0e-10
+
+# --------------------------------------------------------------- damping
+# Equivalent of Castro's problem_source.H, with the parameters of the run
+# that produced the reference curve: damping over [0, 20 t_dyn], ramping
+# off from 18 t_dyn. tmax here is 4 t_dyn, so damping is fully on
+# throughout and the ramp never engages -- exactly as in the reference.
+sim_dampTimescaleTdyn = 0.2
+sim_dampEndTdyn       = 20.0
+sim_dampRampStartTdyn = 18.0
+sim_tDyn              = 0.2879670
+
+# ---------------------------------------------------------- simulation
+sim_modelFile   = "wd_model.dat"
+sim_nSubZones   = 3
+sim_rhoAmbient  = 1.0
+sim_tempAmbient = 1.0e7
+sim_abar        = 4.0
+sim_zbar        = 2.0
+sim_xctr        = 0.0
+sim_yctr        = 0.0
+sim_zctr        = 0.0

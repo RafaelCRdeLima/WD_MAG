@@ -1,0 +1,177 @@
+ WARNING : Adaptive Grid did not find any refinement variables
+ Grid_init: resolution based on runtime params:
+  lrefine          dx              dy              dz
+      1      15312500.000    15312500.000    15312500.000
+ MaterialProperties initialized
+ Cosmology initialized
+ about to open file
+ [Eos_init] Cannot open helm_table.bdat!
+ [Eos_init] Trying old helm_table.dat!
+ Source terms initialized
+ [WDHydrostatic] model file: wd_model.dat
+ [WDHydrostatic] points read =         2048
+ [WDHydrostatic] r range     =    0.0000000000000000        848704895.71000004     
+ [WDHydrostatic] rho_c       =    988393849.50000000     
+ [WDHydrostatic] T (uniform) =    10000000.000000000     
+ [WDHydrostatic] abar, zbar  =    4.0000000000000000        2.0000000000000000     
+ [WDHydrostatic] nSubZones   =            3
+ [WDHydrostatic] t_dyn       =   0.28796699999999997     
+ [WDHydrostatic] damping: timescale/t_dyn =   0.20000000000000001     
+ [WDHydrostatic] damping: ramp start, end (t_dyn) =    18.000000000000000        20.000000000000000     
+  iteration, no. not moved =            0           0
+ refined: total leaf blocks =          512
+ refined: total blocks =          512
+ [amr_morton_process]: Initializing surr_blks using standard orrery implementation
+ [gr_mpoleInit] using 223 moment array, 892 items                                                                                                                                                                                                                               
+  Finished with Grid_initDomain, no restart
+ Ready to call Hydro_init
+ Hydro initialized
+ Gravity initialized
+ Initial dt verified
+ *** Wrote checkpoint file to wd_hdf5_chk_0000 ****
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0000 ****
+ Initial plotfile written
+ Driver init all done
+ [WDHydrostatic] damping: t/t_dyn =   0.0000000000000000       ramp =   1.0000000000000000       factor =  0.99998263705010471     
+       n          t         dt  (         x,          y,          z) |  dt_hydro  dt_Diff  
+       1 1.0000E-06 2.0000E-06  (-7.656E+06, -7.656E+06, -7.656E+06) |  9.569E-03 9.379E+43
+       2 3.0000E-06 4.0000E-06  (-7.656E+06, -7.656E+06, -7.656E+06) |  9.569E-03 9.379E+43
+       3 7.0000E-06 8.0000E-06  (-7.656E+06,  7.656E+06,  7.656E+06) |  9.569E-03 9.379E+43
+       4 1.5000E-05 1.6000E-05  (-7.656E+06, -7.656E+06, -7.656E+06) |  9.569E-03 9.379E+43
+       5 3.1000E-05 3.2000E-05  ( 7.656E+06, -7.656E+06,  7.656E+06) |  9.569E-03 9.379E+43
+       6 6.3000E-05 6.4000E-05  ( 7.656E+06,  7.656E+06, -7.656E+06) |  9.568E-03 9.379E+43
+       7 1.2700E-04 1.2800E-04  ( 7.656E+06,  7.656E+06,  7.656E+06) |  9.568E-03 9.379E+43
+       8 2.5500E-04 2.5600E-04  (-7.656E+06,  7.656E+06,  7.656E+06) |  9.566E-03 9.379E+43
+       9 5.1100E-04 5.1200E-04  ( 7.656E+06, -7.656E+06, -7.656E+06) |  9.563E-03 9.379E+43
+      10 1.0230E-03 1.0240E-03  ( 7.656E+06,  7.656E+06, -7.656E+06) |  9.557E-03 9.379E+43
+      11 2.0470E-03 2.0480E-03  ( 7.656E+06, -7.656E+06, -7.656E+06) |  9.546E-03 9.379E+43
+      12 4.0950E-03 4.0960E-03  ( 7.656E+06, -7.656E+06, -7.656E+06) |  9.528E-03 9.379E+43
+      13 8.1910E-03 8.1920E-03  (-7.656E+06, -7.656E+06, -7.656E+06) |  9.500E-03 9.379E+43
+      14 1.6383E-02 9.4741E-03  (-7.656E+06, -7.656E+06,  7.656E+06) |  9.474E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0001 ****
+      15 2.5857E-02 9.4634E-03  (-7.656E+06, -7.656E+06,  7.656E+06) |  9.463E-03 9.379E+43
+      16 3.5321E-02 9.4578E-03  (-7.656E+06,  7.656E+06, -7.656E+06) |  9.458E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0002 ****
+      17 4.4778E-02 9.4552E-03  ( 7.656E+06, -7.656E+06, -7.656E+06) |  9.455E-03 9.379E+43
+      18 5.4234E-02 9.4543E-03  ( 7.656E+06,  7.656E+06, -7.656E+06) |  9.454E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0003 ****
+      19 6.3688E-02 9.4542E-03  (-7.656E+06,  7.656E+06, -7.656E+06) |  9.454E-03 9.379E+43
+      20 7.3142E-02 9.4547E-03  ( 7.656E+06, -7.656E+06,  7.656E+06) |  9.455E-03 9.379E+43
+ [WDHydrostatic] damping: t/t_dyn =  0.25399472521548844       ramp =   1.0000000000000000       factor =  0.84860441269772302     
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0004 ****
+      21 8.2597E-02 9.4554E-03  ( 7.656E+06, -7.656E+06, -7.656E+06) |  9.455E-03 9.379E+43
+      22 9.2052E-02 9.4564E-03  ( 7.656E+06,  7.656E+06, -7.656E+06) |  9.456E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0005 ****
+      23 1.0151E-01 9.4577E-03  ( 7.656E+06,  7.656E+06, -7.656E+06) |  9.458E-03 9.379E+43
+      24 1.1097E-01 9.4593E-03  (-7.656E+06, -7.656E+06, -7.656E+06) |  9.459E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0006 ****
+      25 1.2043E-01 9.4612E-03  (-7.656E+06, -7.656E+06,  7.656E+06) |  9.461E-03 9.379E+43
+      26 1.2989E-01 9.4631E-03  ( 7.656E+06,  7.656E+06, -7.656E+06) |  9.463E-03 9.379E+43
+      27 1.3935E-01 9.4651E-03  (-7.656E+06,  7.656E+06,  7.656E+06) |  9.465E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0007 ****
+      28 1.4881E-01 9.4670E-03  ( 7.656E+06, -7.656E+06, -7.656E+06) |  9.467E-03 9.379E+43
+      29 1.5828E-01 9.4689E-03  ( 7.656E+06, -7.656E+06,  7.656E+06) |  9.469E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0008 ****
+      30 1.6775E-01 9.4709E-03  (-7.656E+06, -7.656E+06,  7.656E+06) |  9.471E-03 9.379E+43
+      31 1.7722E-01 9.4729E-03  (-7.656E+06, -7.656E+06,  7.656E+06) |  9.473E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0009 ****
+      32 1.8669E-01 9.4750E-03  (-7.656E+06, -7.656E+06,  7.656E+06) |  9.475E-03 9.379E+43
+      33 1.9617E-01 9.4772E-03  (-7.656E+06, -7.656E+06,  7.656E+06) |  9.477E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0010 ****
+      34 2.0565E-01 9.4795E-03  ( 7.656E+06,  7.656E+06,  7.656E+06) |  9.479E-03 9.379E+43
+      35 2.1513E-01 5.7829E-03  ( 2.373E+08, -1.148E+08, -9.953E+07) |  5.783E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0011 ****
+      36 2.2091E-01 8.7172E-03  (-1.148E+08,  1.148E+08,  2.373E+08) |  8.717E-03 9.379E+43
+      37 2.2963E-01 9.4832E-03  (-7.656E+06, -7.656E+06,  7.656E+06) |  9.483E-03 9.379E+43
+      38 2.3911E-01 9.4910E-03  ( 7.656E+06,  7.656E+06,  7.656E+06) |  9.491E-03 9.379E+43
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0012 ****
+      39 2.4860E-01 3.7459E-03  ( 6.891E+07,  2.527E+08, -6.891E+07) |  3.746E-03 9.379E+43
+      40 2.5235E-01 7.7632E-07  ( 6.891E+07,  2.527E+08, -6.891E+07) |  7.763E-07 9.379E+43
+ [WDHydrostatic] damping: t/t_dyn =  0.87630344853180664       ramp =   1.0000000000000000       factor =  0.99998652083697004     
+      41 2.5235E-01 1.3464E-08  ( 6.891E+07,  2.527E+08, -6.891E+07) |  1.346E-08 9.379E+43
+      42 2.5235E-01 3.6586E-12  (-2.527E+08,  6.891E+07,  6.891E+07) |  3.659E-12 9.379E+43
+      43 2.5235E-01 1.0000E-12  ( 2.527E+08, -6.891E+07,  6.891E+07) |  3.901E-14 9.379E+43
+      44 2.5235E-01 1.0000E-12  ( 2.527E+08,  6.891E+07, -6.891E+07) |  7.538E-25 9.379E+43
+  
+ Newton-Raphson failed in subroutine eos_helmholtz
+ (e and rho as input):
+  
+ too many iterations         100
+  
+  temp =    5.0144584301721485E+020
+  dens =   0.92202745449885848     
+  pres =    1.9877018727040443E+071
+  
+ Driver_abort called. See log file for details.
+ Error message is [eos_helmholtz] Error: too many iterations in Helmholtz Eos
+ Calling MPI_Abort() for shutdown in   2 seconds!
+ 
+  
+ Newton-Raphson failed in subroutine eos_helmholtz
+ (e and rho as input):
+  
+ too many iterations         100
+  
+  temp =    7.2691456287096439E+020
+  dens =   0.95796463258891840     
+  pres =    1.2014665505957388E+072
+ DRIVER_ABORT: [eos_helmholtz] Error: too many iterations in Helmholtz Eos
+  
+ Newton-Raphson failed in subroutine eos_helmholtz
+ (e and rho as input):
+  
+ too many iterations         100
+  
+  temp =    6.5766231263785792E+020
+  dens =   0.89844954975580504     
+  pres =    7.9937017280340023E+071
+ DRIVER_ABORT: [eos_helmholtz] Error: too many iterations in Helmholtz Eos
+  
+ Newton-Raphson failed in subroutine eos_helmholtz
+ (e and rho as input):
+  
+ too many iterations         100
+  
+  temp =    6.2570871025153737E+020
+  dens =   0.91881981382118350     
+  pres =    6.0427097266816853E+071
+ DRIVER_ABORT: [eos_helmholtz] Error: too many iterations in Helmholtz Eos
+  
+ Newton-Raphson failed in subroutine eos_helmholtz
+ (e and rho as input):
+  
+ too many iterations         100
+  
+  temp =    7.6076036069709002E+020
+  dens =   0.95796463258895614     
+  pres =    1.5084648687252953E+072
+ DRIVER_ABORT: [eos_helmholtz] Error: too many iterations in Helmholtz Eos
+  
+ Newton-Raphson failed in subroutine eos_helmholtz
+ (e and rho as input):
+  
+ too many iterations         100
+  
+  temp =    9.6145266498595848E+020
+  dens =   0.95796463258892184     
+  pres =    4.8614069216088550E+072
+ DRIVER_ABORT: [eos_helmholtz] Error: too many iterations in Helmholtz Eos
+ [eos_helm] Negative total pressure.
+   values: dens,temp:    886090328.69985771        362096737793680.31                      
+   values: abar,zbar:    4.0000000000000000        2.0000000000000000                      
+   coulomb coupling parameter Gamma:    1.5204223472492781E-006                            
+  Prad   4.33549E+43 Pion  6.66929E+30 Pele  -7.32165E+43 Pcoul -0.00000E+00               
+  Ptot   -2.98615E+43 df_d   -3.73003E+26                                                  
+ DRIVER_ABORT: [eos_helm] ERROR: negative total pressure.
+  
+ Newton-Raphson failed in subroutine eos_helmholtz
+ (e and rho as input):
+  
+ too many iterations         100
+  
+  temp =    6.0716681171851385E+020
+  dens =   0.91881981382114608     
+  pres =    5.1991981900008057E+071
+ DRIVER_ABORT: [eos_helmholtz] Error: too many iterations in Helmholtz Eos
+Abort(1) on node 0 (rank 0 in comm 0): application called MPI_Abort(MPI_COMM_WORLD, 1) - process 0
+Note: The following floating-point exceptions are signalling: IEEE_DIVIDE_BY_ZERO

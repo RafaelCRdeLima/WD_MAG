@@ -77,6 +77,16 @@ smallp = 1.0e-10
 smalle = 1.0e-10
 smallu = 1.0e-10
 
+# --------------------------------------------------------------- damping
+# Equivalent of Castro's problem_source.H, with the parameters of the run
+# that produced the reference curve: damping over [0, 20 t_dyn], ramping
+# off from 18 t_dyn. tmax here is 4 t_dyn, so damping is fully on
+# throughout and the ramp never engages -- exactly as in the reference.
+sim_dampTimescaleTdyn = 0.2
+sim_dampEndTdyn       = 20.0
+sim_dampRampStartTdyn = 18.0
+sim_tDyn              = 0.2879670
+
 # ---------------------------------------------------------- simulation
 sim_modelFile   = "wd_model.dat"
 sim_nSubZones   = 3
