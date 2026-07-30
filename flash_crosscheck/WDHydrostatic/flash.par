@@ -30,12 +30,12 @@ geometry = "cartesian"
 # takes Castro's offset to -1.16%. Same width (9.8e8), same dx
 # (1.53125e7), and identical to the bounds the production runs actually
 # used (their plotfile headers read -497656250 / 482343750).
-xmin = -4.9765625e8
-xmax =  4.8234375e8
-ymin = -4.9765625e8
-ymax =  4.8234375e8
-zmin = -4.9765625e8
-zmax =  4.8234375e8
+xmin = -4.90e8
+xmax =  4.90e8
+ymin = -4.90e8
+ymax =  4.90e8
+zmin = -4.90e8
+zmax =  4.90e8
 
 xl_boundary_type = "outflow"
 xr_boundary_type = "outflow"
@@ -77,10 +77,11 @@ mpole_lmax        = 0
 # disabling it brings the evolved EOS CLOSER to the initial condition.
 eos_coulombMult   = 0.0
 eos_coulombAbort  = .false.
+eos_forceConstantInput = .true.
 eos_maxNewton     = 100
 
 # floors; smlrho must stay below the ambient density
-smlrho = 1.0e-2
+smlrho = 1.0e3
 smallt = 1.0e5
 smallp = 1.0e-10
 smalle = 1.0e-10
@@ -107,7 +108,7 @@ sim_spongeLowerDens   = 1.0e4
 # ---------------------------------------------------------- simulation
 sim_modelFile   = "wd_model.dat"
 sim_nSubZones   = 8
-sim_rhoAmbient  = 1.0
+sim_rhoAmbient  = 1.0e4
 sim_tempAmbient = 1.0e7
 sim_abar        = 4.0
 sim_zbar        = 2.0

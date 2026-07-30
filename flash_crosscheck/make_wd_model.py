@@ -48,7 +48,7 @@ ABAR, ZBAR = 4.0, 2.0     # mu2.net: He4-like, mu_e = A/Z = 2
 T_ISO = 1.0e7             # K, uniform; justified by the printed P_ion/P_deg
 
 DOMAIN_HALF = 4.90e8      # cm, same domain as the Castro run
-RHO_FLOOR = 1.0            # g/cm^3 ambient; Helmholtz will not invert a 1e-6 vacuum
+RHO_FLOOR = 1.0e4          # g/cm^3; matches Castro small_dens = 1e4 (inputs.evolve:83)
 NPTS_OUT = 2048
 
 OUT = HERE / "wd_model.dat"

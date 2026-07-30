@@ -1,0 +1,44 @@
+ WARNING : Adaptive Grid did not find any refinement variables
+ Grid_init: resolution based on runtime params:
+  lrefine          dx              dy              dz
+      1      15312500.000    15312500.000    15312500.000
+ MaterialProperties initialized
+ Cosmology initialized
+ about to open file
+ [Eos_init] Cannot open helm_table.bdat!
+ [Eos_init] Trying old helm_table.dat!
+ Source terms initialized
+ [WDHydrostatic] model file: wd_model.dat
+ [WDHydrostatic] points read =         2048
+ [WDHydrostatic] r range     =    0.0000000000000000        848704895.71000004     
+ [WDHydrostatic] rho_c       =    988393849.50000000     
+ [WDHydrostatic] T (uniform) =    10000000.000000000     
+ [WDHydrostatic] abar, zbar  =    4.0000000000000000        2.0000000000000000     
+ [WDHydrostatic] nSubZones   =            8
+ [WDHydrostatic] t_dyn       =   0.28796699999999997     
+ [WDHydrostatic] damping: timescale/t_dyn =   0.20000000000000001     
+ [WDHydrostatic] damping: ramp start, end (t_dyn) =    18.000000000000000        20.000000000000000     
+ [WDHydrostatic] sponge: timescale =    1.0000000000000000E-004
+ [WDHydrostatic] sponge: dens lower, upper =    10000.000000000000        100000.00000000000     
+  iteration, no. not moved =            0           0
+ refined: total leaf blocks =          512
+ refined: total blocks =          512
+ [amr_morton_process]: Initializing surr_blks using standard orrery implementation
+  Finished with Grid_initDomain, no restart
+ Ready to call Hydro_init
+ Hydro initialized
+ Gravity initialized
+ Initial dt verified
+ *** Wrote checkpoint file to wd_hdf5_chk_0000 ****
+ *** Wrote plotfile to wd_hdf5_plt_cnt_0000 ****
+ Initial plotfile written
+ Driver init all done
+ [WDHydrostatic] t/t_dyn =   0.0000000000000000       damp factor =  0.99998263705010471       sponge alpha =   9.9999999999999985E-003
+       n          t         dt  (         x,          y,          z) |  dt_hydro  dt_Diff  
+       1 1.0000E-06 2.0000E-06  (  0.00    ,   0.00    ,   0.00    ) |  9.511E-03 9.379E+43
+       2 3.0000E-06 4.0000E-06  (  0.00    ,   0.00    ,   0.00    ) |  9.511E-03 9.379E+43
+       3 7.0000E-06 8.0000E-06  (  0.00    ,   0.00    ,   0.00    ) |  9.511E-03 9.379E+43
+       4 1.5000E-05 1.6000E-05  (  0.00    ,   0.00    ,   0.00    ) |  9.511E-03 9.379E+43
+       5 3.1000E-05 3.2000E-05  (  0.00    ,   0.00    ,   0.00    ) |  9.511E-03 9.379E+43
+ *** Wrote checkpoint file to wd_hdf5_chk_0001 ****
+ *** Wrote plotfile to wd_forced_hdf5_plt_cnt_0000 ****

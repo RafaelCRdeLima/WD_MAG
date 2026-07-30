@@ -1,0 +1,627 @@
+ FLASH log file:  07-30-2026  10:54:31.854    Run number:  1
+ ==============================================================================
+ Number of MPI tasks:                  8
+ MPI version:                          5
+ MPI subversion:                       0
+ Dimensionality:                       3
+ Max Number of Blocks/Proc:          200
+ Number x zones:                       8
+ Number y zones:                       8
+ Number z zones:                       8
+ Setup stamp:     Thu Jul 30 10:45:50 2026
+ Build stamp:     Thu Jul 30 10:53:54 2026
+ System info:     Linux 06fd2a734827 6.14.0-37-generic #37~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu
+ Version:         FLASH 4.8                                                                       
+ Build directory: /opt/FLASH4.8/objdir_wd_new
+ Setup syntax:    /opt/FLASH4.8/bin/setup.py WDHydrostatic -auto -3d -site=wd_docker -objdir=objdir_wd_new +newMpole
+ f compiler flags: /opt/micromamba/envs/flash_gcc12/bin/mpif90 -ggdb -c -O2 -fdefault-real-8 -fdefault-double-8 -Wuninitialized -fallow-argument-mismatch -DMAXBLOCKS=200 -DNXB=8 -DNYB=8 -DNZB=8 -DN_DIM=3
+ c compiler flags:    
+ ==============================================================================
+ Comment:  hydrostatic white dwarf, Helmholtz EOS, field-free
+ ==============================================================================
+ FLASH Units used:
+   Driver/DriverMain/Unsplit
+   Driver/localAPI
+   Grid/GridBoundaryConditions
+   Grid/GridMain/paramesh/interpolation/Paramesh4/prolong
+   Grid/GridMain/paramesh/interpolation/prolong
+   Grid/GridMain/paramesh/paramesh4/Paramesh4dev/PM4_package/headers
+   Grid/GridMain/paramesh/paramesh4/Paramesh4dev/PM4_package/mpi_source
+   Grid/GridMain/paramesh/paramesh4/Paramesh4dev/PM4_package/source
+   Grid/GridMain/paramesh/paramesh4/Paramesh4dev/PM4_package/utilities/multigrid
+   Grid/GridMain/paramesh/paramesh4/Paramesh4dev/flash_avoid_orrery
+   Grid/GridSolvers/Multipole_new
+   Grid/localAPI
+   IO/IOMain/hdf5/serial/PM
+   IO/localAPI
+   Multispecies/MultispeciesMain
+   PhysicalConstants/PhysicalConstantsMain
+   RuntimeParameters/RuntimeParametersMain
+   Simulation/SimulationMain/WDHydrostatic
+   flashUtilities/contiguousConversion
+   flashUtilities/general
+   flashUtilities/interpolation/oneDim
+   flashUtilities/nameValueLL
+   flashUtilities/sorting/quicksort
+   flashUtilities/system/memoryUsage/legacy
+   monitors/Logfile/LogfileMain
+   monitors/Timers/TimersMain/MPINative
+   physics/Diffuse/DiffuseMain
+   physics/Diffuse/localAPI
+   physics/Eos/EosMain/Helmholtz/SpeciesBased
+   physics/Eos/localAPI
+   physics/Gravity/GravityMain/Poisson/Multipole
+   physics/Hydro/HydroMain/unsplit/Hydro_Unsplit
+   physics/Hydro/localAPI
+   physics/materialProperties/Conductivity/ConductivityMain/Constant
+   physics/materialProperties/Conductivity/localAPI
+ ==============================================================================
+ RuntimeParameters:
+                                                                               
+ ==============================================================================
+bndpriorityone              =          1
+bndprioritythree            =          3
+bndprioritytwo              =          2
+checkpointfileintervalstep  =          0
+checkpointfilenumber        =          0
+dr_abortpause               =          2
+dr_dtminbelowaction         =          1
+dr_numposdefvars            =          4
+drift_break_inst            =          0
+drift_trunc_mantissa        =          2
+drift_verbose_inst          =          0
+eos_entrelescalechoice      =          6
+eos_loglevel                =        700
+eos_maxnewton               =        100 [CHANGED]
+fileformatversion           =          9
+forcedplotfilenumber        =          0
+gp_radius                   =          2
+gr_lrefmaxtimevalue_1       =         -1
+gr_lrefmaxtimevalue_10      =         -1
+gr_lrefmaxtimevalue_11      =         -1
+gr_lrefmaxtimevalue_12      =         -1
+gr_lrefmaxtimevalue_13      =         -1
+gr_lrefmaxtimevalue_14      =         -1
+gr_lrefmaxtimevalue_15      =         -1
+gr_lrefmaxtimevalue_16      =         -1
+gr_lrefmaxtimevalue_17      =         -1
+gr_lrefmaxtimevalue_18      =         -1
+gr_lrefmaxtimevalue_19      =         -1
+gr_lrefmaxtimevalue_2       =         -1
+gr_lrefmaxtimevalue_20      =         -1
+gr_lrefmaxtimevalue_3       =         -1
+gr_lrefmaxtimevalue_4       =         -1
+gr_lrefmaxtimevalue_5       =         -1
+gr_lrefmaxtimevalue_6       =         -1
+gr_lrefmaxtimevalue_7       =         -1
+gr_lrefmaxtimevalue_8       =         -1
+gr_lrefmaxtimevalue_9       =         -1
+gr_pmrpdivergencefree       =          1
+gr_pmrpifaceoff             =          0
+gr_pmrpl2p5d                =          0
+gr_pmrpmaxblocks            =         -1
+gr_pmrpmflags               =          1
+gr_pmrpnboundaries          =          6
+gr_pmrpndim                 =          3
+gr_pmrpnedgevar1            =         -1
+gr_pmrpnfacevar             =         -1
+gr_pmrpnfielddivf           =         -1
+gr_pmrpnfluxvar             =         -1
+gr_pmrpnguard               =         -1
+gr_pmrpnguardwork           =         -1
+gr_pmrpnvar                 =         -1
+gr_pmrpnvarwork             =          1
+gr_pmrpnvarcorn             =          0
+gr_pmrpnvaredge             =          0
+gr_pmrpnxb                  =         -1
+gr_pmrpnyb                  =         -1
+gr_pmrpnzb                  =         -1
+gr_restrictallmethod        =          3
+gr_sanitizedatamode         =          1
+gr_sanitizeverbosity        =          5
+hy_3torder                  =         -1
+hydrocomputedtoption        =         -1
+iprocs                      =          1
+interpol_order              =          2
+irenorm                     =          0
+jprocs                      =          1
+kprocs                      =          1
+lrefine_del                 =          0
+lrefine_max                 =          1
+lrefine_min                 =          1
+lrefine_min_init            =          1
+max_particles_per_blk       =        100
+memory_stat_freq            =     100000
+meshcopycount               =          1
+min_particles_per_blk       =          1
+mpole_innerzonesize         =         16
+mpole_lmax                  =          0
+mpole_maxradialzones        =          1
+nbegin                      =          1
+nblockx                     =          8 [CHANGED]
+nblocky                     =          8 [CHANGED]
+nblockz                     =          8 [CHANGED]
+nend                        =     200000 [CHANGED]
+nrefs                       =          2
+nsteptotalsts               =          5
+order                       =          2
+outputsplitnum              =          1
+plotfileintervalstep        =          0
+plotfilenumber              =          0
+refine_var_count            =          4
+rolling_checkpoint          =      10000
+sim_nsubzones               =          8 [CHANGED]
+sweeporder                  =        123
+transorder                  =          1
+wr_integrals_freq           =          1
+limitedslopebeta            =                 0.100E+01
+poskappa1                   =                 0.400E+00
+poskappa2                   =                 0.400E+00
+cfl                         =                 0.500E+00 [CHANGED]
+checkpointfileintervaltime  =                 0.500E+00 [CHANGED]
+checkpointfileintervalz     =                 0.180+309
+cond_constantcross          =                 0.000E+00
+cond_constantisochoric      =                 0.000E+00
+cond_constantparallel       =                 0.000E+00
+cond_constantperpendicular  =                 0.000E+00
+cvisc                       =                 0.100E+00
+derefine_cutoff_1           =                 0.200E+00
+derefine_cutoff_2           =                 0.200E+00
+derefine_cutoff_3           =                 0.200E+00
+derefine_cutoff_4           =                 0.200E+00
+diff_eleflcoef              =                 0.100E+01
+diff_ionflcoef              =                 0.100E+01
+diff_magflcoef              =                 0.100E+01
+diff_scalefactthermsatempdiff =                 0.100E+01
+diff_scalefactthermsatime   =                 0.100E+01
+diffusion_cutoff_density    =                 0.100E-29
+dr_dtmincontinue            =                 0.000E+00
+dr_posdefdtfactor           =                 0.100E+01
+dr_tstepslowstartfactor     =                 0.100E+00
+dt_diff_factor              =                 0.800E+00
+dtinit                      =                 0.100E-05 [CHANGED]
+dtmax                       =                 0.100E-01 [CHANGED]
+dtmin                       =                 0.100E-11 [CHANGED]
+eintswitch                  =                 0.000E+00
+eos_coulombmult             =                 0.000E+00 [CHANGED]
+eos_fluffdens               =                 0.000E+00
+eos_mfaspeciesa             =                 0.100E+01
+eos_mfaspeciesz             =                 0.100E+01
+eos_mfbspeciesa             =                 0.100E+01
+eos_mfbspeciesz             =                 0.100E+01
+eos_singlespeciesa          =                 0.100E+01
+eos_singlespeciesz          =                 0.100E+01
+eos_tolerance               =                 0.100E-07
+gamma                       =                 0.167E+01
+gammaa                      =                 0.167E+01
+gammab                      =                 0.167E+01
+gp_elldel                   =                 0.120E+02
+gp_sigdel                   =                 0.200E+01
+gr_lrefinemaxredlogbase     =                 0.100E+02
+gr_lrefinemaxredradiusfact  =                 0.000E+00
+gr_lrefinemaxredtref        =                 0.000E+00
+gr_lrefinemaxredtimescale   =                 0.100E+01
+gr_lrefmaxtime_1            =                -0.100E+01
+gr_lrefmaxtime_10           =                -0.100E+01
+gr_lrefmaxtime_11           =                -0.100E+01
+gr_lrefmaxtime_12           =                -0.100E+01
+gr_lrefmaxtime_13           =                -0.100E+01
+gr_lrefmaxtime_14           =                -0.100E+01
+gr_lrefmaxtime_15           =                -0.100E+01
+gr_lrefmaxtime_16           =                -0.100E+01
+gr_lrefmaxtime_17           =                -0.100E+01
+gr_lrefmaxtime_18           =                -0.100E+01
+gr_lrefmaxtime_19           =                -0.100E+01
+gr_lrefmaxtime_2            =                -0.100E+01
+gr_lrefmaxtime_20           =                -0.100E+01
+gr_lrefmaxtime_3            =                -0.100E+01
+gr_lrefmaxtime_4            =                -0.100E+01
+gr_lrefmaxtime_5            =                -0.100E+01
+gr_lrefmaxtime_6            =                -0.100E+01
+gr_lrefmaxtime_7            =                -0.100E+01
+gr_lrefmaxtime_8            =                -0.100E+01
+gr_lrefmaxtime_9            =                -0.100E+01
+hy_cflfallbackfactor        =                 0.900E+00
+hy_fpresinmomflux           =                 0.100E+01
+hybridorderkappa            =                 0.000E+00
+larget                      =                 0.100E+21
+mpole_innerzoneresolution   =                 0.100E+00
+mpole_zoneexponent_1        =                 0.100E+01
+mpole_zoneexponent_2        =                 0.100E+01
+mpole_zoneexponent_3        =                 0.100E+01
+mpole_zoneexponent_4        =                 0.100E+01
+mpole_zoneradiusfraction_1  =                 0.100E+01
+mpole_zoneradiusfraction_2  =                 0.100E+01
+mpole_zoneradiusfraction_3  =                 0.100E+01
+mpole_zoneradiusfraction_4  =                 0.100E+01
+mpole_zonescalar_1          =                 0.100E+01
+mpole_zonescalar_2          =                 0.100E+01
+mpole_zonescalar_3          =                 0.100E+01
+mpole_zonescalar_4          =                 0.100E+01
+nusts                       =                 0.100E+00
+plotfileintervaltime        =                 0.200E-01 [CHANGED]
+plotfileintervalz           =                 0.180+309
+point_mass                  =                 0.000E+00
+point_mass_rsoft            =                 0.000E+00
+refine_cutoff_1             =                 0.800E+00
+refine_cutoff_2             =                 0.800E+00
+refine_cutoff_3             =                 0.800E+00
+refine_cutoff_4             =                 0.800E+00
+refine_filter_1             =                 0.100E-01
+refine_filter_2             =                 0.100E-01
+refine_filter_3             =                 0.100E-01
+refine_filter_4             =                 0.100E-01
+rss_limit                   =                -0.100E+01
+sim_abar                    =                 0.400E+01
+sim_dampendtdyn             =                 0.200E+02
+sim_damprampstarttdyn       =                 0.180E+02
+sim_damptimescaletdyn       =                 0.200E+00
+sim_rhoambient              =                 0.100E+05 [CHANGED]
+sim_spongelowerdens         =                 0.100E+05
+sim_spongetimescale         =                 0.100E-03
+sim_spongeupperdens         =                 0.100E+06
+sim_tdyn                    =                 0.288E+00
+sim_tempambient             =                 0.100E+08
+sim_xctr                    =                 0.000E+00
+sim_yctr                    =                 0.000E+00
+sim_zbar                    =                 0.200E+01
+sim_zctr                    =                 0.000E+00
+small                       =                 0.100E-09
+smalle                      =                 0.100E-09
+smallp                      =                 0.100E-09
+smallt                      =                 0.100E+06 [CHANGED]
+smallu                      =                 0.100E-09
+smallx                      =                 0.100E-09
+smlrho                      =                 0.100E+04 [CHANGED]
+tinitial                    =                 0.000E+00
+tiny                        =                 0.100E-15
+tmax                        =                 0.115E+01 [CHANGED]
+tstep_change_factor         =                 0.200E+01
+wall_clock_checkpoint       =                 0.432E+05
+wall_clock_time_limit       =                 0.605E+06
+x_refine_center             =                 0.000E+00
+xmax                        =                 0.490E+09 [CHANGED]
+xmin                        =                -0.490E+09 [CHANGED]
+y_refine_center             =                 0.000E+00
+ymax                        =                 0.490E+09 [CHANGED]
+ymin                        =                -0.490E+09 [CHANGED]
+zfinal                      =                 0.000E+00
+zinitial                    =                -0.100E+01
+z_refine_center             =                 0.000E+00
+zmax                        =                 0.490E+09 [CHANGED]
+zmin                        =                -0.490E+09 [CHANGED]
+riemannsolver               = HLLC                          
+unitsystem                  = none                          
+basenm                      = wd_                            [CHANGED]
+diff_eleflmode              = fl_none                       
+diff_elexlboundarytype      = neumann                       
+diff_elexrboundarytype      = neumann                       
+diff_eleylboundarytype      = neumann                       
+diff_eleyrboundarytype      = neumann                       
+diff_elezlboundarytype      = neumann                       
+diff_elezrboundarytype      = neumann                       
+diff_ionflmode              = fl_none                       
+diff_ionxlboundarytype      = neumann                       
+diff_ionxrboundarytype      = neumann                       
+diff_ionylboundarytype      = neumann                       
+diff_ionyrboundarytype      = neumann                       
+diff_ionzlboundarytype      = neumann                       
+diff_ionzrboundarytype      = neumann                       
+diff_magflmode              = fl_none                       
+diff_magxxlboundarytype     = neumann                       
+diff_magxxrboundarytype     = neumann                       
+diff_magxylboundarytype     = neumann                       
+diff_magxyrboundarytype     = neumann                       
+diff_magxzlboundarytype     = neumann                       
+diff_magxzrboundarytype     = neumann                       
+diff_magyxlboundarytype     = neumann                       
+diff_magyxrboundarytype     = neumann                       
+diff_magyylboundarytype     = neumann                       
+diff_magyyrboundarytype     = neumann                       
+diff_magyzlboundarytype     = neumann                       
+diff_magyzrboundarytype     = neumann                       
+diff_magzxlboundarytype     = neumann                       
+diff_magzxrboundarytype     = neumann                       
+diff_magzylboundarytype     = neumann                       
+diff_magzyrboundarytype     = neumann                       
+diff_magzzlboundarytype     = neumann                       
+diff_magzzrboundarytype     = neumann                       
+dr_posdefvar_1              = none                          
+dr_posdefvar_2              = none                          
+dr_posdefvar_3              = none                          
+dr_posdefvar_4              = none                          
+entropyfixmethod            = HARTENHYMAN                   
+eosmode                     = dens_ie                       
+eosmodeinit                 = dens_ie                       
+geometry                    = cartesian                     
+gr_pmrpoutputdir            = ./                            
+grav_boundary_type          = isolated                      
+hy_eosmodegc                = see eosMode                   
+log_file                    = wd.log                         [CHANGED]
+mpole_zonetype_1            = exponential                   
+mpole_zonetype_2            = exponential                   
+mpole_zonetype_3            = exponential                   
+mpole_zonetype_4            = logarithmic                   
+output_directory            =                               
+pc_unitsbase                = CGS                           
+plot_grid_var_1             = none                          
+plot_grid_var_10            = none                          
+plot_grid_var_11            = none                          
+plot_grid_var_12            = none                          
+plot_grid_var_2             = none                          
+plot_grid_var_3             = none                          
+plot_grid_var_4             = none                          
+plot_grid_var_5             = none                          
+plot_grid_var_6             = none                          
+plot_grid_var_7             = none                          
+plot_grid_var_8             = none                          
+plot_grid_var_9             = none                          
+plot_var_1                  = dens                           [CHANGED]
+plot_var_10                 = none                          
+plot_var_11                 = none                          
+plot_var_12                 = none                          
+plot_var_13                 = none                          
+plot_var_14                 = none                          
+plot_var_15                 = none                          
+plot_var_16                 = none                          
+plot_var_2                  = temp                           [CHANGED]
+plot_var_3                  = pres                           [CHANGED]
+plot_var_4                  = none                          
+plot_var_5                  = none                          
+plot_var_6                  = none                          
+plot_var_7                  = none                          
+plot_var_8                  = none                          
+plot_var_9                  = none                          
+prof_file                   = profile.dat                   
+refine_var_1                = none                          
+refine_var_2                = none                          
+refine_var_3                = none                          
+refine_var_4                = none                          
+run_comment                 = hydrostatic white dwarf, Helmh [CHANGED]
+run_number                  = 1                             
+sim_modelfile               = wd_model.dat                  
+slopelimiter                = vanLeer                       
+stats_file                  = flash.dat                     
+wenomethod                  = WENO5                         
+xl_boundary_type            = outflow                        [CHANGED]
+xr_boundary_type            = outflow                        [CHANGED]
+yl_boundary_type            = outflow                        [CHANGED]
+yr_boundary_type            = outflow                        [CHANGED]
+zl_boundary_type            = outflow                        [CHANGED]
+zr_boundary_type            = outflow                        [CHANGED]
+eosforriemann               =  F
+addthermalflux              =  T
+allowdtstsdominate          =  F
+alwayscomputeuservars       =  T
+alwaysrestrictcheckpoint    =  T
+appendparrestart            =  F
+charlimiting                =  T
+chkguardcellsinput          =  F
+chkguardcellsoutput         =  F
+conserveangmom              =  F
+converttoconsvdformeshcalls =  F
+converttoconsvdinmeshinterp =  T
+corners                     =  F
+diff_anisocondforele        =  F
+diff_doanisomagdiff         =  F
+diff_domagdiff              =  F
+diff_usecrosscond           =  F
+diff_useelecond             =  F
+diff_useioncond             =  F
+dr_printtsteploc            =  T
+dr_shortenlaststepbeforetmax =  F
+dr_useposdefcomputedt       =  F
+drift_tuples                =  F
+eachprocwritesownabortlog   =  F
+eachprocwritessummary       =  F
+earlyblockdistadjustment    =  T
+enablemaskedgcfill          =  T
+entropy                     =  F
+eos_coulombabort            =  F [CHANGED]
+eos_forceconstantinput      =  T [CHANGED]
+flux_correct                =  T
+geometryoverride            =  F
+gr_bcenableapplymixedgds    =  T
+gr_lrefinemaxbytime         =  F
+gr_lrefinemaxreddobylogr    =  F
+gr_lrefinemaxreddobytime    =  F
+gr_pmrpadvancealllevels     =  F
+gr_pmrpamrerrorchecking     =  F
+gr_pmrpcartesianpm          =  F
+gr_pmrpconserve             =  F
+gr_pmrpconsvfluxdensities   =  T
+gr_pmrpconsvfluxes          =  F
+gr_pmrpcurvilinear          =  F
+gr_pmrpcurvilinearconserve  =  F
+gr_pmrpcylindricalpm        =  F
+gr_pmrpdiagonals            =  T
+gr_pmrpedgevalue            =  T
+gr_pmrpedgevalueinteg       =  F
+gr_pmrpemptycells           =  F
+gr_pmrpforceconsistency     =  T
+gr_pmrplsingularline        =  F
+gr_pmrpnopermanentguardcells =  F
+gr_pmrppolarpm              =  F
+gr_pmrppredcorr             =  F
+gr_pmrpsphericalpm          =  F
+gr_pmrptimingmpi            =  F
+gr_pmrptimingmpix           =  F
+gr_pmrpvardt                =  F
+grav_temporal_extrp         =  F
+grav_unjunkpden             =  T
+hy_fallbacklowercfl         =  F
+hy_fullspecmsfluxhandling   =  T
+hy_usefluxeqn               =  F
+ignoreforcedplot            =  F
+initializeparticleatrestart =  F
+io_writemscalarintegrals    =  F
+mpole_2dsymmetryplane       =  F
+mpole_3daxisymmetry         =  F
+mpole_dumpmoments           =  F
+mpole_ignoreinnerzone       =  F
+mpole_multithreading        =  F
+mpole_printradialinfo       =  F
+plotfilegridquantitydp      =  F
+plotfilemetadatadp          =  F
+reducegcellfills            =  F
+refine_on_particle_count    =  F
+res_addanomres              =  F
+restart                     =  F
+shockdetect                 =  F
+shocklowercfl               =  F
+summaryoutputonly           =  F
+threadblocklistbuild        =  F
+threaddriverblocklist       =  F
+threaddriverwithinblock     =  F
+threadeoswithinblock        =  F
+threadhydroblocklist        =  F
+threadhydrowithinblock      =  F
+threadraytracebuild         =  F
+threadwithinblockbuild      =  F
+typematchedxfer             =  T
+unbiased_geometry           =  F
+updategravity               =  T
+updatehydrofluxes           =  T
+useburn                     =  F
+usecircuit                  =  F
+usecollectivehdf5           =  T
+useconductivity             =  T
+usecool                     =  F
+usecosmology                =  F
+usedeleptonize              =  F
+usediffuse                  =  T
+usediffusecomputedtspecies  =  T
+usediffusecomputedttherm    =  T
+usediffusecomputedtvisc     =  T
+usediffusecomputedtmagnetic =  T
+usediffusespecies           =  T
+usediffusetherm             =  T
+useenergydeposition         =  F
+useexplicitviscosity        =  T
+useflame                    =  F
+usegravity                  =  T
+useheat                     =  F
+useheatexchange             =  F
+usehydro                    =  T
+useincompns                 =  F
+useionize                   =  F
+uselegacylabels             =  T
+usemagneticresistivity      =  F
+usemassdiffusivity          =  F
+useopacity                  =  F
+useparticles                =  F
+useplasmastate              =  F
+usepolytrope                =  F
+useprimordialchemistry      =  F
+useprotonemission           =  F
+useprotonimaging            =  F
+useradtrans                 =  F
+useraytrace                 =  F
+usests                      =  F
+usestsfordiffusion          =  F
+usestir                     =  F
+usethomsonscattering        =  F
+usetreeray                  =  F
+useturb                     =  T
+useviscosity                =  F
+usexrayimaging              =  F
+use_3dfullctu               =  T
+use_pospreserv              =  F
+use_auxeinteqn              =  T
+use_avisc                   =  F
+use_cma_advection           =  F
+use_cma_flattening          =  F
+use_flash_surr_blks_fill    =  T
+use_flattening              =  F
+use_gravhalfupdate          =  T
+use_hybridorder             =  F
+use_reduced_orrery          =  T
+use_steepening              =  F
+use_upwindtvd               =  F
+writestatsummary            =  T
+                                                                               
+ ==============================================================================
+                                                                               
+ Known units of measurement:
+                                                                               
+              Unit                          CGS Value                Base Unit
+  1                  cm                     1.0000                           cm
+  2                   s                     1.0000                            s
+  3                   g                     1.0000                            g
+  4                   K                     1.0000                            K
+  5                 esu                     1.0000                          esu
+  6                 mol                     1.0000                          mol
+  7                   m                     100.00                           cm
+  8                  km                    1.00000E+05                       cm
+  9                  pc                    3.08568E+18                       cm
+ 10                 kpc                    3.08568E+21                       cm
+ 11                 Mpc                    3.08568E+24                       cm
+ 12                 Gpc                    3.08568E+27                       cm
+ 13                Rsun                    6.96000E+10                       cm
+ 14                  AU                    1.49598E+13                       cm
+ 15                  yr                    3.15569E+07                        s
+ 16                 Myr                    3.15569E+13                        s
+ 17                 Gyr                    3.15569E+16                        s
+ 18                  kg                     1000.0                            g
+ 19                Msun                    1.98892E+33                        g
+ 20                 amu                    1.66054E-24                        g
+ 21             keV/c^2                    1.60218E-09                        g
+ 22                  eV                     11605.                            K
+ 23                   C                    2.99792E+09                      esu
+ 24                LFLY                    3.08568E+24                       cm
+ 25                TFLY                    2.05759E+17                        s
+ 26                MFLY                    9.88470E+45                        g
+ 27            clLength                    3.08568E+24                       cm
+ 28              clTime                    3.15569E+16                        s
+ 29              clMass                    1.98892E+48                        g
+ 30              clTemp                    1.16045E+07                        K
+-----------End of Units--------------------
+                                                                               
+ Known physical constants:
+                                                                               
+    Constant Name       Constant Value   cm       s        g        K        esu      mol
+  1              Newton    6.67408E-08   3.0     -2.0     -1.0      0.0      0.0      0.0    
+  2      speed of light    2.99792E+10   1.0     -1.0      0.0      0.0      0.0      0.0    
+  3              Planck    6.62607E-27   2.0     -1.0      1.0      0.0      0.0      0.0    
+  4     electron charge    4.80320E-10   0.0      0.0      0.0      0.0      1.0      0.0    
+  5       electron mass    9.10938E-28   0.0      0.0      1.0      0.0      0.0      0.0    
+  6         proton mass    1.67262E-24   0.0      0.0      1.0      0.0      0.0      0.0    
+  7      fine-structure    7.29735E-03   0.0      0.0      0.0      0.0      0.0      0.0    
+  8            Avogadro    6.02214E+23   0.0      0.0      0.0      0.0      0.0     -1.0    
+  9           Boltzmann    1.38065E-16   2.0     -2.0      1.0     -1.0      0.0      0.0    
+ 10  ideal gas constant    8.31446E+07   2.0     -2.0      1.0     -1.0      0.0     -1.0    
+ 11                Wien    0.28978       1.0      0.0      0.0      1.0      0.0      0.0    
+ 12    Stefan-Boltzmann    5.67037E-05   0.0     -3.0      1.0     -4.0      0.0      0.0    
+ 13  Radiation Constant    7.56572E-15  -1.0     -2.0      1.0     -4.0      0.0      0.0    
+ 14                  pi     3.1416       0.0      0.0      0.0      0.0      0.0      0.0    
+ 15                   e     2.7183       0.0      0.0      0.0      0.0      0.0      0.0    
+ 16               Euler    0.57722       0.0      0.0      0.0      0.0      0.0      0.0    
+ ==============================================================================
+                                                                               
+ Multifluid database contents:
+                                                                               
+Initially defined values of species:
+Name     Index          Total   Positive  Neutral   Negative  bind Ener Gamma   eosType
+he4         16       4.00E+00  2.00E+00 -9.99E+02  2.00E+00 -9.99E+02  1.67E+00  -999
+
+Name     Index  OpacityLowTemp  Zmin    Subtype ZFreeTableFile                   EnerTableFile                    PresTableFile
+he4         16       0.00E+00 -9.99E+02    -999 -none-                           -none-                           -none-                          
+
+Species Constituents
+he4      0 constituents
+                                                                               
+ ==============================================================================
+ [ 07-30-2026  10:54:31.960 ] [gr_initGeometry] checking BCs for idir: 1
+ [ 07-30-2026  10:54:31.960 ] [gr_initGeometry] checking BCs for idir: 2
+ [ 07-30-2026  10:54:31.960 ] [gr_initGeometry] checking BCs for idir: 3
+ WARNING : Adaptive Grid did not find any variable to refine
+ [ 07-30-2026  10:54:32.140 ] [GRID amr_refine_derefine]: initiating refinement
+ [ 07-30-2026  10:54:32.140 ] [GRID amr_refine_derefine]: redist. phase.  tot blks requested: 512
+ [GRID amr_refine_derefine] min blks 64    max blks 64    tot blks 512
+ [GRID amr_refine_derefine] min leaf blks 64    max leaf blks 64    tot leaf blks 512
+ [ 07-30-2026  10:54:32.143 ] [GRID amr_refine_derefine]: refinement complete
+ [ 07-30-2026  10:54:32.153 ] [GRID gr_expandDomain]: iteration=1, create level=1
+ [ 07-30-2026  10:54:40.916 ] [Grid_markRefineDerefine]: gcArgs=----------------+Eos
+ [ 07-30-2026  10:54:48.754 ] [Grid_fillGuardCells]: gcSet=----------------
+ [ 07-30-2026  10:54:48.754 ] [mpi_amr_comm_setup]: buffer_dim_send=8053, buffer_dim_recv=8053
+ [ 07-30-2026  10:54:48.768 ] [GRID gr_expandDomain]: iteration=2, create level=1
