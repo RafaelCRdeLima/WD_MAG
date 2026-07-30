@@ -487,39 +487,26 @@ not.}
 \subsection{The spatial structure of a relaxed field}
 \label{sec:structure}
 
-The diagnostics above are volume integrals. Figures~\ref{fig:slices}
-and~\ref{fig:lines} show what the field they integrate over actually looks
-like, for seed 20 at $t/t_{\mathrm{dyn}} = 0.83$ -- a plotfile inside the
-validity window, from the realization whose toroidal fraction ($0.338$)
-is the closest in the batch to the ensemble mean, so the figure is
-representative rather than selected.
+The diagnostics above are volume integrals. Figures~\ref{fig:lines}
+and~\ref{fig:components} show what the field they integrate over actually
+looks like, for seed 20 at $t/t_{\mathrm{dyn}} = 0.83$ -- a plotfile
+inside the validity window, from the realization whose toroidal fraction
+($0.338$) is the closest in the batch to the ensemble mean, so the figures
+are representative rather than selected.
 
-In the meridional cut (Fig.~\ref{fig:slices}) the field fills the star
-rather than concentrating in a core or a shell, reaching
-$1.9\times10^{13}$\,G at its peak, and it is structured on scales well
-below the stellar radius -- the seed was multi-scale and the relaxation
-has not organized it into a single large-scale structure on the
-timescale accessible here. The total and poloidal panels are nearly
-indistinguishable, which is what a toroidal fraction of $1/3$ looks like
-pointwise. The toroidal panel vanishes along the vertical axis: that is
-geometric, since $B_\varphi \to 0$ as $\varpi \to 0$ by construction, and
-it is also a visual reminder of a caveat that applies to every toroidal
-fraction quoted in this paper -- the background star is non-rotating and
-the seed field is random, so the $z$ axis about which the decomposition
-is taken is a bookkeeping choice, not a dynamically preferred direction.
-For a statistically isotropic field any axis gives one third, which is
-the same fact reported from the other side in Sect.~\ref{sec:noselection}.
+The field fills the star rather than concentrating in a core or a shell,
+reaching $1.9\times10^{13}$\,G at its peak, and it is structured on scales
+well below the stellar radius -- the seed was multi-scale and the
+relaxation has not organized it into a single large-scale structure on the
+timescale accessible here.
 
-\begin{figure*}
-\centering
-\includegraphics[width=\textwidth]{figures/slices.pdf}
-\caption{Meridional cut ($y=0$) through the relaxed field of seed 20 at
-$t/t_{\mathrm{dyn}} = 0.83$: total field strength, and its toroidal and
-poloidal parts, on a common logarithmic color scale. The contour is the
-stellar surface (density at $10^{-3}$ of peak). The toroidal component
-vanishes on the axis, where $\varpi \to 0$.}
-\label{fig:slices}
-\end{figure*}
+One caveat attaches to every toroidal fraction quoted in this paper, and
+is worth stating before the decomposition is used to look at anything.
+The background star is non-rotating and the seed field is random, so the
+$z$ axis about which poloidal and toroidal are separated is a bookkeeping
+choice, not a dynamically preferred direction. For a statistically
+isotropic field any axis gives one third, which is the same fact reported
+from the other side in Sect.~\ref{sec:noselection}.
 
 Figure~\ref{fig:lines} follows the field lines themselves, integrated
 through each of the three fields from a common set of starting points, so
@@ -621,10 +608,10 @@ drawn this way rather than as three-dimensional field lines.}
 \begin{figure*}
 \centering
 \includegraphics[width=\textwidth]{figures/fieldlines.pdf}
-\caption{Panels (a)-(c): field lines of the same three fields as
-Fig.~\ref{fig:slices}, traced from a common set of starting points in the
-strong-field region, colored by the local field strength on a shared
-scale, with arrowheads giving the direction. The faint wireframe is the
+\caption{Panels (a)-(c): field lines of the total field and of its
+toroidal and poloidal parts, traced from a common set of starting points
+in the strong-field region, colored by the local field strength on a
+shared scale, with arrowheads giving the direction. The faint wireframe is the
 stellar surface. \emph{Each line is truncated at a fixed integration
 length, so its ends are a drawing choice and not a property of the
 field.} Lines of the total and poloidal fields are tangled on scales

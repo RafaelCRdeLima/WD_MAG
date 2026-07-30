@@ -614,7 +614,6 @@ if __name__ == "__main__":
     fig_window()
     fig_relaxation()
     fig_paired()
-    fig_slices()
     fig_fieldlines()
     fig_components()
     print("wrote", *(p.name for p in sorted(HERE.glob("*.pdf"))))
