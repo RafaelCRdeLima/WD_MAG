@@ -114,6 +114,45 @@ def to_meridional(r, th, fields, rmax, n=401):
     return vp, zz, VP, ZZ, out
 
 
+def surface_of_revolution(r, th, H, n_th=121, n_ph=121):
+    """The true stellar surface, R(theta) from the enthalpy, revolved.
+
+    Not a sphere: this star is prolate, R_pol/R_eq = 1.10, and a sphere of
+    max(R_eq, R_pol) overstates the equatorial radius by that whole margin.
+    """
+    th_s = np.linspace(0.0, np.pi, n_th)
+    R_s = np.array([r[H[:, np.argmin(np.abs(th - t))] > 0].max()
+                    for t in th_s])
+    ph_s = np.linspace(0.0, 2.0 * np.pi, n_ph)
+    sin_s, cos_s = np.sin(th_s)[:, None], np.cos(th_s)[:, None]
+    X = (R_s[:, None] * sin_s) * np.cos(ph_s)[None, :]
+    Y = (R_s[:, None] * sin_s) * np.sin(ph_s)[None, :]
+    Z = (R_s[:, None] * cos_s) * np.ones_like(ph_s)[None, :]
+    return X, Y, Z, R_s
+
+
+def draw_star(ax3, X, Y, Z, S8, elev, azim, stride=5):
+    """Draw the surface split into far and near halves about the view.
+
+    mplot3d has no occlusion: it either sorts whole artists by their mean
+    depth (computed_zorder=True, the default, which silently overrides any
+    zorder set on an artist) or obeys zorder literally. Neither can put half
+    a surface behind the field lines and half in front, which is what a
+    wireframe around an interior field has to do. So the surface is split
+    here, by the sign of the dot product with the camera direction, and the
+    caller draws field lines at a zorder between the two halves. The near
+    half is drawn faint, as glass rather than as a wall.
+    """
+    e, a = np.deg2rad(elev), np.deg2rad(azim)
+    cam = np.array([np.cos(e) * np.cos(a), np.cos(e) * np.sin(a), np.sin(e)])
+    near = (X * cam[0] + Y * cam[1] + Z * cam[2]) > 0.0
+    for mask, zo, alpha in ((~near, 0, 1.0), (near, 20, 0.45)):
+        ax3.plot_wireframe(
+            np.where(mask, X, np.nan) / S8, np.where(mask, Y, np.nan) / S8,
+            np.where(mask, Z, np.nan) / S8, rstride=stride, cstride=stride,
+            color="#c9c8c0", linewidth=0.3, alpha=alpha, zorder=zo)
+
+
 def fig_poloidal_3d(r, th, H, u, Br, Bth, Rstar):
     """The poloidal field in three dimensions, to pair with the total field.
 
@@ -158,7 +197,7 @@ def fig_poloidal_3d(r, th, H, u, Br, Bth, Rstar):
                    vmax=np.percentile(finite, 99.9))
 
     fig = plt.figure(figsize=(WIDE_IN * 0.62, WIDE_IN * 0.42))
-    ax3 = fig.add_subplot(111, projection="3d")
+    ax3 = fig.add_subplot(111, projection="3d", computed_zorder=False)
     # four azimuths, not more: every loop passes close to the axis at high
     # |z|, where the poloidal field is strongest, and more planes pile up
     # into an unreadable dark column there
@@ -176,27 +215,18 @@ def fig_poloidal_3d(r, th, H, u, Br, Bth, Rstar):
                 line = np.stack([w * np.cos(ph), w * np.sin(ph), z], axis=-1)
                 pieces = np.stack([line[:-1] / S8, line[1:] / S8], axis=1)
                 lc = Line3DCollection(pieces, cmap=cmap, norm=norm,
-                                      linewidths=0.65, zorder=3)
+                                      linewidths=0.65, zorder=10)
                 lc.set_array(0.5 * (mag[:-1] + mag[1:]))
                 ax3.add_collection3d(lc)
         out = "closes outside the star" if frac < u_sep else "closed inside"
         print(f"  u/u_axis = {frac:.2f}: {len(level_segs)} loop(s), {out}")
 
-    # the true surface, not a sphere: this star is prolate and the figure
-    # has to show where the lines cross it
-    th_s = np.linspace(0.0, np.pi, 61)
-    R_s = np.array([r[H[:, np.argmin(np.abs(th - t))] > 0].max()
-                    for t in th_s])
-    ph_s = np.linspace(0.0, 2 * np.pi, 61)
-    XS = (R_s[:, None] * np.sin(th_s)[:, None]) * np.cos(ph_s)[None, :]
-    YS = (R_s[:, None] * np.sin(th_s)[:, None]) * np.sin(ph_s)[None, :]
-    ZS = (R_s[:, None] * np.cos(th_s)[:, None]) * np.ones_like(ph_s)[None, :]
-    ax3.plot_wireframe(XS / S8, YS / S8, ZS / S8, rstride=4, cstride=4,
-                       color="#cfcec6", linewidth=0.3, zorder=1)
+    XS, YS, ZS, R_s = surface_of_revolution(r, th, H)
+    draw_star(ax3, XS, YS, ZS, S8, 22.0, -58.0, stride=6)
 
-    lim = 1.04 * reach / S8
+    lim = 1.02 * reach / S8
     ax3.set_xlim(-lim, lim); ax3.set_ylim(-lim, lim); ax3.set_zlim(-lim, lim)
-    ax3.set_box_aspect((1, 1, 1))
+    ax3.set_box_aspect((1, 1, 1), zoom=1.14)
     ax3.view_init(elev=22, azim=-58)
     ax3.tick_params(labelsize=6, pad=-2)
     for a in (ax3.xaxis, ax3.yaxis, ax3.zaxis):
@@ -207,9 +237,11 @@ def fig_poloidal_3d(r, th, H, u, Br, Bth, Rstar):
     ax3.set_xlabel(r"$x$ ($10^8$ cm)", fontsize=7, labelpad=-6)
     ax3.set_ylabel(r"$y$", fontsize=7, labelpad=-6)
     ax3.set_zlabel(r"$z$", fontsize=7, labelpad=-6)
+    print(f"  R_eq = {R_s[len(R_s)//2]/S8:.3f}e8, R_pol = {R_s[0]/S8:.3f}e8, "
+          f"loops reach {reach/S8:.3f}e8, frame {lim:.3f}e8")
 
     sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
-    cb = fig.colorbar(sm, ax=ax3, fraction=0.028, pad=0.02)
+    cb = fig.colorbar(sm, ax=ax3, fraction=0.030, pad=0.12)
     cb.set_label(r"$|\mathbf{B}_{\rm p}|$  (G)", fontsize=7.5)
     cb.outline.set_linewidth(0.5)
     cb.ax.tick_params(labelsize=6.5, width=0.5, length=2, pad=1.5)
@@ -335,7 +367,7 @@ def main():
         return np.array(pts), np.array(mags), abs(ph) / (2 * np.pi)
 
     fig = plt.figure(figsize=(WIDE_IN * 0.62, WIDE_IN * 0.42))
-    ax3 = fig.add_subplot(111, projection="3d")
+    ax3 = fig.add_subplot(111, projection="3d", computed_zorder=False)
     # Only surfaces above the separatrix are closed tori. On the equator u
     # runs 0 at the axis, up to u_axis, then DOWN to 0.775 u_axis at the
     # stellar surface -- it does not return to zero, so surfaces below that
@@ -366,21 +398,23 @@ def main():
     for frac, line, mag, turns in drawn:
         segs = np.stack([line[:-1] / S8, line[1:] / S8], axis=1)
         lc = Line3DCollection(segs, cmap=cmap, norm=norm, linewidths=0.55,
-                              zorder=3)
+                              zorder=10)
         lc.set_array(0.5 * (mag[:-1] + mag[1:]))
         ax3.add_collection3d(lc)
 
-    uu_ = np.linspace(0, 2 * np.pi, 41)
-    vv_ = np.linspace(0, np.pi, 21)
-    Rs = Rstar / S8
-    ax3.plot_wireframe(Rs * np.outer(np.cos(uu_), np.sin(vv_)),
-                       Rs * np.outer(np.sin(uu_), np.sin(vv_)),
-                       Rs * np.outer(np.ones_like(uu_), np.cos(vv_)),
-                       rstride=6, cstride=6, color=C_GRID, linewidth=0.25,
-                       zorder=1)
-    lim = 0.62 * Rs
+    # The surface used to be a SPHERE of max(R_eq, R_pol), drawn at radius
+    # R_pol inside a frame of 0.62 R_pol -- both the wrong shape, inflating
+    # the equator by the whole 10% of prolateness, and clipped by the axes,
+    # which is why its south pole ran off the box. Now the true surface of
+    # revolution, with a frame that contains all of it.
+    XS, YS, ZS, R_s = surface_of_revolution(r, th, H)
+    draw_star(ax3, XS, YS, ZS, S8, 22.0, -58.0, stride=6)
+
+    lim = 1.02 * R_s.max() / S8
+    print(f"  R_eq = {R_s[len(R_s)//2]/S8:.3f}e8, R_pol = {R_s[0]/S8:.3f}e8, "
+          f"R_pol/R_eq = {R_s[0]/R_s[len(R_s)//2]:.4f}, frame {lim:.3f}e8")
     ax3.set_xlim(-lim, lim); ax3.set_ylim(-lim, lim); ax3.set_zlim(-lim, lim)
-    ax3.set_box_aspect((1, 1, 1))
+    ax3.set_box_aspect((1, 1, 1), zoom=1.14)
     ax3.view_init(elev=22, azim=-58)
     ax3.tick_params(labelsize=6, pad=-2)
     for a in (ax3.xaxis, ax3.yaxis, ax3.zaxis):
@@ -393,7 +427,7 @@ def main():
     ax3.set_zlabel(r"$z$", fontsize=7, labelpad=-6)
 
     sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
-    cb = fig.colorbar(sm, ax=ax3, fraction=0.028, pad=0.02)
+    cb = fig.colorbar(sm, ax=ax3, fraction=0.030, pad=0.12)
     cb.set_label(r"$|\mathbf{B}|$  (G)", fontsize=7.5)
     cb.outline.set_linewidth(0.5)
     cb.ax.tick_params(labelsize=6.5, width=0.5, length=2, pad=1.5)
