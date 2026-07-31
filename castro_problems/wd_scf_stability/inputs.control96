@@ -1,5 +1,9 @@
-# Phase 1 CONTROL at production length: a field-free star that IS an
-# equilibrium, on the same mesh spacing, run for the same 14.3 s.
+# Phase 1 CONTROL, run only as far as the question needs: a field-free star that IS an
+# equilibrium, on the same mesh spacing, run to t = 3.0 s.
+#
+# 3 s rather than 14.3: the scenario died at t = 2.35 s, so a control that
+# clears that with margin already answers the question, and a short job
+# backfills into the scheduler instead of waiting for a 23 h window.
 #
 # The scenario run collapsed the instant damping switched off at t = 1.68 s:
 # rho_c went 1.0e9 -> 0.66e9 while damped, then 1.0e9, 1.5e9, 2.9e9, 9.2e9,
@@ -18,7 +22,7 @@
 # measurement = 14.3 s.
 #
 # t_A = R/<v_A> = 1.68 s for this configuration (mass-weighted Alfven speed
-# 3.4e8 cm/s over R = 5.74e8 cm), so stop_time = 14.3 s is 10 t_A. The CFL
+# 3.4e8 cm/s over R = 5.74e8 cm), so stop_time = 3.0 s is 10 t_A. The CFL
 # step at 64^3 is ~1.4e-2 s, hence a few thousand steps -- the Braithwaite
 # study's 0.23 t_A ceiling does not bind here, because this field is three
 # orders of magnitude stronger and its Alfven time correspondingly shorter.
@@ -34,7 +38,7 @@ max_step = 0, so nothing evolves.
 # and dx = 2.8125e7 cm the half-width is 9.0e8 cm, comfortably outside the
 # star's R_pol = 5.736e8 cm.
 max_step = 20000
-stop_time = 14.3
+stop_time = 3.0
 
 geometry.is_periodic =  0    0    0
 geometry.coord_sys   =  0

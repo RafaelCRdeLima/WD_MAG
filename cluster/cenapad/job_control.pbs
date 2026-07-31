@@ -2,22 +2,21 @@
 #PBS -N wdctl96
 #PBS -q parexp
 #PBS -l nodes=1:ppn=48
-#PBS -l walltime=23:00:00
+#PBS -l walltime=01:30:00
 #PBS -o wdctl96.out
 #PBS -e wdctl96.err
 #
 # Phase 1 stability run, 96^3, relax-then-measure.
 #
-# Queue choice: parexp, not par128. par128 has 128 cores per node but 91 jobs
-# queued; parexp has 48 cores per node, 24 h walltime, and was EMPTY. For a run
-# estimated at 1-2 h on 48 cores, waiting in a 91-deep queue to get 2.7x the
-# cores is a bad trade.
+# Queue choice: parexp, and a SHORT walltime request. PBS backfills -- a job
+# asking for 23 h waits for a full window to open, while one asking for 1.5 h
+# slots into the gaps between long jobs. The first control submission sat in Q
+# with a 23 h request; this asks for what the run actually needs.
 #
-# Local measurement for scale: 9.99 s/step at 96^3 on 8 ranks of a 6-core
-# laptop. 48 ranks should bring the ~1640 steps to well under the walltime,
-# but the walltime is set near the queue maximum anyway -- if the field goes
-# unstable the steps slow down by up to 10x from subcycling, which is exactly
-# the outcome worth not truncating.
+# Measured on this machine: the scenario run did 333 steps in under 6 minutes
+# of walltime on 48 ranks, so about 1.1 s/step. The control has finer cells
+# (8.33e6 against 1.875e7 cm) and therefore a smaller dt, needing roughly 770
+# steps to reach t = 3.0 s -- call it 15 minutes, with 1.5 h requested.
 
 cd "$PBS_O_WORKDIR"
 
