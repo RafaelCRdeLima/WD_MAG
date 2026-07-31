@@ -1,0 +1,25 @@
+#!/bin/bash
+#PBS -N wdscf96ic
+#PBS -q testes
+#PBS -l nodes=1:ppn=4
+#PBS -l walltime=00:55:00
+#PBS -o wdscf96ic.out
+#PBS -e wdscf96ic.err
+#
+# Smoke test: build the initial condition, run every check, stop (max_step=0).
+# Queue testes, which was empty. This verifies the model file transferred
+# intact, the table covers the domain, and div B is zero on the run mesh --
+# before spending a production slot on it.
+
+cd "$PBS_O_WORKDIR"
+
+module purge
+module load openmpi/5.0.6-gcc-12.2.0
+
+echo "host:  $(hostname)"
+echo "start: $(date)"
+echo "ranks: $PBS_NP"
+
+mpirun -np "${PBS_NP:-4}" ./Castro3d.gnu.MPI.ex inputs.ic_check
+
+echo "end:   $(date)"

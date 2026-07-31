@@ -20,14 +20,14 @@ max_step = 0, so nothing evolves.
 # several-percent error in the central density; this removes it. With N = 64
 # and dx = 2.8125e7 cm the half-width is 9.0e8 cm, comfortably outside the
 # star's R_pol = 5.736e8 cm.
-max_step = 4000
+max_step = 20000
 stop_time = 14.3
 
 geometry.is_periodic =  0    0    0
 geometry.coord_sys   =  0
-geometry.prob_lo     = -9.140625e8 -9.140625e8 -9.140625e8
-geometry.prob_hi     =  8.859375e8  8.859375e8  8.859375e8
-amr.n_cell           =  64   64   64
+geometry.prob_lo     = -9.0937500000e+08 -9.0937500000e+08 -9.0937500000e+08
+geometry.prob_hi     = 8.9062500000e+08 8.9062500000e+08 8.9062500000e+08
+amr.n_cell           =  96  96  96
 
 castro.lo_bc       =  2   2   2
 castro.hi_bc       =  2   2   2
@@ -50,7 +50,7 @@ amr.v                 = 1
 
 amr.max_level       = 0
 amr.blocking_factor = 8
-amr.max_grid_size   = 32
+amr.max_grid_size   = 16
 amr.plot_file       = plt
 amr.check_file      = chk
 amr.check_int       = 200

@@ -1,0 +1,33 @@
+#!/bin/bash
+#PBS -N wdscf96
+#PBS -q parexp
+#PBS -l nodes=1:ppn=48
+#PBS -l walltime=23:00:00
+#PBS -o wdscf96.out
+#PBS -e wdscf96.err
+#
+# Phase 1 stability run, 96^3, relax-then-measure.
+#
+# Queue choice: parexp, not par128. par128 has 128 cores per node but 91 jobs
+# queued; parexp has 48 cores per node, 24 h walltime, and was EMPTY. For a run
+# estimated at 1-2 h on 48 cores, waiting in a 91-deep queue to get 2.7x the
+# cores is a bad trade.
+#
+# Local measurement for scale: 9.99 s/step at 96^3 on 8 ranks of a 6-core
+# laptop. 48 ranks should bring the ~1640 steps to well under the walltime,
+# but the walltime is set near the queue maximum anyway -- if the field goes
+# unstable the steps slow down by up to 10x from subcycling, which is exactly
+# the outcome worth not truncating.
+
+cd "$PBS_O_WORKDIR"
+
+module purge
+module load openmpi/5.0.6-gcc-12.2.0
+
+echo "host:  $(hostname)"
+echo "start: $(date)"
+echo "ranks: $PBS_NP"
+
+mpirun -np "${PBS_NP:-48}" ./Castro3d.gnu.MPI.ex inputs.prod96
+
+echo "end:   $(date)"

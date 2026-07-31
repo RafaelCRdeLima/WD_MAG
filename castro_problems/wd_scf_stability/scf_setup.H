@@ -43,9 +43,43 @@ void compute_background_star()
     problem::t_dyn_s = std::sqrt(r_star * r_star * r_star
                                  / (C::Gconst * amrex::max(mass, 1.0_rt)));
 
+    // Relax-then-measure. The initial condition is an SCF equilibrium sampled
+    // onto a Cartesian mesh, and the sampling alone costs it: the field's peak
+    // amplitude is retained only to 84.5% at 64^3 and 95.6% at 128^3, and the
+    // magnetic force goes as the square of that. So the star arrives out of
+    // balance and rings. Damping every velocity for a fixed window lets it
+    // settle onto the mesh, and the window then CLOSES -- after
+    // damping_end_time_s nothing is damped, and the measurement runs on an
+    // undamped star.
+    //
+    // This is the opposite of what damping did in the Braithwaite problem,
+    // where it ran throughout to hold a random seed field still. Damping
+    // during the measurement would suppress the very instability being looked
+    // for, so the window must end well before the Alfven time the instability
+    // grows on. Here t_dyn = 0.84 s against t_A = 1.26 s, so a window of a
+    // couple of t_dyn leaves most of the run clean.
+    problem::damping_rate = (problem::damping_timescale_in_tdyn > 0.0_rt)
+        ? 1.0_rt / (problem::damping_timescale_in_tdyn * problem::t_dyn_s)
+        : 0.0_rt;
+    problem::damping_end_time_s =
+        problem::damping_end_time_in_tdyn * problem::t_dyn_s;
+    problem::damping_ramp_start_s = problem::damping_end_time_s
+        - problem::damping_ramp_in_tdyn * problem::t_dyn_s;
+
     amrex::Print() << "  [scf_model] M = " << mass / 1.98892e33
                    << " Msun, R_star = " << r_star
                    << " cm, t_dyn = " << problem::t_dyn_s << " s\n";
+    if (problem::damping_end_time_s > 0.0_rt) {
+        amrex::Print() << "  [scf_model] damping until t = "
+                       << problem::damping_end_time_s << " s ("
+                       << problem::damping_end_time_in_tdyn << " t_dyn), "
+                       << "ramping from " << problem::damping_ramp_start_s
+                       << " s; rate " << problem::damping_rate << " /s\n"
+                       << "  [scf_model] MEASUREMENT WINDOW starts there and "
+                       << "is undamped\n";
+    } else {
+        amrex::Print() << "  [scf_model] no damping\n";
+    }
 }
 
 // Sample the discrete curl on the actual domain mesh and report what the

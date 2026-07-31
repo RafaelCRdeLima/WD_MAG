@@ -1,0 +1,53 @@
+diff --git a/Source/driver/Castro_io.cpp b/Source/driver/Castro_io.cpp
+index 3d9ba24..2a2bf3b 100644
+--- a/Source/driver/Castro_io.cpp
++++ b/Source/driver/Castro_io.cpp
+@@ -13,6 +13,20 @@
+ #include <Castro_io.H>
+ #include <AMReX_ParmParse.H>
+ 
++// LOCAL PATCH (not upstream, not covered by any git tracking -- see
++// wd-magnetizada's docs/teoria.md Sec 6.5 and
++// castro_problems/wd_braithwaite/ for why): writeJobInfo() below
++// includes extern_job_info_tests.H, which references the network_rp
++// namespace declared in extern_parameters.H. Every EOS this project
++// had used until now (gamma_law) happens to #include
++// extern_parameters.H itself (for its own eos_rp parameters), so this
++// was always transitively available. ztwd has zero runtime parameters
++// (EOS/ztwd/_parameters is empty) and so never includes it, and
++// nothing else in this translation unit does either -- a real,
++// EOS-module-specific gap in Castro, not something in our problem
++// code. Re-apply this if Castro is ever re-cloned or reset.
++#include <extern_parameters.H>
++
+ #ifdef RADIATION
+ #include <Radiation.H>
+ #endif
+diff --git a/Source/gravity/Gravity.cpp b/Source/gravity/Gravity.cpp
+index 9668d91..de5eeba 100644
+--- a/Source/gravity/Gravity.cpp
++++ b/Source/gravity/Gravity.cpp
+@@ -1427,8 +1427,21 @@ Gravity::interpolate_monopole_grav(int level, RealVector& radial_grav, MultiFab&
+ 
+             if (index <= n1d-1) {
+ 
+-                for (int n = 0; n < AMREX_SPACEDIM; ++n) {
+-                    grav(i,j,k,n) = mag_grav * (loc[n] / r);
++                // g(r=0) = 0 exactly for any spherically symmetric mass
++                // distribution (zero net force at the center by symmetry).
++                // loc[n]/r is 0/0 there -- normally unreachable because no
++                // cell center coincides with problem::center on a standard
++                // (vertex-at-center) grid, but a grid shifted so a cell
++                // center sits exactly on problem::center hits it. See
++                // wd_braithwaite/CASTRO_CORE_PATCHES.md.
++                if (r > 0.0_rt) {
++                    for (int n = 0; n < AMREX_SPACEDIM; ++n) {
++                        grav(i,j,k,n) = mag_grav * (loc[n] / r);
++                    }
++                } else {
++                    for (int n = 0; n < AMREX_SPACEDIM; ++n) {
++                        grav(i,j,k,n) = 0.0_rt;
++                    }
+                 }
+ 
+             }
