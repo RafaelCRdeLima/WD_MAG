@@ -3,16 +3,20 @@
 # is where you compile -- the machine named "frontend" (cenapad.unicamp.br) is
 # a connection server only and refuses module/qstat outright.
 #
-# Toolchain, read off `module avail` on the machine itself: OpenMPI 5.0.6 built
-# against GCC 12.2.0. The system gcc is 8.5.0, which cannot build Castro (it
-# needs C++20). openmpi/5.0.8-gcc-15.2.0 is the module system's default but
-# GCC 15 is very new for AMReX; 12.2 is the safer pair.
+# Toolchain: OpenMPI 5.0.8 built against GCC 15.2.0, which is the module
+# system's own default.
+#
+# GCC 12.2 was tried first, on the reasoning that GCC 15 is very new for AMReX.
+# That was wrong: Castro 26.07's main.cpp includes <format>, and libstdc++ only
+# gained it in GCC 13. The system gcc, 8.5.0, is far too old for anything here.
+# Do not use openmpi/5.0.8-gcc-15.2.0-TESTE-NAO-USE, which the site marks as
+# not-for-use.
 #
 # -j8 rather than -j32: this runs on a shared login node.
 set -euo pipefail
 
 module purge
-module load openmpi/5.0.6-gcc-12.2.0
+module load openmpi/5.0.8-gcc-15.2.0
 module list
 
 # Castro's build scripts have "#!/usr/bin/env python" shebangs, and RHEL8 --

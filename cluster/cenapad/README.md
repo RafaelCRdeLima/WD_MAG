@@ -18,7 +18,10 @@ your laptop  --ssh -p 31459-->  frontend  --ssh lovelace-->  lovelace
 | | |
 |---|---|
 | system gcc | 8.5.0 — **too old**, Castro needs C++20 |
-| toolchain used | `module load openmpi/5.0.6-gcc-12.2.0` |
+| toolchain used | `module load openmpi/5.0.8-gcc-15.2.0` |
+| why not GCC 12.2 | Castro 26.07 includes `<format>`, which libstdc++ only has from GCC 13 |
+| `python` | absent; only `python3`. `build.sh` shims it, Castro's scripts need `python` |
+| home directories | frontend and lovelace are SEPARATE filesystems -- scp needs two hops |
 | scheduler | PBS (`qsub`, `qstat -u $USER`, `qdel`) |
 | `git` | present, and has outbound internet (`git ls-remote` works) |
 | `$HOME` | CephFS, 212 TB free |

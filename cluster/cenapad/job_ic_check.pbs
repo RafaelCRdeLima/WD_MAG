@@ -14,7 +14,7 @@
 cd "$PBS_O_WORKDIR"
 
 module purge
-module load openmpi/5.0.6-gcc-12.2.0
+module load openmpi/5.0.8-gcc-15.2.0
 
 echo "host:  $(hostname)"
 echo "start: $(date)"
