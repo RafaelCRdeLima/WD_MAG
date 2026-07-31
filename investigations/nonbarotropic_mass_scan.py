@@ -94,13 +94,24 @@ MU_E_MIN, MU_E_MAX = 1.95, 2.20
 # configuration whose peak exceeds B_c is inconsistent with its own
 # microphysics -- the same gate the toroidal work used.
 B_C = 4.414e13
-LEDOUX_TOL = 2.0e-2          # allowed fractional increase outward before it counts as unstable
+# Fraction of the total mu_e range that may run the wrong way (outward
+# increase) in the shell-averaged profile before the stratification counts as
+# convectively unstable. Some non-monotonicity is expected from the numerics;
+# a profile that rises by a third of its own range is not stratified.
+LEDOUX_TOL = 0.30
+# Below this fractional spread in the shell-averaged mu_e, the star counts as
+# chemically homogeneous and the Ledoux criterion has nothing to act on.
+HOMOGENEOUS_SPREAD = 0.01
 
 # B_pol scales linearly with k0, and the field-free star gives max|B_pol| =
 # 2.45e12 G at k0 = 1e-13, so B_c is reached near k0 = 1.8e-12. The first
 # smoke test at 3e-12 came out at 1.66 B_c; the grid stops below that.
 K0_LIST = tuple(np.geomspace(2.0e-13, 1.8e-12, 7))
-ALPHA_LIST = (1.00, 1.05, 1.10, 1.20, 1.35, 1.50)
+ALPHA_LIST = (1.00, 1.10, 1.25, 1.40)
+# rho_c is the lever the first grid never touched. The field-free mass rises
+# toward the Chandrasekhar value with it, and the neutronization threshold for
+# mu_e = 2 sits at 1.94e10, so there is room.
+RHO_C_LIST = (1.0e9, 3.0e9, 8.0e9, 1.5e10)
 
 OUT = HERE / "nonbarotropic_mass_scan.csv"
 
@@ -176,7 +187,7 @@ def mu_e_from_P_rho(P, rho):
 
 
 def solve_one(args):
-    k0, alpha = args
+    k0, alpha, RHO_C = args
     try:
         # anchor: the field-free barotropic star supplies P on the axis
         res, r, th, _ = _solve_toroidal_certified(
@@ -184,7 +195,7 @@ def solve_one(args):
             rotation=None, mu_e=MU_E_REF, Nr_base=NR, Ntheta=NTH, lmax=LMAX,
             tol=1e-8, max_iter=200)
         if res is None:
-            return dict(k0=k0, alpha=alpha, status="no background")
+            return dict(k0=k0, alpha=alpha, rho_c=RHO_C, status="no background")
         rho0, Phi, H0 = res["rho"], res["Phi"], res["H"]
         varpi = r[:, None] * np.sin(th)[None, :]
         x0 = eos.x_of_enthalpy(np.maximum(H0, 0.0), MU_E_REF)
@@ -220,14 +231,48 @@ def solve_one(args):
         mu, x = mu_e_from_P_rho(P, rho)
         inside = (rho > 1e-4 * RHO_C) & (P > 0) & np.isfinite(mu)
         if inside.sum() < 500:
-            return dict(k0=k0, alpha=alpha, status="empty", M=M)
+            return dict(k0=k0, alpha=alpha, rho_c=RHO_C, status="empty", M=M)
 
-        mu_in = mu[inside]
-        mu_lo, mu_hi = float(np.percentile(mu_in, 1)), float(np.percentile(mu_in, 99))
-        # Ledoux: mu_e must not increase outward
-        dmu = np.gradient(np.where(inside, mu, np.nan), r, axis=0)
-        bad = np.nansum((dmu > LEDOUX_TOL * np.abs(mu) / r[:, None]) & inside)
-        frac_unstable = float(bad) / float(inside.sum())
+        # Both composition gates read the SHELL-AVERAGED profile, not the
+        # pointwise field.
+        #
+        # mu_e comes from rho, which is a derivative of P, so pointwise it
+        # carries that noise: at one grid point the 1-99 percentile range was
+        # [1.955, 2.105], 7%, while the mass-weighted shell profile ran 1.995
+        # to 2.006, 0.5%. Judging composition on percentiles of the pointwise
+        # field therefore rejected configurations for numerical scatter. Both
+        # earlier versions of these gates did exactly that.
+        nsh = 24
+        Rg = np.broadcast_to(r[:, None], mu.shape)
+        r_star = float(Rg[inside].max())
+        edges = np.linspace(0.0, r_star, nsh + 1)
+        prof, mass_sh = [], []
+        for a, b in zip(edges[:-1], edges[1:]):
+            m = inside & (Rg >= a) & (Rg < b)
+            if m.sum() > 20:
+                w = rho[m]
+                prof.append(float(np.sum(mu[m] * w) / np.sum(w)))
+                mass_sh.append(float(w.sum()))
+        prof, mass_sh = np.array(prof), np.array(mass_sh)
+        if prof.size < 5:
+            return dict(k0=k0, alpha=alpha, rho_c=RHO_C, status="too few shells", M=M)
+
+        mu_lo, mu_hi = float(prof.min()), float(prof.max())
+        spread = (mu_hi - mu_lo) / max(mu_lo, 1e-12)
+
+        # Ledoux only bites where there IS a gradient. A star whose mean
+        # composition is uniform to a fraction of a percent is homogeneous,
+        # which is the commonest and most stable case, not an unstable one --
+        # penalising it for lacking stratification was the previous gate's
+        # error. Below HOMOGENEOUS_SPREAD the criterion does not apply; above
+        # it, the profile must not rise outward by more than LEDOUX_TOL of its
+        # own range.
+        if spread < HOMOGENEOUS_SPREAD:
+            frac_unstable = 0.0
+        else:
+            d = np.diff(prof)
+            frac_unstable = float(np.maximum(d, 0).sum()
+                                  / max(mu_hi - mu_lo, 1e-12))
 
         Br, Bth = diag.poloidal_field(u, r, th)
         E_pol, _, _ = diag.magnetic_energies(Br, Bth, np.zeros_like(rho), r, th)
@@ -235,21 +280,22 @@ def solve_one(args):
 
         B_pol_max = float(np.hypot(Br, Bth).max())
         ok = (MU_E_MIN <= mu_lo <= MU_E_MAX and MU_E_MIN <= mu_hi <= MU_E_MAX
-              and frac_unstable < 0.05 and B_pol_max < B_C)
+              and frac_unstable < LEDOUX_TOL and B_pol_max < B_C)
         return dict(k0=k0, alpha=alpha, status="ok" if ok else "gate",
-                    M=M, mu_lo=mu_lo, mu_hi=mu_hi,
-                    frac_unstable=frac_unstable, E_pol_over_W=E_pol / max(W, 1),
+                    rho_c=RHO_C, M=M, mu_lo=mu_lo, mu_hi=mu_hi,
+                    frac_unstable=frac_unstable, mu_spread=spread,
+                    E_pol_over_W=E_pol / max(W, 1),
                     Bpol_max=B_pol_max, B_over_Bc=B_pol_max / B_C)
     except Exception as exc:                       # noqa: BLE001
         # the message, not just the type: a run that reported only
         # "AttributeError" 42 times cost a full round trip to the cluster
-        return dict(k0=k0, alpha=alpha,
+        return dict(k0=k0, alpha=alpha, rho_c=RHO_C,
                     status=f"error: {type(exc).__name__}: {exc}")
 
 
 def main():
     nproc = int(sys.argv[1]) if len(sys.argv) > 1 else max(1, os.cpu_count() - 1)
-    grid = list(itertools.product(K0_LIST, ALPHA_LIST))
+    grid = list(itertools.product(K0_LIST, ALPHA_LIST, RHO_C_LIST))
     print(f"non-barotropic mass scan: {len(grid)} points on {nproc} processes")
     print(f"mu_e gate [{MU_E_MIN}, {MU_E_MAX}], Ledoux tolerance "
           f"{LEDOUX_TOL}\n")
@@ -257,19 +303,21 @@ def main():
     with Pool(nproc) as pool:
         rows = pool.map(solve_one, grid)
 
-    print("  k0          alpha   status   M (Msun)  mu_e range      "
-          "unstable  E_pol/|W|  B/B_c")
+    print("  rho_c      k0          alpha  status  M (Msun)   mu_e range      "
+          "spread  unstab  E_pol/|W|  B/B_c")
     for d in rows:
-        if "M" in d:
-            print(f"  {d['k0']:.3e}  {d['alpha']:.2f}   {d['status']:6s}  "
-                  f"{d.get('M', float('nan')):8.4f}  "
-                  f"{d.get('mu_lo', float('nan')):.3f}-"
-                  f"{d.get('mu_hi', float('nan')):.3f}   "
-                  f"{d.get('frac_unstable', float('nan')):7.3f}  "
-                  f"{d.get('E_pol_over_W', float('nan')):.5f}  "
-                  f"{d.get('B_over_Bc', float('nan')):.2f}")
+        head = (f"  {d.get('rho_c', 0):.1e}  {d['k0']:.3e}  {d['alpha']:.2f}  "
+                f"{d['status']:6s}")
+        if "M" in d and "mu_lo" in d:
+            print(head
+                  + f" {d['M']:8.4f}   "
+                    f"{d['mu_lo']:.4f}-{d['mu_hi']:.4f}  "
+                    f"{d.get('mu_spread', float('nan')):6.4f}  "
+                    f"{d.get('frac_unstable', float('nan')):5.2f}  "
+                    f"{d.get('E_pol_over_W', float('nan')):9.5f}  "
+                    f"{d.get('B_over_Bc', float('nan')):5.2f}")
         else:
-            print(f"  {d['k0']:.3e}  {d['alpha']:.2f}   {d['status']}")
+            print(head + f"  {d.get('M', '')}")
 
     good = [d for d in rows if d.get("status") == "ok"]
     if good:
@@ -285,14 +333,14 @@ def main():
     with OUT.open("w") as f:
         f.write(f"# non-barotropic poloidal scan, rho_c={RHO_C:.3e}, "
                 f"mu_e gate [{MU_E_MIN},{MU_E_MAX}]\n")
-        f.write("k0,alpha,status,M_msun,mu_lo,mu_hi,frac_unstable,"
-                "E_pol_over_W,Bpol_max_G,B_over_Bc\n")
+        f.write("k0,alpha,rho_c,status,M_msun,mu_lo,mu_hi,frac_unstable,"
+                "E_pol_over_W,Bpol_max_G,B_over_Bc,mu_spread\n")
         for d in rows:
-            f.write(f"{d['k0']:.6e},{d['alpha']:.3f},{d['status']},"
+            f.write(f"{d['k0']:.6e},{d['alpha']:.3f},{d.get('rho_c','')},{d['status']},"
                     f"{d.get('M', '')},{d.get('mu_lo', '')},"
                     f"{d.get('mu_hi', '')},{d.get('frac_unstable', '')},"
                     f"{d.get('E_pol_over_W', '')},{d.get('Bpol_max', '')},"
-                    f"{d.get('B_over_Bc', '')}\n")
+                    f"{d.get('B_over_Bc', '')},{d.get('mu_spread', '')}\n")
     print(f"\nwrote {OUT.name}")
 
 

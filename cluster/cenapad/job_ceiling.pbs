@@ -1,0 +1,35 @@
+#!/bin/bash
+#PBS -N wdceil
+#PBS -q parexp
+#PBS -l nodes=1:ppn=48
+#PBS -l walltime=04:00:00
+#PBS -o wdceil.out
+#PBS -e wdceil.err
+#
+# Non-barotropic mass scan. Pure Python (numpy + scipy), parallel over the
+# parameter grid with multiprocessing, so it wants cores on ONE node rather
+# than MPI across several.
+#
+# Queue parexp for the same reason the Castro runs used it: par128 has more
+# cores per node but a deep queue, and this is a job of hours, not days.
+
+cd "$PBS_O_WORKDIR"
+
+module purge
+module load openmpi/5.0.8-gcc-15.2.0   # brings a modern python3 on PATH
+
+echo "host:   $(hostname)"
+echo "start:  $(date)"
+NP="$(wc -l < "${PBS_NODEFILE:-/dev/null}" 2>/dev/null || true)"
+[ -n "$NP" ] && [ "$NP" -gt 0 ] 2>/dev/null || NP=48
+echo "procs:  $NP"
+python3 --version
+
+# The scan imports scf/ and dashboard/ from the repository, so it must run
+# from the repository root rather than from this directory.
+cd "$HOME/WD_MAG"
+python3 investigations/nonbarotropic_ceiling_scan.py "$NP" > "$PBS_O_WORKDIR/run_ceil.log" 2>&1
+RC=$?
+tail -20 "$PBS_O_WORKDIR/run_ceil.log"
+echo "end:    $(date)"
+exit "$RC"
