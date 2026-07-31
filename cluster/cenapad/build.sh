@@ -15,6 +15,20 @@ module purge
 module load openmpi/5.0.6-gcc-12.2.0
 module list
 
+# Castro's build scripts have "#!/usr/bin/env python" shebangs, and RHEL8 --
+# which lovelace runs -- ships only python3. Without a shim the build dies at
+# check_network.py with "/usr/bin/env: 'python': No such file or directory".
+# A symlink on PATH is enough and is less invasive than loading anaconda,
+# which would shadow other things in the environment.
+if ! command -v python >/dev/null 2>&1; then
+    PY3="$(command -v python3 || true)"
+    [ -n "$PY3" ] || { echo "neither python nor python3 found"; exit 1; }
+    mkdir -p "$HOME/bin"
+    ln -sf "$PY3" "$HOME/bin/python"
+    export PATH="$HOME/bin:$PATH"
+    echo "shim:   $HOME/bin/python -> $PY3"
+fi
+echo "python: $(python --version 2>&1)"
 echo "gcc:    $(gcc --version | head -1)"
 echo "mpicxx: $(command -v mpicxx || echo MISSING)"
 [ -n "$(command -v mpicxx)" ] || { echo "no mpicxx after module load"; exit 1; }

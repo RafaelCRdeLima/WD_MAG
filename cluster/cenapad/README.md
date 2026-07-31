@@ -49,11 +49,13 @@ git clone https://github.com/RafaelCRdeLima/WD_MAG.git
 bash WD_MAG/cluster/cenapad/bootstrap.sh ~/wd-mag
 ```
 
-From the laptop, the only transfer:
+From the laptop, the only transfer -- note the absolute path, the repository
+is at ~/wd-magnetizada and ~/Codes/WD_MAG merely contains it:
 
 ```bash
-scp -P 31459 models/phase1_scenario.txt models/phase1_control.txt \
-    rcrlima@cenapad.unicamp.br:~/
+scp -P 31459 /home/rafael/wd-magnetizada/models/phase1_scenario.txt \
+             /home/rafael/wd-magnetizada/models/phase1_control.txt \
+    rcrlima@cenapad.unicamp.br:/home/lovelace/proj/proj503/rcrlima/wd-mag/Castro/Exec/science/wd_scf_stability/
 ```
 
 **Check first that this lands somewhere lovelace can see it.** The two machines
