@@ -33,6 +33,14 @@ surface_density_frac              real           1.0e-6_rt      y
 # star ends, for R_star and for the field-outside diagnostic.
 ambient_density                   real           2.0e4_rt       y
 
+# Multiplies the vector potential, hence the field, before the curl is taken
+# (never after -- curl(s*A) = s*curl(A) exactly, so div B = 0 survives). Set
+# to 0 for the field-free control: identical star, identical mesh, identical
+# everything else, no field. Without that control a pulsation or a collapse
+# cannot be attributed to the field rather than to the code's ability to hold
+# a marginally stable degenerate star in hydrostatic balance.
+field_scale                       real           1.0_rt         y
+
 # --- Step 3: global velocity damping during the initial accommodation
 # phase (docs/teoria.md Sec 6.4) -- the IC is not in magnetohydrostatic
 # equilibrium (built against gas pressure + gravity only), so the raw

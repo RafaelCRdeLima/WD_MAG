@@ -60,7 +60,7 @@ amrex::Real A_component(int comp, amrex::Real x, amrex::Real y, amrex::Real z)
     amrex::Real varpi = std::sqrt(x * x + y * y);
 
     if (comp == 2) {
-        return table_at(a_z, varpi, z);
+        return problem::field_scale * table_at(a_z, varpi, z);
     }
 
     // On the axis e_phi is undefined, but A_phi vanishes there as varpi
@@ -70,7 +70,7 @@ amrex::Real A_component(int comp, amrex::Real x, amrex::Real y, amrex::Real z)
         return 0.0_rt;
     }
 
-    const amrex::Real ap = table_at(a_phi, varpi, z);
+    const amrex::Real ap = problem::field_scale * table_at(a_phi, varpi, z);
     return (comp == 0) ? (-ap * y / varpi) : (ap * x / varpi);
 }
 

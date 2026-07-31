@@ -138,7 +138,8 @@ void diagnose_field()
                    << "    t_alfven (peak B, central rho) = " << t_alfven
                    << " s = " << t_alfven / problem::t_dyn_s << " t_dyn\n";
 
-    if (problem::diag_max_divB_h_over_B > 1.0e-10) {
+    if (problem::field_scale != 0.0_rt
+        && problem::diag_max_divB_h_over_B > 1.0e-10) {
         amrex::Abort("scf_model: the initial field is not divergence free on "
                      "the run mesh -- the staggering convention in "
                      "scf_model.H and in the writer have drifted apart");

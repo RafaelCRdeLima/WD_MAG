@@ -30,6 +30,7 @@ SOURCE_FILES=(
     _prob_params
     inputs.ic_check
     inputs.evolve
+    inputs.control_nofield
     mu2.net
     problem_initialize.H
     problem_initialize_state_data.H
