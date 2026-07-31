@@ -25,7 +25,23 @@ cd "$PBS_O_WORKDIR"
 # One script for the whole scan keeps the three runs identical in every
 # respect except the model file, which is the point of the comparison.
 : "${INP:?pass -v INP=inputs.scan_M1p50 (or 1p70, 1p85)}"
-LOG="run_${INP#inputs.}.log"
+
+# Each run gets its OWN directory. Castro writes plt00000 and chk00000 with
+# names fixed by the inputs file, so three concurrent runs in one directory
+# clobber each other's checkpoints -- which is exactly what happened on the
+# first attempt: 1p70 died with "Couldn't open file:
+# chk00000.temp/Level_0/SD_5_New_MF_D_00000" while another job was writing the
+# same path. Nothing to do with the physics.
+TAG="${INP#inputs.}"
+WORK="$PBS_O_WORKDIR/dir_$TAG"
+mkdir -p "$WORK"
+MODEL=$(grep -oP 'problem\.model_name\s*=\s*"\K[^"]+' "$INP")
+[ -n "$MODEL" ] || { echo "cannot read model_name from $INP"; exit 1; }
+ln -sf "$PBS_O_WORKDIR/Castro3d.gnu.MPI.ex" "$WORK/"
+ln -sf "$PBS_O_WORKDIR/$INP"                "$WORK/"
+ln -sf "$PBS_O_WORKDIR/$MODEL"              "$WORK/"
+cd "$WORK"
+LOG="run.log"
 
 module purge
 module load openmpi/5.0.8-gcc-15.2.0
@@ -46,7 +62,7 @@ echo "ranks: $NP  (PBS_NP='$PBS_NP', nodefile='${PBS_NODEFILE:-unset}')"
 # runs. The -o file still catches anything printed outside this redirect.
 mpirun -np "$NP" ./Castro3d.gnu.MPI.ex "$INP" > "$LOG" 2>&1
 RC=$?
-echo "log: $PBS_O_WORKDIR/"$LOG" ($(grep -ac '^STEP' "$LOG") steps)"
+echo "log: $WORK/$LOG ($(grep -ac '^STEP' "$LOG") steps)"
 grep -a "amrex::Abort" "$LOG" | head -1
 echo "end:   $(date)"
 # Propagate mpirun's status. Without this the trailing echo becomes the
