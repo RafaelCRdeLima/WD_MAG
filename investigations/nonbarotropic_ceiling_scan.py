@@ -74,13 +74,24 @@ BAROTROPIC_CEILING = 0.018      # measured: the poloidal SCF branch saturates he
 NOISE_FLOOR = 0.0203            # measured at k0 = 0 by nonbarotropic_noise_floor.py
 STRATIFIED_MULTIPLE = 3.0       # below this the composition structure is unresolved
 MU_E_MIN, MU_E_MAX = 1.90, 2.20
+# The strictly defensible interior composition of an ultramassive white dwarf:
+# 2.00 is C, O, Ne and He; 2.15 is Fe. Below 2.00 requires hydrogen, which has
+# burned. Reported alongside the looser gate so near-misses stay visible
+# instead of being collapsed into a pass/fail.
+MU_E_STRICT_MIN, MU_E_STRICT_MAX = 2.00, 2.15
 
 # Starts where the previous scan stopped. B/B_c was 0.69 at k0 = 1.25e-12 on
 # the field-free background, so there is room to roughly 1.8e-12 before the
 # Landau limit -- but the star inflates as k0 rises, so the gate is applied to
 # each configuration rather than assumed from the grid.
 K0_LIST = tuple(np.geomspace(1.0e-12, 3.0e-12, 7))
-ALPHA_LIST = (1.00, 1.15, 1.30)
+# alpha multiplies the anchor pressure, and mu_e = rho / (B1 x^3) with x set by
+# P, so RAISING alpha LOWERS mu_e -- roughly as alpha^(-3/4) for a relativistic
+# gas. The previous grid ran alpha >= 1.00 and returned mean mu_e between 1.62
+# and 1.95 at every one of its 42 points: the physically defensible region,
+# mu_e near 2.0 to 2.15, was never sampled. It lies below 1, near
+# alpha = 1.93/2.05 to the -4/3, about 0.92.
+ALPHA_LIST = (0.80, 0.88, 0.92, 0.96, 1.00)
 RHO_C_LIST = (1.0e9, 3.0e9)
 
 OUT = HERE / "nonbarotropic_ceiling_scan.csv"
@@ -169,13 +180,15 @@ def solve_one(args):
         VE = abs(W_signed + 3.0 * diag.volume_integral(P, r, th) + E_pol) / W
 
         physical = (MU_E_MIN <= prof.min() and prof.max() <= MU_E_MAX)
+        strict = (MU_E_STRICT_MIN <= prof.min()
+                  and prof.max() <= MU_E_STRICT_MAX)
         ok = physical and B_max < B_C and ledoux < 0.30 and VE < VE_GATE
         return dict(k0=k0, alpha=alpha, rho_c=rho_c,
                     status="ok" if ok else "gate", M=M, M0=M0,
                     mu_mean=float(prof.mean()), mu_lo=float(prof.min()),
                     mu_hi=float(prof.max()), over_floor=over_floor,
                     ledoux=ledoux, EpW=EpW, VE=VE,
-                    beats_ceiling=EpW > BAROTROPIC_CEILING,
+                    strict=strict, beats_ceiling=EpW > BAROTROPIC_CEILING,
                     B_over_Bc=B_max / B_C)
     except Exception as exc:                       # noqa: BLE001
         return dict(k0=k0, alpha=alpha, rho_c=rho_c,
@@ -193,7 +206,7 @@ def main():
         rows = pool.map(solve_one, grid)
 
     print("  rho_c    k0        alp  status  M      dM/M0   mu_e mean/range      "
-          "xfloor  E_pol/|W|  beats  B/Bc     VE")
+          "xfloor  E_pol/|W|  beats  B/Bc     VE   strict")
     for d in sorted(rows, key=lambda x: (x["rho_c"], x["k0"], x["alpha"])):
         h = (f"  {d['rho_c']:.0e}  {d['k0']:.2e} {d['alpha']:.2f}  "
              f"{d['status']:6s}")
@@ -202,7 +215,8 @@ def main():
                       f"{d['mu_mean']:.3f} {d['mu_lo']:.3f}-{d['mu_hi']:.3f}  "
                       f"{d['over_floor']:6.2f}  {d['EpW']:9.5f}  "
                       f"{'YES' if d['beats_ceiling'] else ' no'}  "
-                      f"{d['B_over_Bc']:5.2f}  {d['VE']:.5f}")
+                      f"{d['B_over_Bc']:5.2f}  {d['VE']:.5f}  "
+                      f"{'YES' if d['strict'] else '  .'}")
         else:
             print(h + f" {d.get('M', '')}")
 
@@ -217,11 +231,29 @@ def main():
     else:
         print("\nnothing beats the barotropic ceiling below B_c")
 
+    phys = [d for d in rows
+            if d.get("strict") and d.get("B_over_Bc", 9) < 1
+            and d.get("VE", 9) < VE_GATE]
+    if phys:
+        q = max(phys, key=lambda d: d["M"])
+        print(f"\nheaviest with STRICTLY physical composition (mu_e in "
+              f"[{MU_E_STRICT_MIN}, {MU_E_STRICT_MAX}]), below B_c, certified:")
+        print(f"  M = {q['M']:.4f} Msun at rho_c = {q['rho_c']:.0e}, "
+              f"k0 = {q['k0']:.2e}, alpha = {q['alpha']:.2f}")
+        print(f"  mu_e {q['mu_lo']:.3f}-{q['mu_hi']:.3f}, "
+              f"E_pol/|W| = {q['EpW']:.5f} "
+              f"({'beats' if q['beats_ceiling'] else 'below'} the barotropic "
+              f"ceiling), B/B_c = {q['B_over_Bc']:.2f}, VE = {q['VE']:.5f}")
+    else:
+        print("\nno configuration has strictly physical composition below "
+              "B_c -- the composition demand, not the Landau limit, closes "
+              "the route")
+
     with OUT.open("w") as f:
         f.write(f"# non-barotropic ceiling scan; floor={NOISE_FLOOR}, "
                 f"barotropic ceiling={BAROTROPIC_CEILING}, B_c={B_C:.4e}\n")
         f.write("k0,alpha,rho_c,status,M_msun,M0_msun,mu_mean,mu_lo,mu_hi,"
-                "over_floor,ledoux,E_pol_over_W,VE,beats_ceiling,B_over_Bc\n")
+                "over_floor,ledoux,E_pol_over_W,VE,strict,beats_ceiling,B_over_Bc\n")
         for d in rows:
             f.write(",".join(str(d.get(k, "")) for k in
                              ("k0", "alpha", "rho_c", "status", "M", "M0",
