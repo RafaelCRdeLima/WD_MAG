@@ -38,32 +38,44 @@ at one to two hours, `parexp` starting now beats `par128` starting tomorrow.
 
 ## Procedure
 
-From the laptop, in the repository root:
+The repository is public and lovelace's `git` has outbound internet, so the
+source does not need transferring -- clone it there. Only the model files move
+by `scp`, because they are gitignored derived data (15 MB each).
+
+On lovelace:
 
 ```bash
-scp -P 31459 -r cluster/cenapad rcrlima@cenapad.unicamp.br:~/
+git clone https://github.com/RafaelCRdeLima/WD_MAG.git
+bash WD_MAG/cluster/cenapad/bootstrap.sh ~/wd-mag
+```
+
+From the laptop, the only transfer:
+
+```bash
 scp -P 31459 models/phase1_scenario.txt models/phase1_control.txt \
     rcrlima@cenapad.unicamp.br:~/
 ```
 
-Then on lovelace:
+**Check first that this lands somewhere lovelace can see it.** The two machines
+report different Ceph monitors and different mount subpaths -- frontend has
+`/home` (29 TB) from 192.168.193.x mounted at `:/`, lovelace has
+`/home/lovelace` (759 TB) from 172.27.254.x mounted at `:/lovelace/home`. They
+may not be the same filesystem. Test by writing a file on lovelace and looking
+for it from the frontend. If they are separate, copy from lovelace in a second
+hop rather than pushing from the laptop.
+
+Then, back on lovelace:
 
 ```bash
-ssh -p 31459 rcrlima@cenapad.unicamp.br
-ssh lovelace
-
-bash ~/cenapad/bootstrap.sh ~/wd-mag        # clones Castro 26.07, pins the
-                                            # submodules, re-applies the two
-                                            # core patches, installs the problem
 cp ~/phase1_*.txt ~/wd-mag/Castro/Exec/science/wd_scf_stability/
 cd ~/wd-mag/Castro/Exec/science/wd_scf_stability
-bash ~/cenapad/build.sh .
+bash ~/wd-mag/../WD_MAG/cluster/cenapad/build.sh .
 
-qsub ~/cenapad/job_ic_check.pbs             # smoke test first, queue testes
+qsub ~/WD_MAG/cluster/cenapad/job_ic_check.pbs     # smoke test, queue testes
 qstat -u $USER
-# read wdscf96ic.out: it must show div B ~ 1e-16 and the density peak on target
+# read wdscf96ic.out: density peak on target, max|div B| h/|B| ~ 1e-16
 
-qsub ~/cenapad/job_stability.pbs            # production, queue parexp
+qsub ~/WD_MAG/cluster/cenapad/job_stability.pbs    # production, queue parexp
 ```
 
 ## The core patches are not optional
