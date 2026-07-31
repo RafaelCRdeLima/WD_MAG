@@ -1,0 +1,49 @@
+#!/bin/bash
+#PBS -N wdctl64
+#PBS -q testes
+#PBS -l nodes=1:ppn=4
+#PBS -l walltime=00:55:00
+#PBS -o wdctl64.out
+#PBS -e wdctl64.err
+#
+# Phase 1 stability run, 96^3, relax-then-measure.
+#
+# Queue: testes, which is EMPTY and starts immediately, against parexp where
+# the control has been sitting in Q on 'Insufficient amount of resource:
+# Qlist' with an estimated start an hour out. 4 cores and a 1 h limit is not
+# much, but this control is a smaller star at 64^3 and fits.
+
+#
+# Measured on this machine: the scenario run did 333 steps in under 6 minutes
+# of walltime on 48 ranks, so about 1.1 s/step. The control has finer cells
+# (8.33e6 against 1.875e7 cm) and therefore a smaller dt, needing roughly 770
+# steps to reach t = 3.0 s -- call it 15 minutes, with 1.5 h requested.
+
+cd "$PBS_O_WORKDIR"
+
+module purge
+module load openmpi/5.0.8-gcc-15.2.0
+
+echo "host:  $(hostname)"
+echo "start: $(date)"
+# PBS_NP came back empty on this system in the smoke test, so the literal
+# fallback was what ran. It matched ppn by luck. Count the nodefile instead,
+# which is what was actually allocated, and keep the fallback only as a last
+# resort.
+NP="$(wc -l < "${PBS_NODEFILE:-/dev/null}" 2>/dev/null || true)"
+[ -n "$NP" ] && [ "$NP" -gt 0 ] 2>/dev/null || NP="${PBS_NP:-4}"
+echo "ranks: $NP  (PBS_NP='$PBS_NP', nodefile='${PBS_NODEFILE:-unset}')"
+
+# Write to a log in the working directory rather than relying on the PBS -o
+# file: PBS only delivers that when the job ENDS, so a run of hours is
+# invisible until it is over. This one can be followed with tail -f while it
+# runs. The -o file still catches anything printed outside this redirect.
+mpirun -np "$NP" ./Castro3d.gnu.MPI.ex inputs.control64 > run_ctl64.log 2>&1
+RC=$?
+echo "log: $PBS_O_WORKDIR/run_ctl64.log ($(grep -ac '^STEP' run_ctl64.log) steps)"
+grep -a "amrex::Abort" run_ctl64.log | head -1
+echo "end:   $(date)"
+# Propagate mpirun's status. Without this the trailing echo becomes the
+# script's exit code and PBS mails Exit_status=0 for a run that aborted --
+# which is what happened on the first production attempt.
+exit "$RC"

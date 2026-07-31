@@ -33,6 +33,7 @@ SOURCE_FILES=(
     inputs.control_nofield
     inputs.prod96
     inputs.control96
+    inputs.control64
     mu2.net
     problem_initialize.H
     problem_initialize_state_data.H
