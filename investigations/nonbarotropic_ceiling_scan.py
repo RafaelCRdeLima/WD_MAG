@@ -61,7 +61,14 @@ from poisson import solve_poisson                # noqa: E402
 from seed import r_guess                         # noqa: E402
 from sweep_worker import _solve_toroidal_certified   # noqa: E402
 
-LMAX, NR, NTH, N_OUTER = 16, 129, 129, 8
+LMAX, NR, NTH = 16, 129, 129
+# 32, not the 8 the first scan used. Measured on one point, the virial error
+# runs 4.8e-3 at 8 iterations, 1e-5 at 16 and settles near 4e-4 by 32 -- so
+# every point of the first scan was under-converged, by five times the gate at
+# the interesting configurations. The physics of the trade did not depend on
+# it, but no number from that scan should be quoted.
+N_OUTER = 32
+VE_GATE = 1.0e-3                # the same gate used throughout this project
 B_C = 4.414e13
 BAROTROPIC_CEILING = 0.018      # measured: the poloidal SCF branch saturates here
 NOISE_FLOOR = 0.0203            # measured at k0 = 0 by nonbarotropic_noise_floor.py
@@ -150,17 +157,25 @@ def solve_one(args):
 
         Br, Bth = diag.poloidal_field(u, r, th)
         E_pol, _, _ = diag.magnetic_energies(Br, Bth, np.zeros_like(rho), r, th)
-        W = abs(diag.gravitational_energy(rho, Phi, r, th))
+        W_signed = diag.gravitational_energy(rho, Phi, r, th)
+        W = abs(W_signed)
         B_max = float(np.hypot(Br, Bth).max())
         EpW = E_pol / max(W, 1.0)
 
+        # Virial error, computed from the solver's OWN pressure rather than
+        # from an equation of state -- the whole point here is that P is not a
+        # function of rho alone. A configuration that fails this is not an
+        # equilibrium and nothing else about it means anything.
+        VE = abs(W_signed + 3.0 * diag.volume_integral(P, r, th) + E_pol) / W
+
         physical = (MU_E_MIN <= prof.min() and prof.max() <= MU_E_MAX)
-        ok = physical and B_max < B_C and ledoux < 0.30
+        ok = physical and B_max < B_C and ledoux < 0.30 and VE < VE_GATE
         return dict(k0=k0, alpha=alpha, rho_c=rho_c,
                     status="ok" if ok else "gate", M=M, M0=M0,
                     mu_mean=float(prof.mean()), mu_lo=float(prof.min()),
                     mu_hi=float(prof.max()), over_floor=over_floor,
-                    ledoux=ledoux, EpW=EpW, beats_ceiling=EpW > BAROTROPIC_CEILING,
+                    ledoux=ledoux, EpW=EpW, VE=VE,
+                    beats_ceiling=EpW > BAROTROPIC_CEILING,
                     B_over_Bc=B_max / B_C)
     except Exception as exc:                       # noqa: BLE001
         return dict(k0=k0, alpha=alpha, rho_c=rho_c,
@@ -178,7 +193,7 @@ def main():
         rows = pool.map(solve_one, grid)
 
     print("  rho_c    k0        alp  status  M      dM/M0   mu_e mean/range      "
-          "xfloor  E_pol/|W|  beats  B/Bc")
+          "xfloor  E_pol/|W|  beats  B/Bc     VE")
     for d in sorted(rows, key=lambda x: (x["rho_c"], x["k0"], x["alpha"])):
         h = (f"  {d['rho_c']:.0e}  {d['k0']:.2e} {d['alpha']:.2f}  "
              f"{d['status']:6s}")
@@ -187,7 +202,7 @@ def main():
                       f"{d['mu_mean']:.3f} {d['mu_lo']:.3f}-{d['mu_hi']:.3f}  "
                       f"{d['over_floor']:6.2f}  {d['EpW']:9.5f}  "
                       f"{'YES' if d['beats_ceiling'] else ' no'}  "
-                      f"{d['B_over_Bc']:5.2f}")
+                      f"{d['B_over_Bc']:5.2f}  {d['VE']:.5f}")
         else:
             print(h + f" {d.get('M', '')}")
 
@@ -198,7 +213,7 @@ def main():
               f"{b['EpW']:.5f} at rho_c = {b['rho_c']:.0e}, k0 = {b['k0']:.2e}")
         print(f"  M = {b['M']:.4f} Msun ({100*(b['M']-b['M0'])/b['M0']:+.1f}% "
               f"over field-free), mu_e {b['mu_lo']:.3f}-{b['mu_hi']:.3f} "
-              f"({b['over_floor']:.1f}x floor), status {b['status']}")
+              f"({b['over_floor']:.1f}x floor), VE = {b['VE']:.5f}")
     else:
         print("\nnothing beats the barotropic ceiling below B_c")
 
@@ -206,7 +221,7 @@ def main():
         f.write(f"# non-barotropic ceiling scan; floor={NOISE_FLOOR}, "
                 f"barotropic ceiling={BAROTROPIC_CEILING}, B_c={B_C:.4e}\n")
         f.write("k0,alpha,rho_c,status,M_msun,M0_msun,mu_mean,mu_lo,mu_hi,"
-                "over_floor,ledoux,E_pol_over_W,beats_ceiling,B_over_Bc\n")
+                "over_floor,ledoux,E_pol_over_W,VE,beats_ceiling,B_over_Bc\n")
         for d in rows:
             f.write(",".join(str(d.get(k, "")) for k in
                              ("k0", "alpha", "rho_c", "status", "M", "M0",
