@@ -261,6 +261,14 @@ family of equilibria with different masses. Closing it needs a physical
 stratification condition (convective stability is the candidate), not a
 better solver.
 
+**R6 - a latent bug in the inherited Castro diagnostics.** `ca_deremag`
+reads `dat(i,j,k+1,2)` with too few ghost cells and returns garbage (1e90)
+once the domain is decomposed in z across MPI ranks. Correct on a single
+rank, which is why an initial-condition check does not catch it. `ca_deretor`
+escapes because it never touches component 2. **This is inherited from
+`wd_braithwaite` and affects it too**, so any E_mag diagnostic taken from a
+parallel run of that problem needs rechecking.
+
 **R5 — EOS/screening inconsistency in the default FLASH combination.** FLASH
 uses Helmholtz (no Coulomb) for the EOS and Alastuey–Jancovici for screening;
 they are not derived from the same free energy, and the classical AJ form
@@ -299,6 +307,45 @@ everything downstream is moot. This is prior to the EOS work, and cheaper.
 
 Exit criterion: a measured survival time in Alfvén units for at least two
 values of B_t/B_p, one of them the value the 10⁹ G dipole implies.
+
+**Status: steps 1 and 2 done, step 3 blocked on resolution.**
+
+The exporter and the Castro problem work and agree with each other. The
+initial condition at 64^3 reproduces the star: central density 1000000007
+against rho_c = 1e9, max|Bx| at 84.5% of the SCF peak -- the same number the
+exporter computes independently -- E_mag at 97.1% of E_tor, |div B| h/|B| =
+1.2e-16, field outside/inside 5.8e-4, t_A = 1.257 s = 1.50 t_dyn.
+
+The evolution does not yet measure what it was built to measure. The run
+aborted at 1.74 t_A on subcycle exhaustion, after rho_c fell to 0.48 of its
+initial value and then compressed to 9.6e9 g/cm^3. The m = 1 azimuthal power
+grew from round-off to 4.7e-3 and E_tor fell 43%, which is the signature
+being looked for -- but it cannot be attributed to the Tayler instability,
+because the star does not sit still even without a field.
+
+Diagnosis, and what it is not:
+
+- **Not gravity multipoles.** PoissonGrav and MonopoleGrav give the same
+  drift (6.4e8 vs 7.4e8 at t = 0.068 s), so the monopole approximation for a
+  prolate star is not the cause.
+- **Not the field reconstruction alone**, though that is a real defect: the
+  amplitude retained rises 84.5% -> 91.4% -> 95.6% -> 96.1% at n = 64, 96,
+  128, 160, and the magnetic force goes as its square, so 64^3 is missing
+  29% of the local magnetic force.
+- **It is resolution at the core.** rho_c drops 2.5% by t = 0.0018 s, which
+  is 0.002 dynamical times -- nothing physical happens in that interval. The
+  density peak is being numerically diffused, and 64^3 puts only 41 cells
+  across the star.
+
+Next: 128^3 (82 cells across, 95.6% amplitude), or 64^3 with AMR refining
+the core.
+
+A note on the control that was run. Setting field_scale = 0 removes the
+field from a star that needs it to exist, so the result -- that it also
+moves -- was never a null test. The right control is a field-free star that
+IS an equilibrium, a 1.35 Msun configuration at the same central density,
+exported and run identically.
+
 
 ### Phase 2 — the equilibrium family
 
