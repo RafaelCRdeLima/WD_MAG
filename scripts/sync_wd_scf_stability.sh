@@ -35,6 +35,7 @@ SOURCE_FILES=(
     inputs.control96
     inputs.control64
     inputs.nodamp96
+    inputs.nodamp128
     mu2.net
     problem_initialize.H
     problem_initialize_state_data.H
