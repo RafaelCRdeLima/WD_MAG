@@ -241,7 +241,10 @@ def solve_one(args):
                     frac_unstable=frac_unstable, E_pol_over_W=E_pol / max(W, 1),
                     Bpol_max=B_pol_max, B_over_Bc=B_pol_max / B_C)
     except Exception as exc:                       # noqa: BLE001
-        return dict(k0=k0, alpha=alpha, status=f"error: {type(exc).__name__}")
+        # the message, not just the type: a run that reported only
+        # "AttributeError" 42 times cost a full round trip to the cluster
+        return dict(k0=k0, alpha=alpha,
+                    status=f"error: {type(exc).__name__}: {exc}")
 
 
 def main():

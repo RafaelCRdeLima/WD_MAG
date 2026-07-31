@@ -35,6 +35,12 @@ integrais estavam errados).
 """
 
 import numpy as np
+
+# numpy renamed trapz to trapezoid in 2.0. This project develops against 2.x
+# but runs on clusters with older numpy -- CENAPAD's system python3 is 3.6.8 --
+# so bind whichever exists. The two are the same function.
+_trapezoid = getattr(np, "trapezoid", None) or np.trapz
+
 from scipy.special import lpmv
 
 
@@ -120,7 +126,7 @@ def solve_gradshafranov(source, r, theta, lmax=16):
     for idx, l in enumerate(range(1, lmax + 1)):
         norm = (2 * l + 1) / (2 * l * (l + 1))
         integrand = source * P1[idx][None, :]
-        S_l[idx] = norm * np.trapezoid(integrand, theta, axis=1)
+        S_l[idx] = norm * _trapezoid(integrand, theta, axis=1)
 
     T1 = _inner_terms(S_l, r, lmax)
     T2 = _outer_terms(S_l, r, lmax)

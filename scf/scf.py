@@ -76,6 +76,12 @@ dashboard.
 """
 
 import numpy as np
+
+# numpy renamed trapz to trapezoid in 2.0. This project develops against 2.x
+# but runs on clusters with older numpy -- CENAPAD's system python3 is 3.6.8 --
+# so bind whichever exists. The two are the same function.
+_trapezoid = getattr(np, "trapezoid", None) or np.trapz
+
 from scipy.optimize import brentq
 
 from eos import enthalpy, density_of_enthalpy, B_of_mu_e
@@ -91,8 +97,8 @@ def initial_guess(r, theta, rho_c, r_target):
 def total_mass(rho, r, theta):
     """M = integral rho dV em coordenadas esfericas (r, theta), simetria azimutal."""
     integrand = rho * r[:, None] ** 2 * np.sin(theta)[None, :]
-    over_theta = np.trapezoid(integrand, theta, axis=1)
-    return 2 * np.pi * np.trapezoid(over_theta, r)
+    over_theta = _trapezoid(integrand, theta, axis=1)
+    return 2 * np.pi * _trapezoid(over_theta, r)
 
 
 def _solve_rho_implicit(RHS, toroidal, r, theta, mu_e, rho_c):

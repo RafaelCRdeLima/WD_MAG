@@ -5,6 +5,12 @@ equatorial, ver D3 em plano_wd_magnetizada.md).
 """
 
 import numpy as np
+
+# numpy renamed trapz to trapezoid in 2.0. This project develops against 2.x
+# but runs on clusters with older numpy -- CENAPAD's system python3 is 3.6.8 --
+# so bind whichever exists. The two are the same function.
+_trapezoid = getattr(np, "trapezoid", None) or np.trapz
+
 from numpy.polynomial import legendre as npleg
 
 G_CONST = 6.674e-8  # cm^3 g^-1 s^-2
@@ -81,7 +87,7 @@ def solve_poisson(rho, r, theta, lmax=16):
     rho_l = np.zeros((lmax + 1, len(r)))
     for l in range(lmax + 1):
         integrand = rho * P[l][None, :]
-        rho_l[l] = (2 * l + 1) / 2 * np.trapezoid(integrand, mu, axis=1)
+        rho_l[l] = (2 * l + 1) / 2 * _trapezoid(integrand, mu, axis=1)
         # trapz com mu decrescente (theta de 0 a pi -> mu de 1 a -1) da sinal trocado
     rho_l *= -1.0 if mu[0] > mu[-1] else 1.0
 

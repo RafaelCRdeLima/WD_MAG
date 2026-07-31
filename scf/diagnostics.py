@@ -6,14 +6,20 @@ de scf.hachisu_scf — nao resolve nada, so' integra/deriva.
 """
 
 import numpy as np
+
+# numpy renamed trapz to trapezoid in 2.0. This project develops against 2.x
+# but runs on clusters with older numpy -- CENAPAD's system python3 is 3.6.8 --
+# so bind whichever exists. The two are the same function.
+_trapezoid = getattr(np, "trapezoid", None) or np.trapz
+
 from eos import pressure, x_of_enthalpy
 
 
 def volume_integral(field, r, theta):
     """integral de field(r,theta) dV, dV = r^2 sin(theta) dr dtheta dphi (phi->2pi)."""
     integrand = field * r[:, None] ** 2 * np.sin(theta)[None, :]
-    over_theta = np.trapezoid(integrand, theta, axis=1)
-    return 2 * np.pi * np.trapezoid(over_theta, r)
+    over_theta = _trapezoid(integrand, theta, axis=1)
+    return 2 * np.pi * _trapezoid(over_theta, r)
 
 
 def gravitational_energy(rho, Phi, r, theta):
