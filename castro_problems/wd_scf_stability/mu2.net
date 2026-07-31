@@ -1,0 +1,7 @@
+# single species, mu_e = A/Z = 2 (He4-like), matching the SCF's
+# default mu_e=2.0 (scf/eos.py) -- keeps the species short-name "X" so
+# scf/castro_model_writer.py's model file column header ("X") and
+# problem_initialize_state_data.H's generic NumSpec loop don't need to
+# change, only the composition (aion, zion) does.
+# name short-name aion zion
+X X 4.0 2.0

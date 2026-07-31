@@ -1,0 +1,72 @@
+# name                          data type      default        in namelist?
+
+model_name                       string         ""             y
+
+rng_seed                         integer        42             y
+
+E_mag_over_W_target               real           0.15_rt        y
+
+n_modes                           integer        10             y
+
+dominant_scale_over_R             real           0.3_rt         y
+
+mode_scale_band_factor            real           3.0_rt         y
+
+envelope_transition_frac          real           0.2_rt         y
+
+# Field confinement radius = field_cutoff_frac * R_star, NOT R_star
+# itself -- leaves a field-free buffer shell from here out to the real
+# surface. Was implicitly 1.0 (envelope tapered all the way to R_star)
+# until a real crash (negative density, subcycle exhaustion at
+# r/R_star=0.92-0.97) traced to the envelope decaying far slower than
+# the star's actual density near the surface, sustaining a broad
+# v_A~1e9 cm/s shell. See seed_field.H::envelope() and docs/teoria.md
+# Sec 6.5/6.6.
+field_cutoff_frac                 real           0.8_rt         y
+
+surface_density_frac              real           1.0e-6_rt      y
+
+# Ambient floor for the initial data. MUST sit above castro.small_dens
+# (1.0e4 g/cm^3 for these runs, Sec 6.5) or Castro aborts at init with
+# "initial data has rho <~ small_dens". Kept separate from
+# surface_density_frac, which answers a different question -- where the
+# star ends, for R_star and for the field-outside diagnostic.
+ambient_density                   real           2.0e4_rt       y
+
+# --- Step 3: global velocity damping during the initial accommodation
+# phase (docs/teoria.md Sec 6.4) -- the IC is not in magnetohydrostatic
+# equilibrium (built against gas pressure + gravity only), so the raw
+# transient must be damped everywhere, not just in the sponge's
+# exterior region, while the star settles. Windows given in units of
+# t_dyn (computed from the actual background star, not guessed) --
+# requires castro.add_ext_src=1 in inputs or problem_source.H never runs.
+
+damping_timescale_in_tdyn         real           0.2_rt         y
+
+damping_end_time_in_tdyn          real           5.0_rt         y
+
+damping_ramp_in_tdyn              real           1.0_rt         y
+
+# --- computed at problem_initialize() time, not meant to be set from
+# the inputs file (in namelist = n, matching how wdmerger's
+# central_density_P/mass_P are computed then overwritten) ---
+
+A_amplitude_scale                 real           1.0_rt         n
+
+R_star_cm                         real           0.0_rt         n
+
+W_abs_erg                         real           0.0_rt         n
+
+diag_max_divB_h_over_B            real           0.0_rt         n
+
+diag_E_mag_over_W_achieved        real           0.0_rt         n
+
+diag_Bmax_outside_over_inside     real           0.0_rt         n
+
+t_dyn_s                            real           0.0_rt         n
+
+damping_rate                       real           0.0_rt         n
+
+damping_end_time_s                 real           0.0_rt         n
+
+damping_ramp_start_s               real           0.0_rt         n
