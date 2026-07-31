@@ -65,7 +65,12 @@ castro.v              = 1
 amr.v                 = 1
 
 amr.max_level       = 0
-amr.blocking_factor = 8
+# blocking_factor 4, not the 8 inherited from the 96^3 inputs: AMReX requires
+# max_grid_size to be divisible by it, and 12 is not a multiple of 8. 12 was
+# chosen to give 6^3 = 216 boxes on a 72^3 mesh, about 4.5 per rank.
+# blocking_factor only sets the minimum block size, so the comparison with
+# the 96^3 run is unaffected.
+amr.blocking_factor = 4
 amr.max_grid_size   = 12
 amr.plot_file       = plt
 amr.check_file      = chk
