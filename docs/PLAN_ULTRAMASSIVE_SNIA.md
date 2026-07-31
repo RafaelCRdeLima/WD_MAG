@@ -308,6 +308,36 @@ everything downstream is moot. This is prior to the EOS work, and cheaper.
 Exit criterion: a measured survival time in Alfvén units for at least two
 values of B_t/B_p, one of them the value the 10⁹ G dipole implies.
 
+**Correction, and the thing that reframes all of it.** The configuration is
+not a mildly prolate white dwarf. Measured on the converged SCF solution, the
+density ratio between the axis and the equator at the SAME spherical radius is
+4.2 at r/R = 0.1, 11.5 at 0.2, and 23.4 at 0.5. Along the equator the density
+falls by a factor 230 from centre to half radius; along the axis it falls by
+10. The object is a dense axial column inside an evacuated equatorial region --
+a spindle -- because B_phi = K rho varpi puts its magnetic pressure exactly
+where rho and varpi are both large.
+
+R_pol/R_eq = 1.10 describes only the surface where H = 0 and understates this
+completely. The mixed-field paper quotes that ratio as the measure of the
+deformation, and Fig. 2 of that paper shows the rho = 1e-3 rho_c contour
+sitting far inside the stellar surface -- which I described as 'the extended
+low-density envelope this configuration carries' rather than recognising it as
+extreme equatorial evacuation. The evidence was in a figure I made.
+
+This explains the mass-independence that the scan found and that nothing else
+accounted for. All four configurations share rho_c and the field law and
+differ only in K, so they share the spindle character and differ only in its
+degree. The death time ignored E_tor/|W| because the thing that collapses --
+the axial column -- is the same object in all of them.
+
+It also changes what the collapses mean. They are not evidence that "a 2 Msun
+magnetically supported white dwarf is dynamically unstable". They are evidence
+that THIS family of configurations, the self-consistent toroidal branch with
+B_phi = K rho varpi at E_tor/|W| ~ 0.1-0.2, is a magnetically confined spindle
+that collapses in a few dynamical times. Whether a 2 Msun white dwarf can be
+supported by some other field geometry is a question these runs do not touch.
+
+
 **Status: Phase 1 answered, but not the question it was asked.**
 
 The machinery works and reproduces exactly. The initial condition built on
