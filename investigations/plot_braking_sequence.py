@@ -27,11 +27,9 @@ C_GRID = "#e1e0d9"
 
 B_C = 4.414e13
 RHO_CC, RHO_NE, RHO_O = 3.0e9, 9.6e9, 1.94e10
-CONFINE_GAIN = 2.71     # measured in confinement_cost.py at rho_c = 1e9:
-                        # 4.275e13 space-filling vs 1.579e13 confined, same
-                        # E_tor/|W|. Applied here as a constant, which it is
-                        # only approximately -- the closed-region geometry
-                        # drifts along the sequence.
+# The confined curve is now read per point from confinement_gain_sequence.py
+# rather than scaled by a constant. The gain is not constant: it drifts from
+# 2.69 to 2.93 as the closed region grows from 36.7% to 39.7% of the star.
 
 plt.rcParams.update({
     "font.family": "serif", "font.serif": ["Times New Roman", "DejaVu Serif"],
@@ -56,6 +54,16 @@ def main():
     rho = np.array([r[0] for r in rows])
     emag = np.array([r[1] for r in rows])
     bt = np.array([r[2] for r in rows])
+
+    crow = []
+    with (HERE / "confinement_gain_sequence.csv").open() as f:
+        for line in f:
+            if line.startswith("#") or line.startswith("rho_c"):
+                continue
+            q = line.strip().split(",")
+            crow.append((float(q[0]), float(q[6])))       # rho_c, Bt_conf/B_c
+    rho_c_arr = np.array([c[0] for c in crow])
+    conf = np.array([c[1] for c in crow])
 
     fig, (ax, axb) = plt.subplots(
         2, 1, figsize=(COL_IN, COL_IN * 1.15), sharex=True,
@@ -89,8 +97,17 @@ def main():
     axb.plot(rho, bt / B_C, color=C_FIELD, linewidth=1.4, marker="o",
              markersize=3.4, markeredgecolor="white", markeredgewidth=0.5,
              zorder=3, label="space-filling")
-    axb.plot(rho, bt / B_C / CONFINE_GAIN, color=C_ALT, linewidth=1.2,
-             linestyle=(0, (5, 2)), zorder=3, label="confined (estimate)")
+    axb.plot(rho_c_arr, conf, color=C_ALT, linewidth=1.4, marker="s",
+             markersize=3.0, markeredgecolor="white", markeredgewidth=0.5,
+             zorder=3, label="confined")
+    # where the confined branch crosses B_c: below it a field-independent
+    # equation of state is defensible, above it is not
+    xc = np.exp(np.interp(0.0, np.log(conf), np.log(rho_c_arr)))
+    axb.plot([xc], [1.0], marker="o", markersize=6, markerfacecolor="none",
+             markeredgecolor=C_ALT, markeredgewidth=1.1, zorder=5)
+    axb.annotate(rf"$\rho_c = {xc/1e9:.1f}\times10^9$", xy=(xc, 1.0),
+                 xytext=(2, -13), textcoords="offset points", fontsize=6.2,
+                 color=C_ALT)
     axb.axhline(1.0, color="#0b0b0b", linewidth=0.9, zorder=2)
     axb.text(8.5e8, 1.13, r"$B_c$", fontsize=7, color="#0b0b0b")
     axb.set_yscale("log")
@@ -104,9 +121,10 @@ def main():
     print("wrote braking_sequence.pdf")
     for x, name in ((RHO_CC, "C+C"), (RHO_NE, "20Ne"), (RHO_O, "16O")):
         b = np.interp(np.log10(x), np.log10(rho), bt) / B_C
+        c = np.interp(np.log10(x), np.log10(rho_c_arr), conf)
         e = np.interp(np.log10(x), np.log10(rho), emag)
         print(f"  at {name:5s} ({x:.2e}): E_mag/|W| = {e:.4f}, "
-              f"B/B_c = {b:.2f} space-filling, {b / CONFINE_GAIN:.2f} confined")
+              f"B/B_c = {b:.2f} space-filling, {c:.2f} confined")
 
 
 if __name__ == "__main__":
