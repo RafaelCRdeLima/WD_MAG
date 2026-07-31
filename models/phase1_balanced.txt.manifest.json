@@ -1,0 +1,34 @@
+{
+  "checks": {
+    "amplitude_retained_64cubed": 0.8453378938081569,
+    "curl_err_poloidal": 8.978643008956979e-16,
+    "curl_err_toroidal": 0.016816618519683267,
+    "relative_divB_64cubed": 2.1617881066728754e-16
+  },
+  "file": "phase1_balanced.txt",
+  "format": "axisym-vector-potential-v1",
+  "git_commit": "4c15259",
+  "n_varpi": 385,
+  "n_z": 769,
+  "params": {
+    "B_pole_G": 591281118747.1913,
+    "Bphi_max_G": 42751028726937.84,
+    "Bt_over_Bp_amplitude": 2.61816051200709,
+    "E_tor_over_Epol": 8.842037430403682,
+    "E_tor_over_W": 0.202610497171179,
+    "K_tor": 0.003245,
+    "M_msun": 2.0072046150134826,
+    "R_eq_cm": 520689219.28487724,
+    "R_pol_cm": 573576482.6173987,
+    "k0": 1e-12,
+    "m_tor": 1.0,
+    "mu_e": 2.0,
+    "rho_c": 1000000000.0
+  },
+  "units": "cgs: varpi,z in cm; density in g/cm^3; A_phi,A_z in G*cm",
+  "varpi_max_cm": 1590022634.4,
+  "z_range_cm": [
+    -1590022634.4,
+    1590022634.4
+  ]
+}

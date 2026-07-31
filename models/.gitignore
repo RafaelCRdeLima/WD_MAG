@@ -1,0 +1,3 @@
+# large derived data: regenerate with investigations/export_phase1_models.py
+*.txt
+!*.manifest.json
