@@ -308,70 +308,65 @@ everything downstream is moot. This is prior to the EOS work, and cheaper.
 Exit criterion: a measured survival time in Alfvén units for at least two
 values of B_t/B_p, one of them the value the 10⁹ G dipole implies.
 
-**Status: steps 1 and 2 done, step 3 blocked on resolution.**
+**Status: Phase 1 answered, but not the question it was asked.**
 
-The exporter and the Castro problem work and agree with each other. The
-initial condition at 64^3 reproduces the star: central density 1000000007
-against rho_c = 1e9, max|Bx| at 84.5% of the SCF peak -- the same number the
-exporter computes independently -- E_mag at 97.1% of E_tor, |div B| h/|B| =
-1.2e-16, field outside/inside 5.8e-4, t_A = 1.257 s = 1.50 t_dyn.
+The machinery works and reproduces exactly. The initial condition built on
+Lovelace matches the one built on a laptop in every printed digit -- mass
+2.007562769, peak density 1000000007, |div B| h/|B| = 1.17e-16, E_mag
+5.396e50 -- across different compilers and MPI stacks.
 
-The evolution does not yet measure what it was built to measure. The run
-aborted at 1.74 t_A on subcycle exhaustion, after rho_c fell to 0.48 of its
-initial value and then compressed to 9.6e9 g/cm^3. The m = 1 azimuthal power
-grew from round-off to 4.7e-3 and E_tor fell 43%, which is the signature
-being looked for -- but it cannot be attributed to the Tayler instability,
-because the star does not sit still even without a field.
+The 2 Msun configuration does not survive. Every run ends in subcycle
+exhaustion after a large radial expansion, a rebound, and a runaway collapse:
 
-Diagnosis, and what it is not:
-
-- **Not gravity multipoles.** PoissonGrav and MonopoleGrav give the same
-  drift (6.4e8 vs 7.4e8 at t = 0.068 s), so the monopole approximation for a
-  prolate star is not the cause.
-- **Not the field reconstruction alone**, though that is a real defect: the
-  amplitude retained rises 84.5% -> 91.4% -> 95.6% -> 96.1% at n = 64, 96,
-  128, 160, and the magnetic force goes as its square, so 64^3 is missing
-  29% of the local magnetic force.
-- **It is resolution at the core.** rho_c drops 2.5% by t = 0.0018 s, which
-  is 0.002 dynamical times -- nothing physical happens in that interval. The
-  density peak is being numerically diffused, and 64^3 puts only 41 cells
-  across the star.
-
-Next: 128^3 (82 cells across, 95.6% amplitude), or 64^3 with AMR refining
-the core.
-
-**Resolution study and the proper control, both done.**
-
-The control was redone properly: a field-free star that IS an equilibrium at
-the same central density, in a domain scaled so it spans the same number of
-cells (39 against 41) -- running it in the magnetized star's domain would
-give it 17 cells and compare two different things. Result: rho_c holds at
-0.99998 of its initial value at t = 0.0019 s and drifts 2% over 0.24 s.
-**Castro can hold an equilibrium at this resolution.** The magnetized star's
-excursion is therefore not the code's well-balancing.
-
-Resolution changes the magnetized star qualitatively, and the initial dip
-converges:
-
-| mesh | cells across | initial dip | afterwards |
+| mesh | cells across | magnetic force | died at |
 |---|---|---|---|
-| 64^3 | 41 | 0.75 | runaway, collapse to 9.6e9, abort at 1.74 t_A |
-| 96^3 | 61 | 0.83 | bounded oscillation, settles near 1.045 |
-| 128^3 | 82 | 0.91 | bounded oscillation, settles near 1.15 |
-| control, no field | 39 | 0.99998 | 0.98 |
+| 64^3 | 41 | 71% of correct | 2.18 s |
+| 96^3 (damped to 1.68 s) | 61 | 83% | 2.35 s |
+| 96^3 (undamped) | 61 | 83% | 2.50 s |
+| 128^3 (undamped) | 82 | 91% | 2.70 s |
 
-The collapse was an artefact of 64^3 and is gone by 96^3. The initial dip
-shrinks monotonically with resolution, consistent with numerical diffusion of
-the under-resolved central peak.
+**This is not the mesh.** The control decides it: a field-free star that IS an
+equilibrium, at the same relative resolution, ran to 3.0 s with rho_c bounded
+between 0.86 and 0.96 of its initial value. Castro holds an equilibrium for
+seconds on this mesh; the magnetized configuration is what does not.
 
-What is NOT yet settled: the magnetized star still swings by 15% or more at
-128^3, against 2% for the field-free control at comparable cell count. Until
-that excursion is understood, the m = 1 growth cannot be separated from it.
-The remaining suspect is the field itself: B_phi = K rho varpi is an
-equilibrium in the SCF's own (r, theta) discretisation at lmax = 16, and
-reproducing that balance on a Cartesian mesh leaves force errors that 128^3
-has not removed -- the amplitude retained is 95.6% there, so the local
-magnetic force is still 9% low.
+**Nor is it a mapping error.** Halving the initial force deficit twice bought
+0.32 s and then 0.20 s -- diminishing returns, consistent with survival time
+depending on the logarithm of the seed amplitude, which is what exponential
+growth from a seed does. A merely mis-mapped configuration would show survival
+growing without bound as the mapping improved. Extrapolating the increments
+gives a limit near 3 s, about 3.5 dynamical times.
+
+**Nor is it Tayler.** The m = 1 mode is non-radial and was never reached: the
+star dies radially first. Phase 1 was built to measure the twisted torus's
+susceptibility to Tayler and instead found something prior to it.
+
+Why this is physically unsurprising. Under homologous contraction at fixed
+mass and frozen flux, |W| goes as 1/R, E_mag goes as 1/R, and at Gamma = 4/3
+the internal energy goes as 1/R too. All three scale identically, so magnetic
+support buys mass capacity but no stability -- it cannot lift a marginal star
+off the knife edge. At rho_c = 1e9 the central Gamma is 1.343, within 0.7% of
+the marginal value, and these runs say the configuration falls off toward
+collapse.
+
+**What this means for the scenario.** A configuration that lasts a few
+dynamical times cannot sit still for the Myr-Gyr that magnetic braking needs.
+If this holds for the collaboration's phenomenological B(rho) models too --
+which have not been tested dynamically -- it constrains the scenario before
+any question about Tayler, braking timescales, or carbon ignition arises.
+
+**The useful follow-up is a bound, not a verdict.** 1.346 Msun (field-free)
+survives; 2.007 Msun does not. Models at 1.50, 1.70 and 1.85 Msun are exported
+and gated (`investigations/export_mass_scan.py`), to locate where the turnover
+is. 'Magnetically supported white dwarfs are dynamically unstable above
+M_crit' is something the collaboration can use; 'this one configuration
+failed' is not.
+
+**Limits of the claim.** Four runs at three resolutions is not a linear
+stability analysis, and the boundary the scan gives will be as coarse as its
+mass spacing. The control itself drops 14% before settling, so the mapping is
+not exact even with no field. What is established is that the collapse
+survives every check that would have made it an artefact.
 
 
 ### Phase 2 — the equilibrium family
