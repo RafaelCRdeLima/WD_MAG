@@ -324,11 +324,22 @@ sitting far inside the stellar surface -- which I described as 'the extended
 low-density envelope this configuration carries' rather than recognising it as
 extreme equatorial evacuation. The evidence was in a figure I made.
 
-This explains the mass-independence that the scan found and that nothing else
-accounted for. All four configurations share rho_c and the field law and
-differ only in K, so they share the spindle character and differ only in its
-degree. The death time ignored E_tor/|W| because the thing that collapses --
-the axial column -- is the same object in all of them.
+The spindle character varies strongly across the scan, so "they are the same
+object to different degrees" is not the explanation. Measured at r/R = 0.5 the
+axis-to-equator ratio runs 3.0, 8.0, 14.2, 23.4 for 1.50, 1.70, 1.85 and 2.01
+Msun -- a factor 7.7.
+
+The explanation the numbers do give is sharper. The AXIAL COLUMN is invariant:
+rho on the axis at r/R = 0.2 is 6.26, 6.33, 6.38, 6.35 x 1e8 across the four,
+a spread of 1.9%, and at r/R = 0.5 it is 9.13, 9.63, 9.98, 10.2 x 1e7, an 11%
+spread. What varies is the equator, by factors of 5.5 and 6.9 respectively.
+
+And the collapse happens at the centre, on the axis -- where B_phi = K rho
+varpi vanishes and the field does not reach. So the object that runs away is
+the same in all four configurations because the axial density profile is set
+by rho_c and is nearly untouched by the toroidal field. Vary E_tor/|W| by 2.8,
+vary the equatorial evacuation by 7, and the column that collapses does not
+move.
 
 It also changes what the collapses mean. They are not evidence that "a 2 Msun
 magnetically supported white dwarf is dynamically unstable". They are evidence
