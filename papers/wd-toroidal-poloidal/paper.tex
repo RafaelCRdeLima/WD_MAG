@@ -61,9 +61,11 @@
    {A $2\,M_\odot$ white dwarf with a strong toroidal field and an
     exterior dipole is constructible and certifiable, at the cost of a
     poloidal component carrying a tenth of a percent of the magnetic
-    energy. It is not shown to be stable: a field this toroidal is the
-    configuration most exposed to the Tayler instability, which an
-    axisymmetric calculation cannot test.}
+    energy. It does not survive dynamically: evolved in three-dimensional
+    magnetohydrodynamics it runs away in central density after about three
+    dynamical times, at a rate insensitive to resolution and to the field
+    strength, because the material that collapses is the axial column on
+    which the toroidal field vanishes.}
 
    \keywords{white dwarfs -- stars: magnetic field -- magnetohydrodynamics (MHD) -- methods: numerical}
 
@@ -254,6 +256,8 @@ $M$ ($M_\odot$)                                & 2.007 \\
 $R_{\mathrm{eq}}$ (km)                         & 5207 \\
 $R_{\mathrm{pol}}$ (km)                        & 5736 \\
 $R_{\mathrm{pol}}/R_{\mathrm{eq}}$             & 1.102 \\
+$\rho_{\mathrm{axis}}/\rho_{\mathrm{eq}}$ at $0.2\,R_{\mathrm{eq}}$ & 11.5 \\
+$\rho_{\mathrm{axis}}/\rho_{\mathrm{eq}}$ at $0.5\,R_{\mathrm{eq}}$ & 23.4 \\
 $K$                                            & $3.245\times10^{-3}$ \\
 $E_{\mathrm{tor}}/|W|$                         & 0.2026 \\
 $B_{\varphi,\max}$ (G)                         & $4.275\times10^{13}$ \\
@@ -278,6 +282,26 @@ well below the inverse-beta-decay threshold for $\mu_e = 2$
 ($1.94\times10^{10}$\,g\,cm$^{-3}$, Sect.~\ref{sec:eos}), so the
 configuration is a white dwarf in the sense the equation of state can
 still describe.
+
+The shape of the star is not what $R_{\mathrm{pol}}/R_{\mathrm{eq}}$
+suggests. That ratio is $1.10$ and describes only the surface where the
+enthalpy vanishes; the mass distribution is far more extreme. Measured at
+matched spherical radius, the density on the rotation axis exceeds the
+density at the equator by a factor $11.5$ at $0.2\,R_{\mathrm{eq}}$ and
+$23.4$ at $0.5\,R_{\mathrm{eq}}$. Along the equator the density falls by a
+factor $230$ from the centre to half a radius; along the axis it falls by
+$10$. The configuration is a dense axial column inside an evacuated
+equatorial region.
+
+That follows directly from the field law. The magnetic pressure of
+$B_\varphi = K\rho\varpi$ goes as $\rho^2\varpi^2$, so it is largest exactly
+where the density and the cylindrical radius are both large, and it drives
+matter out of the equatorial mid-region and onto the axis. The effect
+strengthens with $K$: across configurations of $1.50$, $1.70$, $1.85$ and
+$2.01\,M_\odot$ at this central density, the ratio at $0.5\,R_{\mathrm{eq}}$
+runs $3.0$, $8.0$, $14.2$ and $23.4$, while
+$R_{\mathrm{pol}}/R_{\mathrm{eq}}$ moves only from $1.037$ to $1.102$. The
+surface ratio is a poor proxy for the deformation and we quote both.
 
 The field is toroidal-dominated by a wide margin,
 $B_{\mathrm{t}}/B_{\mathrm{p}} = 884$ in energy and $26$ in amplitude.
@@ -489,16 +513,39 @@ Table~\ref{tab:config}.}
 \section{Limitations}
 \label{sec:limitations}
 
-\paragraph{No stability test.} This is a two-dimensional axisymmetric
-equilibrium, certified to satisfy hydrostatic and virial balance and
-nothing more. A field this strongly toroidal is precisely the
-configuration subject to the Tayler $m=1$ instability
-\citep{tayler1973,markey1973}, which is non-axisymmetric and therefore
-invisible to this formulation by construction. The poloidal component
-adopted here is far too weak to be the stabilizing agent that a mixed
-field is supposed to provide. Whether this configuration survives a
-non-axisymmetric perturbation is open, and answering it requires a
-three-dimensional magnetohydrodynamic evolution.
+\paragraph{The configuration does not survive dynamically.} The
+equilibrium above is certified to satisfy hydrostatic and virial balance and
+nothing more, and a three-dimensional magnetohydrodynamic evolution of it does
+not hold. Exported as a vector potential and evolved in \textsc{Castro}, it
+undergoes a large radial expansion, rebounds, and runs away in central density,
+reaching $10^{10}$\,g\,cm$^{-3}$ and terminating at $t \simeq 2.5$\,s, about
+three dynamical times.
+
+The collapse is not an artefact of the transfer, as far as we have been able to
+test. It is unchanged by resolution: at $64^3$, $96^3$ and $128^3$ the peak
+field is reconstructed to $84.5\%$, $91.4\%$ and $95.6\%$ of its correct value,
+taking the local magnetic force from $71\%$ to $91\%$, and the survival time
+moves only from $2.18$ to $2.70$\,s. Mass is conserved to $0.02\%$, the centre
+of mass does not drift, and the density maximum stays at the origin throughout.
+A field-free equilibrium mapped and evolved the same way is bounded, its
+central density oscillating between $0.86$ and $0.96$ of its initial value.
+
+It is also insensitive to the field strength, which is the informative part.
+Across $1.50$ to $2.01\,M_\odot$, spanning a factor $2.8$ in
+$E_{\mathrm{tor}}/|W|$ and a factor $7$ in the equatorial evacuation described
+in Sect.~\ref{sec:results}, the termination time moves by $12\%$. What is
+invariant across those configurations is the axial column: the density on the
+axis at $0.2\,R_{\mathrm{eq}}$ agrees to $1.9\%$ among them, because
+$B_\varphi = K\rho\varpi$ vanishes on the axis and the toroidal field does not
+reach the material that runs away.
+
+The instability is therefore radial and central, and the non-axisymmetric
+Tayler mode \citep{tayler1973,markey1973} -- which a field this toroidal is
+the classic candidate for, and which motivated the evolution in the first
+place -- is never reached. Whether some other field geometry supports
+$2\,M_\odot$ is not addressed by these runs; what they establish is that the
+self-consistent toroidal branch with $B_\varphi = K\rho\varpi$ at
+$E_{\mathrm{tor}}/|W| \sim 0.1$--$0.2$ does not.
 
 \paragraph{The poloidal component is not self-consistent.} It is solved
 on the converged toroidal density and imposed, for the reason given in
