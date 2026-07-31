@@ -98,6 +98,22 @@ def main():
           f"  ->  k0 = {k0_scenario:.4e} for {B_POLE_TARGET:.1e} G\n")
 
     cases = [("scenario", k0_scenario), ("balanced", K0_BALANCED)]
+
+    # The control: a FIELD-FREE star that is itself an equilibrium, at the
+    # same central density. Setting field_scale = 0 on the magnetized model
+    # is not a null test -- it removes the field from a star that needs it to
+    # exist, so of course that star moves. This one has no field and needs
+    # none, so any drift it shows is the code's, not the configuration's.
+    res_ff, r_ff, th_ff, _ = _solve_toroidal_certified(
+        rho_c=RHO_C, R_guess=r_guess(RHO_C), K_tor=0.0, m_tor_sc=M_TOR,
+        rotation=None, mu_e=MU_E, Nr_base=129, Ntheta=129, lmax=LMAX,
+        tol=1e-8, max_iter=200)
+    if res_ff is not None:
+        rho_ff, H_ff = res_ff["rho"], res_ff["H"]
+        M_ff = units.g_to_msun(scf_mod.total_mass(rho_ff, r_ff, th_ff))
+        Req_ff, Rpol_ff = diag.equatorial_polar_radii(H_ff, r_ff, th_ff)
+        print(f"[control] field-free equilibrium: M = {M_ff:.4f} Msun, "
+              f"R_eq = {Req_ff:.4e}, R_pol = {Rpol_ff:.4e} cm")
     # The meridional grid must cover the CORNERS of the Cartesian box, not
     # its faces: a point at (HALF, HALF, HALF) sits at radius sqrt(3)*HALF.
     # Sizing it to the face instead leaves A undefined in the corners, where
@@ -156,6 +172,20 @@ def main():
                           OUTDIR / f"phase1_{name}.txt", params, checks)
         print(f"   wrote models/{man['file']} "
               f"({man['n_varpi']}x{man['n_z']})\n")
+
+
+    vp_c = np.linspace(0.0, 1.02 * CORNER * HALF_CM, N_MER)
+    zz_c = np.linspace(-vp_c[-1], vp_c[-1], 2 * N_MER - 1)
+    rho_mc, = to_meridional(r_ff, th_ff, (rho_ff,), vp_c, zz_c)
+    zeros = np.zeros_like(rho_mc)
+    man = write_model(
+        vp_c, zz_c, rho_mc, zeros, zeros,
+        OUTDIR / "phase1_control.txt",
+        dict(rho_c=RHO_C, mu_e=MU_E, K_tor=0.0, k0=0.0, M_msun=M_ff,
+             R_eq_cm=Req_ff, R_pol_cm=Rpol_ff),
+        dict(note="field-free equilibrium control, A identically zero"))
+    print(f"   wrote models/{man['file']} "
+          f"({man['n_varpi']}x{man['n_z']})")
 
 
 if __name__ == "__main__":

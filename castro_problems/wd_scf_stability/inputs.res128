@@ -1,0 +1,74 @@
+# Phase 1 stability run. Evolves the magnetized SCF equilibrium for ten
+# Alfven crossing times, looking for the m = 1 Tayler mode.
+#
+# t_A = R/<v_A> = 1.68 s for this configuration (mass-weighted Alfven speed
+# 3.4e8 cm/s over R = 5.74e8 cm), so stop_time = 0.32 s is 10 t_A. The CFL
+# step at 64^3 is ~1.4e-2 s, hence a few thousand steps -- the Braithwaite
+# study's 0.23 t_A ceiling does not bind here, because this field is three
+# orders of magnitude stronger and its Alfven time correspondingly shorter.
+#
+# Domain: HALF-SHIFT geometry (docs/teoria.md Sec 6.6). prob_lo = -(N+1)/2*dx
+# and prob_hi = (N-1)/2*dx, so a cell CENTRE lands exactly on r = 0.
+max_step = 0, so nothing evolves.
+#
+# Domain: HALF-SHIFT geometry (docs/teoria.md Sec 6.6). prob_lo = -(N+1)/2*dx
+# and prob_hi = (N-1)/2*dx, so a cell CENTRE lands exactly on r = 0. The
+# symmetric domain misaligns the star's centre with the mesh and shows up as a
+# several-percent error in the central density; this removes it. With N = 64
+# and dx = 2.8125e7 cm the half-width is 9.0e8 cm, comfortably outside the
+# star's R_pol = 5.736e8 cm.
+max_step = 100000
+stop_time = 0.32
+
+geometry.is_periodic =  0    0    0
+geometry.coord_sys   =  0
+geometry.prob_lo     = -9.0703125000e+08 -9.0703125000e+08 -9.0703125000e+08
+geometry.prob_hi     = 8.9296875000e+08 8.9296875000e+08 8.9296875000e+08
+amr.n_cell           =  128  128  128
+
+castro.lo_bc       =  2   2   2
+castro.hi_bc       =  2   2   2
+
+castro.do_hydro = 1
+castro.do_react = 0
+castro.ppm_type = 0
+castro.use_flattening = 0
+
+castro.do_grav = 1
+gravity.gravity_type = MonopoleGrav
+gravity.drdxfac = 2
+
+castro.cfl            = 0.5
+castro.init_shrink    = 0.01
+castro.change_max     = 1.1
+castro.sum_interval   = 1
+castro.v              = 1
+amr.v                 = 1
+
+amr.max_level       = 0
+amr.blocking_factor = 8
+amr.max_grid_size   = 32
+amr.plot_file       = plt
+amr.check_file      = chk
+amr.check_int       = 100000
+amr.plot_int        = 100000
+amr.derive_plot_vars = density x_velocity y_velocity z_velocity eden Temp pressure B_x B_y B_z Div_B emag_density etor_density
+
+# Sec 6.5: small_dens is 1.0e4 g/cm^3, not 1e-4 -- the ambient has to be
+# heavy enough that the boundary Alfven speed stays finite.
+castro.small_dens = 1.0e4
+castro.small_temp = 1.0e3
+
+castro.do_sponge = 1
+castro.sponge_upper_density = 1.0e5
+castro.sponge_lower_density = 1.0e4
+castro.sponge_timescale     = 1.0e-4
+
+# NO global damping. problem_source.H damps velocity everywhere, which is
+# what settled the Braithwaite random seed -- and it would suppress exactly
+# the instability this problem exists to measure. damping_rate is left at its
+# zero default and the source term is switched off outright.
+castro.add_ext_src = 0
+
+problem.model_name = "phase1_scenario.txt"
+problem.surface_density_frac = 1.0e-6

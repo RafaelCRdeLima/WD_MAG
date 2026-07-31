@@ -7,7 +7,7 @@
   },
   "file": "phase1_scenario.txt",
   "format": "axisym-vector-potential-v1",
-  "git_commit": "4c15259",
+  "git_commit": "ff7d37a",
   "n_varpi": 385,
   "n_z": 769,
   "params": {

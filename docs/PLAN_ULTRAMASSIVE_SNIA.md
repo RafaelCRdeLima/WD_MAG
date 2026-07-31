@@ -340,11 +340,38 @@ Diagnosis, and what it is not:
 Next: 128^3 (82 cells across, 95.6% amplitude), or 64^3 with AMR refining
 the core.
 
-A note on the control that was run. Setting field_scale = 0 removes the
-field from a star that needs it to exist, so the result -- that it also
-moves -- was never a null test. The right control is a field-free star that
-IS an equilibrium, a 1.35 Msun configuration at the same central density,
-exported and run identically.
+**Resolution study and the proper control, both done.**
+
+The control was redone properly: a field-free star that IS an equilibrium at
+the same central density, in a domain scaled so it spans the same number of
+cells (39 against 41) -- running it in the magnetized star's domain would
+give it 17 cells and compare two different things. Result: rho_c holds at
+0.99998 of its initial value at t = 0.0019 s and drifts 2% over 0.24 s.
+**Castro can hold an equilibrium at this resolution.** The magnetized star's
+excursion is therefore not the code's well-balancing.
+
+Resolution changes the magnetized star qualitatively, and the initial dip
+converges:
+
+| mesh | cells across | initial dip | afterwards |
+|---|---|---|---|
+| 64^3 | 41 | 0.75 | runaway, collapse to 9.6e9, abort at 1.74 t_A |
+| 96^3 | 61 | 0.83 | bounded oscillation, settles near 1.045 |
+| 128^3 | 82 | 0.91 | bounded oscillation, settles near 1.15 |
+| control, no field | 39 | 0.99998 | 0.98 |
+
+The collapse was an artefact of 64^3 and is gone by 96^3. The initial dip
+shrinks monotonically with resolution, consistent with numerical diffusion of
+the under-resolved central peak.
+
+What is NOT yet settled: the magnetized star still swings by 15% or more at
+128^3, against 2% for the field-free control at comparable cell count. Until
+that excursion is understood, the m = 1 growth cannot be separated from it.
+The remaining suspect is the field itself: B_phi = K rho varpi is an
+equilibrium in the SCF's own (r, theta) discretisation at lmax = 16, and
+reproducing that balance on a Cartesian mesh leaves force errors that 128^3
+has not removed -- the amplitude retained is 95.6% there, so the local
+magnetic force is still 9% low.
 
 
 ### Phase 2 — the equilibrium family

@@ -1,0 +1,25 @@
+{
+  "checks": {
+    "note": "field-free equilibrium control, A identically zero"
+  },
+  "file": "phase1_control.txt",
+  "format": "axisym-vector-potential-v1",
+  "git_commit": "ff7d37a",
+  "n_varpi": 385,
+  "n_z": 769,
+  "params": {
+    "K_tor": 0.0,
+    "M_msun": 1.3463785171468987,
+    "R_eq_cm": 245627372.18701363,
+    "R_pol_cm": 245643032.74823794,
+    "k0": 0.0,
+    "mu_e": 2.0,
+    "rho_c": 1000000000.0
+  },
+  "units": "cgs: varpi,z in cm; density in g/cm^3; A_phi,A_z in G*cm",
+  "varpi_max_cm": 1590022634.4,
+  "z_range_cm": [
+    -1590022634.4,
+    1590022634.4
+  ]
+}
