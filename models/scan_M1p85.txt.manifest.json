@@ -1,0 +1,32 @@
+{
+  "checks": {
+    "amplitude_retained_64cubed": 0.8490531860784307,
+    "curl_err_poloidal": 1.0484450392766698e-15,
+    "curl_err_toroidal": 0.014193698591252368,
+    "relative_divB_64cubed": 1.868363883110205e-16
+  },
+  "file": "scan_M1p85.txt",
+  "format": "axisym-vector-potential-v1",
+  "git_commit": "5ce5737",
+  "n_varpi": 385,
+  "n_z": 769,
+  "params": {
+    "Bphi_max_G": 41168730864460.29,
+    "E_tor_over_Epol": 3612110.2770491107,
+    "E_tor_over_W": 0.17203221928877216,
+    "K_tor": 0.0028274231136832927,
+    "M_msun": 1.8516242184053633,
+    "R_eq_cm": 455920964.60653985,
+    "R_pol_cm": 495482555.9774101,
+    "k0": 1.4894141239815227e-15,
+    "m_tor": 1.0,
+    "mu_e": 2.0,
+    "rho_c": 1000000000.0
+  },
+  "units": "cgs: varpi,z in cm; density in g/cm^3; A_phi,A_z in G*cm",
+  "varpi_max_cm": 1590022634.4,
+  "z_range_cm": [
+    -1590022634.4,
+    1590022634.4
+  ]
+}
