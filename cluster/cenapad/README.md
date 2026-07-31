@@ -83,6 +83,23 @@ qstat -u $USER
 qsub ~/WD_MAG/cluster/cenapad/job_stability.pbs    # production, queue parexp
 ```
 
+## Watching a run without typing qstat repeatedly
+
+Three ways, roughly in order of usefulness:
+
+```bash
+bash ~/WD_MAG/cluster/cenapad/watch_job.sh    # state, steps, rho_c drift
+tail -f run_prod96.log                        # the raw output, live
+qsub -m abe -M you@example.com job_stability.pbs   # mail on begin/end/abort
+```
+
+The job redirects into `run_prod96.log` in the working directory precisely so
+it can be followed live. PBS only delivers its own `-o` file when the job
+ENDS, which makes a multi-hour run invisible until it is over.
+
+`-m abe` is set at submit time rather than in the script, so no address is
+committed to a public repository.
+
 ## The core patches are not optional
 
 `castro_core.patch` touches two files in Castro's own `Source/`:

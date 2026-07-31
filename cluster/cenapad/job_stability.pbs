@@ -34,6 +34,11 @@ NP="$(wc -l < "${PBS_NODEFILE:-/dev/null}" 2>/dev/null || true)"
 [ -n "$NP" ] && [ "$NP" -gt 0 ] 2>/dev/null || NP="${PBS_NP:-48}"
 echo "ranks: $NP  (PBS_NP='$PBS_NP', nodefile='${PBS_NODEFILE:-unset}')"
 
-mpirun -np "$NP" ./Castro3d.gnu.MPI.ex inputs.prod96
+# Write to a log in the working directory rather than relying on the PBS -o
+# file: PBS only delivers that when the job ENDS, so a run of hours is
+# invisible until it is over. This one can be followed with tail -f while it
+# runs. The -o file still catches anything printed outside this redirect.
+mpirun -np "$NP" ./Castro3d.gnu.MPI.ex inputs.prod96 > run_prod96.log 2>&1
+echo "log: $PBS_O_WORKDIR/run_prod96.log ($(grep -c '^STEP' run_prod96.log) steps)"
 
 echo "end:   $(date)"
