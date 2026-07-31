@@ -1,10 +1,10 @@
 #!/bin/bash
-#PBS -N wdscf96
+#PBS -N wdctl96
 #PBS -q parexp
 #PBS -l nodes=1:ppn=48
 #PBS -l walltime=23:00:00
-#PBS -o wdscf96.out
-#PBS -e wdscf96.err
+#PBS -o wdctl96.out
+#PBS -e wdctl96.err
 #
 # Phase 1 stability run, 96^3, relax-then-measure.
 #
@@ -38,10 +38,10 @@ echo "ranks: $NP  (PBS_NP='$PBS_NP', nodefile='${PBS_NODEFILE:-unset}')"
 # file: PBS only delivers that when the job ENDS, so a run of hours is
 # invisible until it is over. This one can be followed with tail -f while it
 # runs. The -o file still catches anything printed outside this redirect.
-mpirun -np "$NP" ./Castro3d.gnu.MPI.ex inputs.prod96 > run_prod96.log 2>&1
+mpirun -np "$NP" ./Castro3d.gnu.MPI.ex inputs.control96 > run_ctl96.log 2>&1
 RC=$?
-echo "log: $PBS_O_WORKDIR/run_prod96.log ($(grep -ac '^STEP' run_prod96.log) steps)"
-grep -a "amrex::Abort" run_prod96.log | head -1
+echo "log: $PBS_O_WORKDIR/run_ctl96.log ($(grep -ac '^STEP' run_ctl96.log) steps)"
+grep -a "amrex::Abort" run_ctl96.log | head -1
 echo "end:   $(date)"
 # Propagate mpirun's status. Without this the trailing echo becomes the
 # script's exit code and PBS mails Exit_status=0 for a run that aborted --

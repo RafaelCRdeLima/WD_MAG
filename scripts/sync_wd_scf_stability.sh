@@ -32,6 +32,7 @@ SOURCE_FILES=(
     inputs.evolve
     inputs.control_nofield
     inputs.prod96
+    inputs.control96
     mu2.net
     problem_initialize.H
     problem_initialize_state_data.H

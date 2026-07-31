@@ -1,0 +1,94 @@
+# Phase 1 CONTROL at production length: a field-free star that IS an
+# equilibrium, on the same mesh spacing, run for the same 14.3 s.
+#
+# The scenario run collapsed the instant damping switched off at t = 1.68 s:
+# rho_c went 1.0e9 -> 0.66e9 while damped, then 1.0e9, 1.5e9, 2.9e9, 9.2e9,
+# 4.0e10 and aborted on subcycle exhaustion at t = 2.35 s. That is a global
+# radial runaway, not the m = 1 Tayler mode Phase 1 was built to measure.
+#
+# This control decides whether Castro can hold ANY equilibrium on this mesh
+# for that long. The domain is scaled so this smaller star spans the same
+# number of cells; running it in the scenario's domain would give it a third
+# of the resolution and compare two different things.
+#
+# Phase 1 stability run. Evolves the magnetized SCF equilibrium for ten
+# Alfven crossing times, looking for the m = 1 Tayler mode.
+#
+# Total = 1.68 s of damped relaxation + 10 t_A of undamped
+# measurement = 14.3 s.
+#
+# t_A = R/<v_A> = 1.68 s for this configuration (mass-weighted Alfven speed
+# 3.4e8 cm/s over R = 5.74e8 cm), so stop_time = 14.3 s is 10 t_A. The CFL
+# step at 64^3 is ~1.4e-2 s, hence a few thousand steps -- the Braithwaite
+# study's 0.23 t_A ceiling does not bind here, because this field is three
+# orders of magnitude stronger and its Alfven time correspondingly shorter.
+#
+# Domain: HALF-SHIFT geometry (docs/teoria.md Sec 6.6). prob_lo = -(N+1)/2*dx
+# and prob_hi = (N-1)/2*dx, so a cell CENTRE lands exactly on r = 0.
+max_step = 0, so nothing evolves.
+#
+# Domain: HALF-SHIFT geometry (docs/teoria.md Sec 6.6). prob_lo = -(N+1)/2*dx
+# and prob_hi = (N-1)/2*dx, so a cell CENTRE lands exactly on r = 0. The
+# symmetric domain misaligns the star's centre with the mesh and shows up as a
+# several-percent error in the central density; this removes it. With N = 64
+# and dx = 2.8125e7 cm the half-width is 9.0e8 cm, comfortably outside the
+# star's R_pol = 5.736e8 cm.
+max_step = 20000
+stop_time = 14.3
+
+geometry.is_periodic =  0    0    0
+geometry.coord_sys   =  0
+geometry.prob_lo     = -4.0416666667e+08 -4.0416666667e+08 -4.0416666667e+08
+geometry.prob_hi     = 3.9583333333e+08 3.9583333333e+08 3.9583333333e+08
+amr.n_cell           =  96  96  96
+
+castro.lo_bc       =  2   2   2
+castro.hi_bc       =  2   2   2
+
+castro.do_hydro = 1
+castro.do_react = 0
+castro.ppm_type = 0
+castro.use_flattening = 0
+
+castro.do_grav = 1
+gravity.gravity_type = MonopoleGrav
+gravity.drdxfac = 2
+
+castro.cfl            = 0.5
+castro.init_shrink    = 0.01
+castro.change_max     = 1.1
+castro.sum_interval   = 1
+castro.v              = 1
+amr.v                 = 1
+
+amr.max_level       = 0
+amr.blocking_factor = 8
+amr.max_grid_size   = 16
+amr.plot_file       = plt
+amr.check_file      = chk
+amr.check_int       = 200
+amr.plot_int        = 20
+amr.derive_plot_vars = density x_velocity y_velocity z_velocity eden Temp pressure B_x B_y B_z Div_B emag_density etor_density
+
+# Sec 6.5: small_dens is 1.0e4 g/cm^3, not 1e-4 -- the ambient has to be
+# heavy enough that the boundary Alfven speed stays finite.
+castro.small_dens = 1.0e4
+castro.small_temp = 1.0e3
+
+castro.do_sponge = 1
+castro.sponge_upper_density = 1.0e5
+castro.sponge_lower_density = 1.0e4
+castro.sponge_timescale     = 1.0e-4
+
+# Relax, THEN measure. Damping runs for 2 t_dyn = 1.68 s to let the star
+# settle onto the mesh (the sampled field is 4-16% short in amplitude, so the
+# initial condition is genuinely out of balance), ramps off over the last
+# 0.5 t_dyn, and is then GONE. The measurement window is undamped -- damping
+# during it would suppress the instability being looked for.
+castro.add_ext_src = 1
+problem.damping_timescale_in_tdyn = 0.2
+problem.damping_end_time_in_tdyn = 2.0
+problem.damping_ramp_in_tdyn = 0.5
+
+problem.model_name = "phase1_control.txt"
+problem.surface_density_frac = 1.0e-6
