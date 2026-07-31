@@ -26,8 +26,14 @@ module load openmpi/5.0.8-gcc-15.2.0
 
 echo "host:  $(hostname)"
 echo "start: $(date)"
-echo "ranks: $PBS_NP"
+# PBS_NP came back empty on this system in the smoke test, so the literal
+# fallback was what ran. It matched ppn by luck. Count the nodefile instead,
+# which is what was actually allocated, and keep the fallback only as a last
+# resort.
+NP="$(wc -l < "${PBS_NODEFILE:-/dev/null}" 2>/dev/null || true)"
+[ -n "$NP" ] && [ "$NP" -gt 0 ] 2>/dev/null || NP="${PBS_NP:-48}"
+echo "ranks: $NP  (PBS_NP='$PBS_NP', nodefile='${PBS_NODEFILE:-unset}')"
 
-mpirun -np "${PBS_NP:-48}" ./Castro3d.gnu.MPI.ex inputs.prod96
+mpirun -np "$NP" ./Castro3d.gnu.MPI.ex inputs.prod96
 
 echo "end:   $(date)"

@@ -18,8 +18,10 @@ module load openmpi/5.0.8-gcc-15.2.0
 
 echo "host:  $(hostname)"
 echo "start: $(date)"
-echo "ranks: $PBS_NP"
+NP="$(wc -l < "${PBS_NODEFILE:-/dev/null}" 2>/dev/null || true)"
+[ -n "$NP" ] && [ "$NP" -gt 0 ] 2>/dev/null || NP="${PBS_NP:-4}"
+echo "ranks: $NP"
 
-mpirun -np "${PBS_NP:-4}" ./Castro3d.gnu.MPI.ex inputs.ic_check
+mpirun -np "$NP" ./Castro3d.gnu.MPI.ex inputs.ic_check
 
 echo "end:   $(date)"

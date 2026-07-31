@@ -69,7 +69,14 @@ void compute_background_star()
     amrex::Print() << "  [scf_model] M = " << mass / 1.98892e33
                    << " Msun, R_star = " << r_star
                    << " cm, t_dyn = " << problem::t_dyn_s << " s\n";
-    if (problem::damping_end_time_s > 0.0_rt) {
+    // problem_source.H only runs when castro.add_ext_src is set, so
+    // announcing a damping window without checking it prints a schedule that
+    // will never happen -- which the smoke test did, saying "damping until
+    // 4.2 s" on a run where damping was off.
+    int ext_src = 0;
+    { amrex::ParmParse pp("castro"); pp.query("add_ext_src", ext_src); }
+
+    if (ext_src != 0 && problem::damping_end_time_s > 0.0_rt) {
         amrex::Print() << "  [scf_model] damping until t = "
                        << problem::damping_end_time_s << " s ("
                        << problem::damping_end_time_in_tdyn << " t_dyn), "
@@ -77,6 +84,8 @@ void compute_background_star()
                        << " s; rate " << problem::damping_rate << " /s\n"
                        << "  [scf_model] MEASUREMENT WINDOW starts there and "
                        << "is undamped\n";
+    } else if (ext_src == 0) {
+        amrex::Print() << "  [scf_model] no damping (castro.add_ext_src = 0)\n";
     } else {
         amrex::Print() << "  [scf_model] no damping\n";
     }
