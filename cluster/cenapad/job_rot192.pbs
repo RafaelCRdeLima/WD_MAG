@@ -2,7 +2,7 @@
 #PBS -N wdrot192
 #PBS -q parexp
 #PBS -l nodes=4:ppn=48
-#PBS -l walltime=04:00:00
+#PBS -l walltime=02:00:00
 #PBS -o wdrot192.out
 #PBS -e wdrot192.err
 #
@@ -82,6 +82,32 @@ RC=$?
 echo "log: $PBS_O_WORKDIR/$RUNDIR/run_rot192.log ($(grep -ac '^STEP' run_rot192.log) steps)"
 grep -a "amrex::Abort" run_rot192.log | head -1
 echo "end:   $(date)"
+
+# Chain the next window automatically. Backfill windows have been short --
+# 4 h was refused with 17 nodes free -- so the run has to cross several of
+# them, and babysitting that by hand costs more than the run.
+#
+# Three guards, because a job that resubmits itself is a job that can run
+# away. It stops after CHAIN_MAX submissions; it stops unless this window
+# actually produced a NEW checkpoint, so a run that aborts immediately does
+# not respawn; and it stops once the log shows the target time reached.
+CHAIN_MAX=8
+N="$(cat ../chain_count 2>/dev/null || echo 0)"
+LAST_NOW="$(ls -d chk????? 2>/dev/null | sort | tail -1)"
+REACHED="$(grep -a '^STEP' run_rot192.log | tail -1 | sed 's/.*TIME = \([0-9.e+-]*\).*/\1/')"
+DONE="$(awk -v t="${REACHED:-0}" 'BEGIN{print (t+0 >= 11.9) ? 1 : 0}')"
+
+if [ "$N" -ge "$CHAIN_MAX" ]; then
+    echo "chain: stopping, $N submissions already"
+elif [ "$DONE" = "1" ]; then
+    echo "chain: stopping, reached t = $REACHED s"
+elif [ -z "$LAST_NOW" ] || [ "$LAST_NOW" = "$LAST" ]; then
+    echo "chain: stopping, this window produced no new checkpoint (was '$LAST', now '$LAST_NOW')"
+else
+    echo "$((N+1))" > ../chain_count
+    echo "chain: submission $((N+1)) of $CHAIN_MAX, continuing from $LAST_NOW (t = $REACHED s)"
+    cd "$PBS_O_WORKDIR" && qsub "$0"
+fi
 # Propagate mpirun's status: without this a trailing echo becomes the script's
 # exit code and PBS reports Exit_status=0 for a run that aborted.
 exit "$RC"
