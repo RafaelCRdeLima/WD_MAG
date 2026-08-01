@@ -44,12 +44,30 @@ castro.do_react = 0
 castro.ppm_type = 0
 castro.use_flattening = 0
 
-# MonopoleGrav was checked against PoissonGrav on the non-rotating star and
-# agreed. That check does NOT carry over: this star is oblate at 0.38, so the
-# monopole approximation is being asked to represent a genuinely aspherical
-# potential. Re-run the comparison before trusting any quantitative result.
+# PoissonGrav, not MonopoleGrav, and for this star that is not a refinement.
+#
+# The SCF builds the equilibrium by solving Poisson to l_max = 16. Castro's
+# MonopoleGrav keeps only l = 0. On the spherical star of the companion paper
+# the two agreed, and that agreement was recorded -- but this star has
+# R_pol/R_eq = 0.38, so its quadrupole is enormous and the two cannot agree.
+# The model then arrives balanced against one gravity and evolved under
+# another, and it rings.
+#
+# The evidence that this is what was happening: two runs with different
+# surface treatments traced almost identical density curves, oscillating
+# +-20% about 3.0e9 and always returning -- 2.933e9 at t = 0.19, 3.68e9 at
+# 1.18, 2.99e9 at 1.79, 3.18e9 at 2.09. Not a collapse and not an
+# instability, but a star pulsating at about 2-4 t_dyn because it was not in
+# equilibrium under the gravity actually applied to it. A surface moving that
+# hard is what pushed edge cells through the density floor, at the equator in
+# one run and off the pole in another.
+#
+# max_multipole_order sets only the boundary condition of the multigrid
+# solve, so 8 costs almost nothing and brings it far closer to the l_max = 16
+# the model was built with than the default monopole boundary would.
 castro.do_grav = 1
-gravity.gravity_type = MonopoleGrav
+gravity.gravity_type = PoissonGrav
+gravity.max_multipole_order = 8
 gravity.drdxfac = 2
 
 castro.cfl            = 0.5
