@@ -1,24 +1,31 @@
 #!/bin/bash
 #PBS -N wdrot192
-#PBS -q par128
-#PBS -l nodes=2:ppn=128
-#PBS -l walltime=48:00:00
+#PBS -q parexp
+#PBS -l nodes=4:ppn=48
+#PBS -l walltime=24:00:00
 #PBS -o wdrot192.out
 #PBS -e wdrot192.err
 #
 # 2 Msun rotating, toroidal-dominated white dwarf, 192^3, full MHD.
 #
-# Queue choice differs from job_stability.pbs, and deliberately. That run was
-# 96^3 and estimated at 1-2 h, so waiting behind a 91-deep par128 queue to get
-# more cores was a bad trade. This one is 192^3 -- eight times the cells --
-# and runs to 12 s of star time against that run's 14.3 s at a third of the
-# resolution, so the arithmetic reverses: the wait is worth the cores.
+# Queue: parexp, not par128, for the same reason job_stability.pbs gives.
+# Read off the scheduler on 2026-07-31, par128 had 100 jobs QUEUED against 36
+# running, while parexp had 2 queued against 6 running and allows up to 11
+# nodes (528 cores) at 24 h. Waiting days behind a 100-deep queue to get more
+# cores per node is a bad trade when parexp starts now.
 #
 # Scale: the 96^3 run took about 10 s/step on 8 laptop ranks. At 192^3 the
 # cell count is 8x and the CFL step is 3x smaller, so roughly 24x the work,
-# against 256 ranks here. Expect O(10 h). The walltime is set well above that
-# because an unstable field subcycles and can slow by up to 10x, and being
-# truncated at the interesting moment is the one outcome to avoid.
+# against 192 ranks here. Expect O(10 h), inside the 24 h ceiling -- but note
+# that ceiling is now a real constraint rather than slack: an unstable field
+# subcycles and can slow by up to 10x. Checkpoints every 500 steps exist so a
+# truncated run can be restarted rather than repeated.
+#
+# Decomposition: 192^3 with max_grid_size 32 is 6^3 = 216 boxes over 192
+# ranks, so some ranks carry two. 216 has no divisor that is also a multiple
+# of the 48-core node, so no rank count fits it cleanly; 192 with mild
+# imbalance beats dropping max_grid_size to 16, where perfect balance would
+# cost a 3.4x ghost-cell overhead against 1.95x at 32.
 #
 # Submit with the address on the command line rather than in the file -- this
 # repository is public:
@@ -33,7 +40,7 @@ echo "host:  $(hostname)"
 echo "start: $(date)"
 
 NP="$(wc -l < "${PBS_NODEFILE:-/dev/null}" 2>/dev/null || true)"
-[ -n "$NP" ] && [ "$NP" -gt 0 ] 2>/dev/null || NP="${PBS_NP:-256}"
+[ -n "$NP" ] && [ "$NP" -gt 0 ] 2>/dev/null || NP="${PBS_NP:-192}"
 echo "ranks: $NP  (PBS_NP='$PBS_NP', nodefile='${PBS_NODEFILE:-unset}')"
 
 # Per-run directory: three concurrent jobs once wrote chk00000 and plt00000
