@@ -61,6 +61,16 @@ echo "ranks: $NP  (PBS_NP='$PBS_NP', nodefile='${PBS_NODEFILE:-unset}')"
 RUNDIR="dir_rot192"
 mkdir -p "$RUNDIR"
 cd "$RUNDIR"
+
+# Refuse to start beside another instance. Two jobs did land in this
+# directory at once and the second restarted from the first's half-written
+# checkpoint.
+if [ -f RUNNING ] && kill -0 "$(cat RUNNING 2>/dev/null)" 2>/dev/null; then
+    echo "another instance is live in $RUNDIR (pid $(cat RUNNING)); refusing"
+    exit 1
+fi
+echo "$$" > RUNNING
+trap 'rm -f "$PBS_O_WORKDIR/$RUNDIR/RUNNING"' EXIT
 ln -sf ../Castro3d.gnu.MPI.ex .
 ln -sf ../rotating_mixed.txt .
 ln -sf ../inputs.rot192 .
@@ -94,6 +104,7 @@ echo "end:   $(date)"
 CHAIN_MAX=8
 N="$(cat ../chain_count 2>/dev/null || echo 0)"
 LAST_NOW="$(ls -d chk????? 2>/dev/null | sort | tail -1)"
+STEPS="$(grep -ac '^STEP' run_rot192.log 2>/dev/null || echo 0)"
 REACHED="$(grep -a '^STEP' run_rot192.log | tail -1 | sed 's/.*TIME = \([0-9.e+-]*\).*/\1/')"
 DONE="$(awk -v t="${REACHED:-0}" 'BEGIN{print (t+0 >= 11.9) ? 1 : 0}')"
 
@@ -101,6 +112,13 @@ if [ "$N" -ge "$CHAIN_MAX" ]; then
     echo "chain: stopping, $N submissions already"
 elif [ "$DONE" = "1" ]; then
     echo "chain: stopping, reached t = $REACHED s"
+elif [ "$STEPS" -lt 1 ]; then
+    # An abort during initialisation still leaves chk00000 behind, and the
+    # first version of this guard counted that as progress: the window took
+    # zero steps, resubmitted anyway, and the next job restarted from a
+    # checkpoint the first was still writing. That produced
+    # "State has NaNs in the density component" and wasted a test.
+    echo "chain: stopping, the window took no steps at all"
 elif [ -z "$LAST_NOW" ] || [ "$LAST_NOW" = "$LAST" ]; then
     echo "chain: stopping, this window produced no new checkpoint (was '$LAST', now '$LAST_NOW')"
 else
