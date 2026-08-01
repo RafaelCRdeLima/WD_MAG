@@ -37,15 +37,42 @@
     magnetic braking or an observer to act on.}
    % aims
    {We ask whether a self-consistent equilibrium can carry both at once,
-    and identify precisely which assumption blocks it.}
+    whether differential rotation then lifts it into the $1.8$--$2\,M_\odot$
+    range of interest for ultramassive white dwarfs, and, if not, which
+    assumption blocks it.}
    % methods
-   {TBD.}
+   {We build axisymmetric non-barotropic equilibria by integrating
+    $\mathrm{d}P = g\,\mathrm{d}u$ along equipotentials and recovering the
+    density from radial force balance, closing the system with a
+    zero-temperature degenerate gas of variable composition so that the
+    mean molecular weight per electron is diagnosed pointwise rather than
+    imposed. Differential rotation enters through a $j$-constant law. We
+    scan $908$ models and accept one only if it is simultaneously in
+    equilibrium to a virial error below $10^{-3}$, below the Landau field,
+    not shedding mass, of admissible composition on a mass-weighted
+    pointwise test, and Ledoux-stable above the solver's own measured
+    noise floor.}
    % results
-   {TBD -- so far, the barotropic ceiling has been measured in this code:
-    a self-consistent barotropic twisted torus on a $1.35\,M_\odot$ white
-    dwarf saturates at $E_{\mathrm{tor}}/E_{\mathrm{mag}} = 0.04$.}
+   {The barotropic twisted torus saturates in this code at
+    $E_{\mathrm{tor}}/E_{\mathrm{mag}} = 0.04$. Non-barotropy exceeds
+    that, but the composition stratification required is Ledoux-unstable
+    in all $126$ models where it is large enough to measure. Force balance,
+    not composition, caps the toroidal fraction near
+    $E_{\mathrm{tor}}/|W| \simeq 0.01$, so
+    $B_\varphi/|\mathbf{B}_{\mathrm{p}}| \lesssim 0.6$ in every
+    equilibrium, with or without rotation. Differential rotation reaches
+    $2.85\,M_\odot$ in genuine equilibrium, but mass and composition trade
+    monotonically and above $1.5\,M_\odot$ the solution demands
+    $\mu_e < 2$, which no cold composition supplies. Exactly one model of
+    $908$ passes every test: $1.278\,M_\odot$, no toroidal field, and
+    lighter than its own field-free background.}
    % conclusions
-   {TBD.}
+   {Supplying the missing pressure thermally would require
+    $4\times10^9$\,K at $1.4\,M_\odot$ and $2$--$5\times10^{10}$\,K at
+    $2\,M_\odot$, against a pycnonuclear carbon ignition already active at
+    these densities. An ultramassive white dwarf supported this way does
+    not wait: the conditions it needs are ones under which carbon has
+    already ignited.}
 
    \keywords{white dwarfs -- stars: magnetic field --
              magnetohydrodynamics (MHD) -- methods: numerical}
@@ -321,31 +348,445 @@ than assume.
 \section{The non-barotropic construction}
 \label{sec:nonbarotropic}
 
-TBD. The plan, stated so the next step is falsifiable:
+\subsection{Equilibrium without a barotrope}
 
-\begin{enumerate}
-\item Drop the requirement that $\rho^{-1}\mathbf{f}_L$ be a gradient,
-      keeping Eq.~(\ref{eq:beta}) and the confinement, which
-      Sect.~\ref{sec:forced} shows are not negotiable.
-\item Choose the poloidal source freely rather than as $\rho M'(u)$, and
-      solve for the pressure by integrating
-      $\nabla P = \mathbf{f}_L - \rho\nabla\Phi$ along the resulting
-      field, which is possible exactly when
-      $\nabla\times\mathbf{f}_L = \nabla\rho\times\nabla\Phi$.
-\item Measure the stratification this demands -- the spread of $P$ over
-      surfaces of constant $\rho$ -- and ask whether it is plausible for
-      a white dwarf, in magnitude and in convective stability. This is
-      the step where the method can fail honestly, and it is the one
-      worth doing first.
-\item Only then ask how high $E_{\mathrm{tor}}/E_{\mathrm{mag}}$ and
-      $E_{\mathrm{tor}}/|W|$ go.
-\end{enumerate}
+Dropping $\rho = \rho(P)$ removes the requirement that
+$\rho^{-1}\mathbf{f}_L$ be a gradient, but not the requirement that the
+Lorentz force be parallel to $\nabla u$, which follows from
+Eq.~(\ref{eq:decomposition}) alone. We may therefore write
+\begin{equation}
+\mathbf{f}_L = g\,\nabla u ,
+\qquad
+g = -\frac{\Delta^\ast u + \beta\beta'}{4\pi\varpi^2} ,
+\label{eq:fl}
+\end{equation}
+where $g$ is now a function of position and not of $u$ alone. The Euler
+equation becomes
+\begin{equation}
+\nabla P + \rho\nabla\Phi = g\,\nabla u .
+\label{eq:euler}
+\end{equation}
+Taking the component along a surface of constant $\Phi$ gives
+\begin{equation}
+\mathrm{d}P = g\,\mathrm{d}u
+\qquad\text{along equipotentials,}
+\label{eq:dPdu}
+\end{equation}
+which determines $P$ everywhere once it is fixed on one curve crossing
+every equipotential; we integrate outward along equipotentials from the
+polar axis, where we impose
+$P(\text{axis}) = \alpha\,P_{\mathrm{ff}}(\text{axis})$ with
+$P_{\mathrm{ff}}$ the pressure of the field-free star at the same central
+density. The dimensionless anchor $\alpha$ is a free parameter of the
+construction and, as Sect.~\ref{sec:results-rot} shows, it is the knob
+that controls the composition the solution demands. The radial component
+of Eq.~(\ref{eq:euler}) then returns the density,
+\begin{equation}
+\rho = \frac{g\,\partial_r u - \partial_r P}{\partial_r \Phi} ,
+\label{eq:rhoinv}
+\end{equation}
+and $\Phi$ is recovered from $\rho$ by solving Poisson's equation. The
+three steps are iterated to convergence.
+
+The logic is worth stating plainly, because it is what the rest of the
+paper tests. The poloidal source is now free: we may choose
+$\Delta^\ast u$ as we like, and the pressure adjusts. Nothing is
+determined by an equation of state, because no equation of state has been
+imposed. What the solution owes us instead is a demonstration that the
+$(P,\rho)$ pair it produces corresponds to matter that could exist.
+
+\subsection{The composition closure, and what it can and cannot absorb}
+\label{sec:closure}
+
+We close the system with a zero-temperature degenerate electron gas of
+variable composition. Then $P = A f(x)$ with $A$ independent of the mean
+molecular weight per electron, while $\rho = B(\mu_e)\,x^3$ with
+$B \propto \mu_e$. The relativity parameter $x$ is therefore fixed by
+$P$ alone, and
+\begin{equation}
+\mu_e \;\propto\; \frac{\rho}{x^3(P)} ,
+\label{eq:mue}
+\end{equation}
+so that $\mu_e$ is not an input but a diagnostic: it is read off
+pointwise as the mismatch between the density and the pressure the
+solution carries. Less pressure supporting a given density means a larger
+$\mu_e$, and more pressure means a smaller one.
+
+This is the precise sense in which non-barotropy is composition
+stratification here. Fixing $\mu_e$ at a single value everywhere would
+restore $P = P(\rho)$ and return us to Sect.~\ref{sec:ceiling}. The
+freedom that lets the construction exceed the barotropic ceiling is
+exactly the freedom in $\mu_e$, and the question the construction must
+answer is whether the $\mu_e$ field it asks for is one a white dwarf can
+supply.
+
+The two directions are not symmetric, and this asymmetry turns out to
+decide the result.
+\begin{itemize}
+\item $\mu_e > 2$ is ordinary. Neutron-rich species supply it:
+      $^{56}$Fe gives $2.154$, $^{22}$Ne gives $2.2$. A cold interior can
+      be built with them.
+\item $\mu_e < 2$ has no cold realisation at all. Every $\alpha$-chain
+      nucleus --- $^{4}$He, $^{12}$C, $^{16}$O, $^{20}$Ne, $^{24}$Mg ---
+      has $A/Z = 2$ exactly, and going below requires hydrogen, which is
+      not available in the interior of an ultramassive white dwarf.
+\end{itemize}
+A solution demanding $\mu_e < 2$ is therefore not asking for a
+composition. By Eq.~(\ref{eq:mue}) it is asking for more pressure than
+cold degenerate matter provides at that density, and the only physical
+source of that excess is finite temperature. We return to this in
+Sect.~\ref{sec:thermal}, where it becomes the decisive constraint.
+
+We accept $\mu_e \in [2.0, 2.15]$ as the strict window and report
+$[2.0, 2.2]$ separately, since $^{22}$Ne is a defensible contaminant of a
+C/O interior.
+
+\subsection{The toroidal component}
+\label{sec:toroidal}
+
+Equation~(\ref{eq:beta}) and the confinement to $u > u_s$ survive the
+loss of barotropy, as Sect.~\ref{sec:forced} established, so we keep the
+form of Eq.~(\ref{eq:betaform}) and normalise $\beta_0$ to a target
+$E_{\mathrm{tor}}/|W|$. Two details of the implementation are not
+cosmetic, and we record them because each one produced a converged but
+spurious answer before it was fixed.
+
+First, $u_s$ must be recomputed against the current star at every outer
+iteration, not held at the field-free background. Freezing it left the
+toroidal field confined to the region belonging to a $1.74\,M_\odot$
+configuration while the iteration converged on a $1.21\,M_\odot$ one, so
+part of the field lay outside the matter with nothing to confine it. The
+resulting virial error was $0.17$ and was stable from $32$ to $256$ outer
+iterations: converged, and converged on something that was not an
+equilibrium.
+
+Second, $\zeta = 2$ rather than $\zeta = 1$. At $\zeta = 1$ the
+derivative $\beta'$ jumps across the separatrix, which is a current
+sheet. Localising the residual of Eq.~(\ref{eq:euler}) showed it piled up
+in the equatorial plane at $0.4$--$0.6\,R_{\mathrm{eq}}$ --- on the
+separatrix --- and carried essentially the whole virial error; raising
+$\zeta$ to $2$, so that $\beta$ and $\beta'$ both vanish there, cut the
+error at $E_{\mathrm{tor}}/|W| = 0.10$ from $0.029$ to $0.010$. This is
+the same choice made by \citet{ciolfi2013} and \citet{lander2009}, and
+for the same reason.
+
+\subsection{Differential rotation}
+\label{sec:rotation}
+
+We add rotation on the $j$-constant law,
+\begin{equation}
+\Omega(\varpi) = \Omega_c\,\frac{A^2}{A^2 + \varpi^2} ,
+\qquad
+\Psi(\varpi) = -\frac{\Omega_c^2 A^2}{2}\,
+               \frac{\varpi^2}{A^2 + \varpi^2} ,
+\label{eq:rot}
+\end{equation}
+with $A$ quoted as a fraction of the background equatorial radius;
+$A \to \infty$ is uniform rotation. Because $\Omega$ depends on $\varpi$
+alone the centrifugal force is conservative, and the whole construction
+goes through with $\Phi$ replaced by $\Phi_{\mathrm{eff}} = \Phi + \Psi$
+in Eqs.~(\ref{eq:dPdu}) and (\ref{eq:rhoinv}). Gravity itself is still
+solved from $\rho$ alone. We normalise $\Omega_c$ to a target
+$T/|W|$, renormalising against the current $|W|$ at each iteration so
+that the quoted ratio is the one attained at the solution and not at the
+starting guess.
+
+%-------------------------------------------------------------------
+
+\section{Numerical method, and what the acceptance tests cost}
+\label{sec:method}
+
+The meridional grid is $129 \times 129$ in $(r,\theta)$ with Poisson and
+Grad--Shafranov solved to $l_{\max} = 16$, and $32$ outer iterations;
+doubling either the grid or the iteration count moves the reported
+virial errors by less than one part in $10^{2}$ of their own value.
+
+A configuration is accepted only if it passes, simultaneously:
+
+\begin{description}
+\item[Equilibrium.] The virial error
+      $\mathrm{VE} = |2T + W + 3\!\int\!P\,\mathrm{d}V +
+      E_{\mathrm{mag}}|/|W| < 10^{-3}$. This is not a formality. We
+      verified each term separately against its own identity ---
+      $\int \mathbf{x}\cdot\rho\nabla\Phi\,\mathrm{d}V = -W$ to
+      $1$ part in $10^4$,
+      $\int \mathbf{x}\cdot\nabla P\,\mathrm{d}V = -3\!\int\!P\,\mathrm{d}V$
+      to $7$ parts in $10^4$, and
+      $\int \mathbf{x}\cdot\mathbf{f}_L\,\mathrm{d}V = E_{\mathrm{mag}}$
+      to $1.3$ parts in $10^3$ --- and confirmed that VE equals the
+      integrated radial force imbalance. A configuration with
+      $\mathrm{VE} = 0.26$ has, in the worst $5\%$ of its volume, a
+      pointwise force residual of $0.35$ of the local gravity, against
+      $1.7\times10^{-4}$ for an accepted one.
+\item[Composition.] Mass-weighted percentiles $\mu_e^{(1)}$ and
+      $\mu_e^{(99)}$ inside the window, and at most $1\%$ of the mass
+      outside it. The gate must be pointwise. A shell-averaged version
+      reported $\mu_e \in [2.048, 2.630]$ for a configuration whose
+      pointwise maximum was $65.2$, and reported $[2.002, 2.122]$ ---
+      inside the strict window --- for one whose pointwise maximum was
+      $2.627$. Mass weighting is what handles the stellar surface, where
+      the inversion of Eq.~(\ref{eq:mue}) is ill-conditioned as
+      $P \to 0$: that shell holds almost no mass and cannot move a
+      mass-weighted percentile, so no \textit{ad hoc} radial cut is
+      needed.
+\item[Stratification.] The composition profile must be measurable above
+      the solver's own noise, and Ledoux-stable. We calibrate the noise
+      by running the construction at $k_0 = 0$, where the answer must be
+      homogeneous; the residual spread is $0.0203$, and we require a
+      profile at least $3\times$ that before computing a Ledoux
+      criterion at all. Profiles below that threshold are not declared
+      stable, they are declared unmeasured.
+\item[Landau.] $\max|\mathbf{B}| < B_c = 4.414\times10^{13}$\,G, applied
+      to the total field.
+\item[Core support.] The mass-weighted radial Lorentz force inside
+      $0.2\,R$, as a fraction of local gravity, must be positive.
+\item[Rotation.] No mass shedding, and the attained $T/|W|$ within $5\%$
+      of its target. The second test matters: the iteration runs away at
+      large $T/|W|$ with concentrated shear, and without a guard it
+      returned $M = 2\times10^{13}\,M_\odot$ with $\mathrm{VE} = 1705$ as
+      though it were a measurement. Of the $780$ rotating models
+      attempted, $334$ were rejected this way.
+\end{description}
+
+%-------------------------------------------------------------------
+
+\section{Results without rotation}
+\label{sec:results-mixed}
+
+We scanned $128$ non-rotating models over
+$\rho_c \in \{10^9, 3\times10^9\}$\,g\,cm$^{-3}$,
+$k_0 \in [1.0,2.5]\times10^{-12}$,
+$\alpha \in [0.70, 1.00]$ and
+$E_{\mathrm{tor}}/|W| \in \{0, 0.005, 0.01, 0.02\}$.
+
+\emph{Not one is admissible.} The individual pass rates are
+$104/128$ on equilibrium, $48/128$ on the Landau limit,
+$128/128$ on core support, and $2/128$ on composition; the intersection
+is empty.
+
+Three results are worth separating out.
+
+\paragraph{The toroidal field does not add mass here.} Along any family
+at fixed $(k_0,\alpha,\rho_c)$ the mass falls monotonically as the
+toroidal component is turned up: $1.407$, $1.386$, $1.366$ and
+$1.279\,M_\odot$ at $E_{\mathrm{tor}}/|W| = 0$, $0.005$, $0.01$ and
+$0.02$. What rises with it is $\mu_e$, and the rise is localised: the
+maximum of $\mu_e$ migrates from $0.98\,R$ --- a surface artefact of the
+ill-conditioned inversion --- to $0.49\,R$ in the equatorial plane, which
+is where $|B_\varphi|$ peaks, at $0.48\,R$. The toroidal field takes over
+part of the support locally, and Eq.~(\ref{eq:mue}) records that as a
+local demand for heavier composition.
+
+\paragraph{Equilibrium itself limits the toroidal fraction.} The virial
+error crosses $10^{-3}$ between $E_{\mathrm{tor}}/|W| = 0.01$ and
+$0.02$. In consequence $B_\varphi/|\mathbf{B}_{\mathrm{p}}|$ never
+exceeds about $0.6$ in any model that is in equilibrium. The
+toroidal-dominated interior is not reached.
+
+\paragraph{The stratification is Ledoux-unstable.} Of the $126$ models
+whose composition profile rises above the noise floor, \emph{every one}
+is Ledoux-unstable, $43$ of them maximally so. The two models that pass
+the Ledoux test do so only because their stratification falls below the
+threshold and is therefore unmeasured, and both of those fail
+composition. The two models with admissible composition are both purely
+poloidal, at $1.262$ and $1.336\,M_\odot$, and both are maximally
+Ledoux-unstable.
+
+This last point is the mechanism, and it is not a numerical accident.
+The extra support that non-barotropy buys is bought by a composition
+gradient, and the gradient it needs has the heavy material on the
+outside.
+
+%-------------------------------------------------------------------
+
+\section{Results with differential rotation}
+\label{sec:results-rot}
+
+We then scanned $780$ models adding
+$T/|W| \in \{0, 0.02, 0.04, 0.06, 0.08\}$ and
+$A/R_{\mathrm{eq}} \in \{0.5, 1.0, 2.0\}$, and extending the pressure
+anchor down to $\alpha = 0.40$; $334$ ran away and were rejected, leaving
+$446$.
+
+\paragraph{Mass stops being the difficulty.} Rotation delivers it. The
+heaviest model in genuine equilibrium reaches $2.851\,M_\odot$ at
+$T/|W| = 0.080$, with $\mathrm{VE} = 2.4\times10^{-4}$, $B < 0.56\,B_c$,
+no mass shedding, and its core held. This is a different situation from
+the barotropic toroidal branch, which reached $2\,M_\odot$ and then
+collapsed dynamically within a few dynamical times.
+
+\paragraph{Mass and composition trade against each other, monotonically.}
+Table~\ref{tab:trade} gives the median $\mu_e^{(1)}$ against mass over
+the models that are in equilibrium, below $B_c$, on their rotation
+target and not shedding. There is no elbow and no island: every increment
+of mass is paid for in $\mu_e$, and the payment runs the wrong way ---
+towards $\mu_e < 2$, the direction Sect.~\ref{sec:closure} showed has no
+cold realisation.
+
+\begin{table}
+\caption{Mass against the composition it demands, over the $213$
+         rotating models in equilibrium, below $B_c$, on their rotation
+         target and not shedding. $\mu_e^{(1)}$ is the mass-weighted
+         first percentile; the last column is the pressure excess over
+         cold $\mu_e = 2$ matter that the median value implies.}
+\label{tab:trade}
+\centering
+\begin{tabular}{lccc}
+\hline\hline
+$M$ ($M_\odot$) & $n$ & median $\mu_e^{(1)}$ & implied $\Delta P/P$ \\
+\hline
+$< 1.3$      & 40 & 2.045 & --- \\
+$1.3$--$1.5$ & 48 & 1.912 & $6\%$ \\
+$1.5$--$1.8$ & 61 & 1.780 & $16\%$ \\
+$1.8$--$2.2$ & 38 & 1.549 & $42\%$ \\
+$2.2$--$3.0$ & 26 & 1.363 & $62\%$ \\
+\hline
+\end{tabular}
+\end{table}
+
+\paragraph{Rotation does not lift the toroidal ceiling.} At
+$T/|W| = 0.04$ the virial error runs $1.2\times10^{-4}$, $3.2\times
+10^{-3}$, $1.7\times10^{-2}$ and $0.26$ at
+$E_{\mathrm{tor}}/|W| = 0.005$, $0.02$, $0.05$ and $0.10$. The gate is
+crossed in the same place as without rotation; the ceiling moves from
+about $0.01$ to about $0.015$, which is not a qualitative change. The
+$2.10\,M_\odot$ model that appears at $E_{\mathrm{tor}}/|W| = 0.10$ has
+$\mathrm{VE} = 0.26$ and is not an equilibrium.
+
+\paragraph{One model is admissible, and it is unremarkable.} Nothing
+passes every test with the strict window. Widening it to
+$\mu_e \le 2.2$, which $^{22}$Ne justifies, admits exactly one model out
+of $780$:
+\begin{quote}
+$M = 1.278\,M_\odot$, $\rho_c = 3\times10^9$\,g\,cm$^{-3}$,
+$\alpha = 0.55$, $T/|W| = 0.020$, $A = R_{\mathrm{eq}}$,
+$B_\varphi/|\mathbf{B}_{\mathrm{p}}| = 0$,
+$\mu_e \in [2.020, 2.196]$ with $0.5\%$ of the mass outside,
+Ledoux $0.259$, $E_{\mathrm{mag}}/|W| = 0.011$, $B = 0.81\,B_c$,
+$\mathrm{VE} = 5.3\times10^{-4}$.
+\end{quote}
+It is the first fully certified non-barotropic configuration we have
+obtained, and it carries no toroidal field, sits below the Chandrasekhar
+mass, and --- the point that should not be buried --- is \emph{lighter}
+than its own field-free background, $1.278$ against $1.387\,M_\odot$.
+The construction that was meant to add support subtracted $8\%$ of the
+mass. Since $\alpha < 1$ lowers the central pressure, this is
+self-consistent; but it means that not one admissible model in this
+paper is held up by its field.
+
+We note that the $1\%$ mass-fraction test was evaluated against the
+strict window even when the percentile window was widened, so it is
+stricter than the widened window and the count of one is a lower bound.
+
+%-------------------------------------------------------------------
+
+\section{What the composition demand means physically}
+\label{sec:thermal}
+
+Every high-mass model asks for $\mu_e$ well below $2$, and
+Sect.~\ref{sec:closure} showed that this is a request for pressure, not
+for composition. In the ultrarelativistic limit $P \propto
+\mu_e^{-4/3}$, so the excess required is
+$(2/\mu_e)^{4/3} - 1$. Supplying it as ideal ion thermal pressure of
+$^{12}$C, $P_{\mathrm{ion}} = \rho k T / (A m_u)$, fixes the temperature
+in Table~\ref{tab:temp}.
+
+\begin{table}
+\caption{Temperature that would have to supply the missing pressure, at
+         $\rho_c = 3\times10^9$\,g\,cm$^{-3}$ where
+         $P_{\mathrm{deg}} = 2.12\times10^{27}$\,erg\,cm$^{-3}$.}
+\label{tab:temp}
+\centering
+\begin{tabular}{lcc}
+\hline\hline
+$\mu_e$ demanded & $\Delta P / P$ & $T$ (K) \\
+\hline
+1.945 & $3.8\%$  & $3.9\times10^{9}$ \\
+1.90  & $7.1\%$  & $7.2\times10^{9}$ \\
+1.70  & $24\%$   & $2.5\times10^{10}$ \\
+1.50  & $47\%$   & $4.8\times10^{10}$ \\
+\hline
+\end{tabular}
+\end{table}
+
+At $\rho_c = 3\times10^9$\,g\,cm$^{-3}$ carbon is already in the
+pycnonuclear regime, where C+C proceeds without thermal assistance at
+all. Requiring in addition a temperature of several times $10^9$\,K puts
+the configuration an order of magnitude above any carbon ignition
+threshold, and the $1.8$--$2.2\,M_\odot$ band of Table~\ref{tab:trade}
+requires $2$--$5\times10^{10}$\,K, which is photodisintegration and NSE
+territory rather than white dwarf territory.
+
+The conclusion is not that the thermal route is unexplored but that it is
+self-defeating: a configuration in this mass range, supported this way,
+would have ignited before it could be assembled. We emphasise that this
+is an order-of-magnitude argument with an ideal ion gas and not a solved
+finite-temperature equation of state; radiation pressure is subdominant
+at these densities. The margin, however, is a factor of $5$ to $100$
+above ignition, so the conclusion does not rest on the approximation.
+
+It is worth adding that every realistic refinement of the equation of
+state moves in the same, unhelpful direction. Coulomb and lattice
+corrections lower the pressure by one to two percent here; general
+relativity lowers the maximum mass; Landau quantisation softens the
+equation of state. None of them supplies the $24\%$ that
+$1.8\,M_\odot$ needs. The Landau limit, incidentally, is not what
+closes the route: the certified model sits at $0.81\,B_c$, comfortably
+below.
 
 %-------------------------------------------------------------------
 
 \section{Conclusions}
+\label{sec:conclusions}
 
-TBD.
+We set out to determine whether abandoning barotropy allows a white dwarf
+to carry a strong mixed poloidal--toroidal field, and, with differential
+rotation added, to reach the $1.8$--$2\,M_\odot$ range of interest for
+ultramassive white dwarfs. It does not, and the obstruction is specific
+enough to be useful.
+
+\begin{enumerate}
+\item Measured in this code, the barotropic twisted torus saturates at
+      $E_{\mathrm{tor}}/E_{\mathrm{mag}} = 0.04$ and
+      $E_{\mathrm{pol}}/|W| = 0.018$ (Sect.~\ref{sec:ceiling}).
+\item The non-barotropic construction can exceed that, but the
+      composition stratification it requires to do so is Ledoux-unstable
+      in every model where the stratification is large enough to be
+      measured at all --- $126$ of $126$ (Sect.~\ref{sec:results-mixed}).
+\item Equilibrium, not composition, limits the toroidal fraction:
+      the virial error crosses $10^{-3}$ near
+      $E_{\mathrm{tor}}/|W| \simeq 0.01$, and
+      $B_\varphi/|\mathbf{B}_{\mathrm{p}}| \lesssim 0.6$ in every model
+      that is in equilibrium, with or without rotation. A
+      toroidal-dominated interior was not obtained.
+\item With differential rotation, mass ceases to be the difficulty ---
+      $2.85\,M_\odot$ in genuine equilibrium --- but mass and composition
+      trade monotonically, and above $1.5\,M_\odot$ the required $\mu_e$
+      falls below $2$, which no cold composition supplies
+      (Table~\ref{tab:trade}).
+\item Supplying that deficit thermally requires $4\times10^9$\,K at
+      $1.4\,M_\odot$ and $2$--$5\times10^{10}$\,K at $2\,M_\odot$,
+      against a pycnonuclear carbon ignition that is already active at
+      these densities (Sect.~\ref{sec:thermal}).
+\item Of $908$ models across both scans, exactly one satisfies every
+      test, at $1.278\,M_\odot$, with no toroidal field, and lighter than
+      its own field-free background.
+\end{enumerate}
+
+The astrophysical reading is that an ultramassive white dwarf held up in
+this way does not wait. The support it would need corresponds to
+conditions under which carbon has already ignited, which bears directly
+on the question of whether such objects end as thermonuclear supernovae
+or collapse, and answers it from the side of the equilibrium structure
+rather than from the evolution.
+
+What would change the answer is a genuinely self-consistent mixed
+Grad--Shafranov solve, in which $u$ responds to $\beta$ instead of being
+taken from a purely poloidal solution. We expect that to raise the
+toroidal ceiling of point~3, since that ceiling is a failure of force
+balance rather than of composition. We do not expect it to help with
+points~4 and~5, and it will probably make them worse, since the
+composition demand grows with field strength.
 
 \begin{acknowledgements}
 TBD.
