@@ -156,11 +156,29 @@ def main():
     A_phi, A_z = vector_potential(vp, u_m, bphi_m)
 
     # v_phi = Omega(varpi) varpi depends on varpi alone, so it is evaluated
-    # directly on the meridional grid rather than interpolated, and is cut
-    # off outside the star: the ambient floor must not be spun.
+    # directly on the meridional grid rather than interpolated.
+    #
+    # It is TAPERED to zero across the density transition, not cut at the
+    # stellar surface. Cutting it was the first version, and the first run
+    # died of it: a hard cut puts the full 7.5e8 cm/s into one cell beside a
+    # static ambient, and Castro aborted at t = 2.59 s with
+    # "Invalid density = 871 at index 75, 77, 84" -- a cell at
+    # (varpi/R_eq)^2 + (z/R_pol)^2 = 1.02, which is to say exactly on the
+    # stellar surface. Mass was conserved to 6e-5 and the central density was
+    # unchanged, so the star was healthy; what failed was the shear layer the
+    # export had manufactured.
+    #
+    # The taper is a smoothstep in log10(rho) between the sponge's own
+    # bracketing densities, so the rotation dies out over the same two
+    # decades the sponge acts on, and both the value and its first derivative
+    # vanish at each end.
+    RHO_SPIN_LO, RHO_SPIN_HI = 1.0e4, 1.0e6
+    t = np.clip((np.log10(np.maximum(rho_m, RHO_SPIN_LO))
+                 - np.log10(RHO_SPIN_LO))
+                / (np.log10(RHO_SPIN_HI) - np.log10(RHO_SPIN_LO)), 0.0, 1.0)
     v_phi = (np.atleast_1d(rot.Omega(vp))[:, None] * vp[:, None]
              * np.ones((1, len(zz))))
-    v_phi = np.where(rho_m > 0.0, v_phi, 0.0)
+    v_phi = v_phi * (t * t * (3.0 - 2.0 * t))
 
     err_pol, err_tor = verify_meridional_curl(vp, zz, A_phi, A_z, u_m, bphi_m)
     rel_div, b_max, dx = verify_curl_on_cartesian(

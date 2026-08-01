@@ -79,6 +79,16 @@ amr.derive_plot_vars = density x_velocity y_velocity z_velocity eden Temp pressu
 castro.small_dens = 1.0e4
 castro.small_temp = 1.0e3
 
+# Robustness at the stellar surface, added after the first run aborted there.
+# limit_fluxes_on_small_dens makes the hydro limit its own fluxes so a cell
+# cannot be drained below small_dens in the first place, which is the failure
+# that happened rather than a general instability -- mass was conserved to
+# 6e-5 and the central density was flat at the time. max_subcycles is raised
+# from its default of 10 to give the retry mechanism more room before it
+# gives up on a single bad cell.
+castro.limit_fluxes_on_small_dens = 1
+castro.max_subcycles = 32
+
 castro.do_sponge = 1
 castro.sponge_upper_density = 1.0e5
 castro.sponge_lower_density = 1.0e4
