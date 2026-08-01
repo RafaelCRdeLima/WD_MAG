@@ -67,7 +67,6 @@ castro.use_flattening = 0
 # the model was built with than the default monopole boundary would.
 castro.do_grav = 1
 gravity.gravity_type = PoissonGrav
-gravity.max_multipole_order = 8
 gravity.drdxfac = 2
 
 castro.cfl            = 0.5

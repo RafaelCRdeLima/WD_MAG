@@ -107,9 +107,11 @@ echo "end:   $(date)"
 # actually produced a NEW checkpoint, so a run that aborts immediately does
 # not respawn; and it stops once the log shows the target time reached.
 CHAIN_MAX=8
-N="$(cat ../chain_count 2>/dev/null || echo 0)"
+N="$(cat ../chain_count 2>/dev/null || true)"
+STEPS="${STEPS:-0}"
 LAST_NOW="$(ls -d chk????? 2>/dev/null | sort | tail -1)"
-STEPS="$(grep -ac '^STEP' run_rot192.log 2>/dev/null || echo 0)"
+STEPS="$(grep -ac '^STEP' run_rot192.log 2>/dev/null || true)"
+STEPS="${STEPS:-0}"
 REACHED="$(grep -a '^STEP' run_rot192.log | tail -1 | sed 's/.*TIME = \([0-9.e+-]*\).*/\1/')"
 DONE="$(awk -v t="${REACHED:-0}" 'BEGIN{print (t+0 >= 11.9) ? 1 : 0}')"
 

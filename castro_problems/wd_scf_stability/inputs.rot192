@@ -62,12 +62,15 @@ castro.use_flattening = 0
 # hard is what pushed edge cells through the density floor, at the equator in
 # one run and off the pole in another.
 #
-# max_multipole_order sets only the boundary condition of the multigrid
-# solve, so 8 costs almost nothing and brings it far closer to the l_max = 16
-# the model was built with than the default monopole boundary would.
+# max_multipole_order was set to 8 here and every run that carried it died
+# with "State has NaNs in the density component" before taking a single step,
+# including a field-free control with div B = 0 -- while every MonopoleGrav
+# run took hundreds of steps. The multipole boundary condition assumes the
+# mass is compactly supported well inside the domain, and this problem's
+# ambient of 2.0e4 g/cm^3 fills the box out to the boundary, so that
+# assumption fails. Left at the default until it is tested on its own.
 castro.do_grav = 1
 gravity.gravity_type = PoissonGrav
-gravity.max_multipole_order = 8
 gravity.drdxfac = 2
 
 castro.cfl            = 0.5
