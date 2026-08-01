@@ -62,7 +62,14 @@ amr.v                 = 1
 # single level: Castro's constrained-transport MHD does not do AMR
 amr.max_level       = 0
 amr.blocking_factor = 8
-amr.max_grid_size   = 32
+# 24, not 32, so the box count divides the rank count exactly. 192^3 at 24
+# gives 8^3 = 512 boxes, which over the 256 ranks of two 128-core paralela
+# nodes is exactly 2 each. At 32 it was 6^3 = 216 boxes over 192 ranks, so
+# 24 ranks carried two while 168 carried one and waited -- about 56% balance,
+# uncomfortably close to the 50% CPU efficiency below which CENAPAD may kill
+# a job. The cost is ghost-cell overhead rising from 1.95x to 2.37x, which
+# perfect balance more than repays.
+amr.max_grid_size   = 24
 amr.plot_file       = plt
 amr.check_file      = chk
 amr.check_int       = 500
