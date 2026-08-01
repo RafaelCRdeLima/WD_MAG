@@ -1,44 +1,33 @@
 #!/bin/bash
 #PBS -N wdrot192
-#PBS -q parexp
-#PBS -l nodes=4:ppn=48
-#PBS -l walltime=02:00:00
+#PBS -q paralela
+#PBS -l nodes=2:ppn=128
+#PBS -l walltime=03:00:00
 #PBS -o wdrot192.out
 #PBS -e wdrot192.err
 #
 # 2 Msun rotating, toroidal-dominated white dwarf, 192^3, full MHD.
 #
-# Queue: parexp, and the reason is availability, not doctrine. CENAPAD's
-# documentation does designate paralela as the multi-node MPI queue (2-8
-# nodes of 128 cores, up to 3 days), so a 2-node job was moved there -- and
-# it sat queued at 12 h and again at 4 h. The pbsnodes output had the answer
-# the whole time: every 128-core node (adano10-53) was job-exclusive, while
-# 16 of the 48-core parexp nodes (adano59-80) stood free. paralela is the
-# right queue by design and the wrong one by occupancy.
+# Queue: paralela, chosen on queue depth rather than on doctrine.
 #
-# Sizing, and what the failures taught. A 4-node/24 h parexp request sat
-# queued 9.5 h, and a 2-node/12 h resubmission was refused identically, both
-# with "Job would conflict with reservation or top job" while pbs_rstat showed
-# NO reservation and 16 parexp nodes standing free. With nodes going spare,
-# the thing that did not fit was the TIME: the scheduler holds free nodes for
-# a higher-priority job and backfills only work finishing before it starts.
-# Cut to 4 h and the job started within 20 seconds. CENAPAD's guide says the
-# same thing in its own words -- request the minimum walltime the application
-# needs rather than the queue maximum.
+# Read off the scheduler, the machine is full -- zero free nodes in every
+# queue -- so nothing starts anywhere immediately. What differs is how many
+# jobs are ahead when capacity frees:
 #
-# 4 h, after 12 h was tried here and sat queued exactly as predicted. Three
-# submissions now say the same thing: 24 h and 12 h wait, 4 h starts within
-# seconds. The estimate at 256 ranks is 1.5-4 h, so one window may well
-# finish it, and if it does not the restart below continues it. Getting the
-# run STARTED is worth more than finishing it in a single window -- a job
-# that waits produces nothing at all.
+#   paralela   5 queued,   7 running
+#   parexp    11 queued,   0 running   <- its nodes have been absorbed
+#   par16     79 queued,  34 running
+#   par128   102 queued,  32 running
 #
-# Decomposition: inputs.rot192 sets max_grid_size 24, giving 8^3 = 512 boxes.
-# Over the 192 ranks of four 48-core nodes that is 2 or 3 boxes each, so the
-# step is set by the 3-box ranks and efficiency is 512/(192*3) = 89%. Not the
-# exact division 256 ranks would give, but far above the 56% of the original
-# 216-boxes-over-192-ranks layout, and comfortably clear of the 50% CPU
-# efficiency below which the high-capacity queues may kill a job.
+# parexp is now the worst place to be: eleven jobs waiting and nothing at all
+# running, which is where two of ours had been sitting. paralela drains first.
+#
+# It also balances exactly. inputs.rot192 sets max_grid_size 24, so 192^3 is
+# 8^3 = 512 boxes, and two 128-core nodes give 256 ranks -- 2 boxes each.
+#
+# Walltime 3 h, following the day's lesson that long requests do not backfill:
+# 24 h waited 9.5 h, 12 h waited on two queues, 4 h started in seconds. The
+# run is 1.5-4 h at 256 ranks and the checkpoint restart covers a truncation.
 #
 # Submit with the address on the command line rather than in the file -- this
 # repository is public:
@@ -53,7 +42,7 @@ echo "host:  $(hostname)"
 echo "start: $(date)"
 
 NP="$(wc -l < "${PBS_NODEFILE:-/dev/null}" 2>/dev/null || true)"
-[ -n "$NP" ] && [ "$NP" -gt 0 ] 2>/dev/null || NP="${PBS_NP:-192}"
+[ -n "$NP" ] && [ "$NP" -gt 0 ] 2>/dev/null || NP="${PBS_NP:-256}"
 echo "ranks: $NP  (PBS_NP='$PBS_NP', nodefile='${PBS_NODEFILE:-unset}')"
 
 # Per-run directory: three concurrent jobs once wrote chk00000 and plt00000
