@@ -2,7 +2,7 @@
 #PBS -N wdrot192
 #PBS -q paralela
 #PBS -l nodes=2:ppn=128
-#PBS -l walltime=12:00:00
+#PBS -l walltime=04:00:00
 #PBS -o wdrot192.out
 #PBS -e wdrot192.err
 #
@@ -24,11 +24,12 @@
 # same thing in its own words -- request the minimum walltime the application
 # needs rather than the queue maximum.
 #
-# 12 h here is therefore a deliberate compromise, not an oversight: at 256
-# ranks the run is 1.5-4 h, so 12 h is generous margin against an unstable
-# field subcycling, but it is also long enough to be harder to backfill than
-# the 4 h that worked. If it sits queued, drop it to 6 h and let the restart
-# below carry the run across two windows.
+# 4 h, after 12 h was tried here and sat queued exactly as predicted. Three
+# submissions now say the same thing: 24 h and 12 h wait, 4 h starts within
+# seconds. The estimate at 256 ranks is 1.5-4 h, so one window may well
+# finish it, and if it does not the restart below continues it. Getting the
+# run STARTED is worth more than finishing it in a single window -- a job
+# that waits produces nothing at all.
 #
 # Decomposition: inputs.rot192 sets max_grid_size 24, giving 8^3 = 512 boxes,
 # exactly 2 per rank on 256 ranks. Perfect balance matters here beyond speed:
