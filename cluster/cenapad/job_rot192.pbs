@@ -1,8 +1,8 @@
 #!/bin/bash
 #PBS -N wdrot192
 #PBS -q parexp
-#PBS -l nodes=4:ppn=48
-#PBS -l walltime=24:00:00
+#PBS -l nodes=2:ppn=48
+#PBS -l walltime=12:00:00
 #PBS -o wdrot192.out
 #PBS -e wdrot192.err
 #
@@ -14,12 +14,17 @@
 # nodes (528 cores) at 24 h. Waiting days behind a 100-deep queue to get more
 # cores per node is a bad trade when parexp starts now.
 #
-# Scale: the 96^3 run took about 10 s/step on 8 laptop ranks. At 192^3 the
-# cell count is 8x and the CFL step is 3x smaller, so roughly 24x the work,
-# against 192 ranks here. Expect O(10 h), inside the 24 h ceiling -- but note
-# that ceiling is now a real constraint rather than slack: an unstable field
-# subcycles and can slow by up to 10x. Checkpoints every 500 steps exist so a
-# truncated run can be restarted rather than repeated.
+# Sizing, after a first attempt sat queued for 9.5 h. PBS gave the reason:
+# "Job would conflict with reservation or top job" -- the scheduler was
+# draining nodes for something with higher priority and a request for 4 nodes
+# held for 24 h fits into no backfill window. The 24 h was over-cautious
+# anyway: 192 ranks over 216 boxes puts the run at 2-5 h, and asking for four
+# times the time it needs only made it unschedulable.
+#
+# 2 nodes rather than 4 for the same reason. 96 ranks over 216 boxes is about
+# 2.25 boxes each, so expect 4-10 h -- slower, but a two-node window opens far
+# more often than a four-node one, and a job that runs slowly beats one that
+# does not run at all. The 12 h ceiling covers the estimate with margin.
 #
 # Decomposition: 192^3 with max_grid_size 32 is 6^3 = 216 boxes over 192
 # ranks, so some ranks carry two. 216 has no divisor that is also a multiple
@@ -40,7 +45,7 @@ echo "host:  $(hostname)"
 echo "start: $(date)"
 
 NP="$(wc -l < "${PBS_NODEFILE:-/dev/null}" 2>/dev/null || true)"
-[ -n "$NP" ] && [ "$NP" -gt 0 ] 2>/dev/null || NP="${PBS_NP:-192}"
+[ -n "$NP" ] && [ "$NP" -gt 0 ] 2>/dev/null || NP="${PBS_NP:-96}"
 echo "ranks: $NP  (PBS_NP='$PBS_NP', nodefile='${PBS_NODEFILE:-unset}')"
 
 # Per-run directory: three concurrent jobs once wrote chk00000 and plt00000
@@ -52,7 +57,19 @@ ln -sf ../Castro3d.gnu.MPI.ex .
 ln -sf ../rotating_mixed.txt .
 ln -sf ../inputs.rot192 .
 
-mpirun -np "$NP" ./Castro3d.gnu.MPI.ex inputs.rot192 > run_rot192.log 2>&1
+# Restart from the newest checkpoint if one is there, so a run truncated by
+# the walltime is continued by resubmitting rather than repeated from zero.
+RESTART=""
+LAST="$(ls -d chk????? 2>/dev/null | sort | tail -1)"
+if [ -n "$LAST" ] && [ -f "$LAST/Header" ]; then
+    RESTART="amr.restart=$LAST"
+    echo "restarting from $LAST"
+else
+    echo "starting from the initial model"
+fi
+
+mpirun -np "$NP" ./Castro3d.gnu.MPI.ex inputs.rot192 $RESTART \
+    >> run_rot192.log 2>&1
 RC=$?
 echo "log: $PBS_O_WORKDIR/$RUNDIR/run_rot192.log ($(grep -ac '^STEP' run_rot192.log) steps)"
 grep -a "amrex::Abort" run_rot192.log | head -1
