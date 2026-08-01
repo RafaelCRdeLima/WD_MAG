@@ -76,29 +76,31 @@ amr.check_int       = 500
 amr.plot_int        = 50
 amr.derive_plot_vars = density x_velocity y_velocity z_velocity eden Temp pressure B_x B_y B_z Div_B emag_density etor_density
 
-# The floor, and the ambient above it, are two decades lower than the values
-# this problem inherited, because those were sized for a different star.
+# The floor sits two decades below the ambient, and ONLY the floor was moved.
 #
-# Two runs died at t = 2.59 and 2.66 s on "Invalid density" at a surface
-# cell, and the second time the offending values were 9933, 9935 and 9972 --
-# less than 0.7% below a floor of 1.0e4. limit_fluxes_on_small_dens was
-# already holding the density right against the floor; the material simply
-# wants to be at about 9.9e3 there and the floor forbids it. With an ambient
-# of 2.0e4 sitting only 2x above the floor, the surface had nowhere to
-# rarefy into.
+# Two runs died at t = 2.59 and 2.66 s on "Invalid density" at a surface cell,
+# the second time at 9933 against a floor of 1.0e4 -- 0.7% below it. With
+# limit_fluxes_on_small_dens already pinning the density to the floor, the
+# material simply wants to be at about 9.9e3 there and an ambient of 2.0e4
+# left it only a factor of 2 to work in. Dropping the floor to 1.0e2 gives it
+# 200x.
 #
-# The note that set 1.0e4 reasoned that the ambient must stay heavy enough to
-# keep the boundary Alfven speed finite -- true, but written for a model with
-# a 2.45e12 G surface field. This star's dipole is 1.0e9 G, three orders
-# weaker, so at rho = 1e2 the ambient Alfven speed is about 2.8e7 cm/s
-# against an interior sound speed near 1e9, and constrains nothing.
+# The ambient stays at its default 2.0e4, and that is the correction to an
+# attempt that lowered it to 1.0e2 alongside the floor. The model cuts the
+# star at surface_density_frac = 1e-6 of rho_c, which is 3.0e3, so an ambient
+# ABOVE that value means max(rho_model, ambient) ends the star on a plateau
+# with nothing discontinuous about it. An ambient BELOW it manufactures a
+# factor-30 cliff at the surface instead, and that run died at t = 0.0686 s
+# -- forty times sooner -- with NEGATIVE densities of -172 and -1623 at
+# (varpi, z) = (5.1e7, -1.6e8), which is |z|/R_pol = 1.06, just off the pole.
+# A rarefaction crossing zero, not a floor problem.
 #
-# The old ambient also carried 0.059 Msun of spurious mass over the box,
-# which is why Castro reported 2.064 Msun for a 2.005 Msun star. At 1.0e2
-# that falls to 3e-4 Msun.
-castro.small_dens = 1.0e0
+# The cost of keeping the ambient here is 0.059 Msun of spurious mass over
+# the box, which is the gap between the 2.064 Msun Castro reports and the
+# 2.005 Msun model. That is bookkeeping and can be subtracted; a density
+# cliff cannot be subtracted.
+castro.small_dens = 1.0e2
 castro.small_temp = 1.0e3
-problem.ambient_density = 1.0e2
 
 # Robustness at the stellar surface, added after the first run aborted there.
 # limit_fluxes_on_small_dens makes the hydro limit its own fluxes so a cell
@@ -110,15 +112,15 @@ problem.ambient_density = 1.0e2
 castro.limit_fluxes_on_small_dens = 1
 castro.max_subcycles = 32
 
-# The sponge window moves down with the ambient, and this is not merely for
-# consistency. At an upper density of 1.0e5 the sponge was damping the star's
-# whole outer envelope, not just the ambient, and the angular momentum shows
-# it: L_z fell 4.2% in 2.6 s. For a star held up BY its rotation, a sponge
-# quietly eating its angular momentum is a systematic that would eventually
-# produce a collapse having nothing to do with physics.
+# The sponge window stays where it was, for now. It is worth flagging that at
+# an upper density of 1.0e5 it damps the star's outer envelope and not only
+# the ambient, and L_z fell 4.2% in 2.6 s -- for a star held up BY rotation
+# that is a systematic worth chasing. But it is chased on its own, after the
+# surface is stable: three parameters were changed at once here and the run
+# got worse, which is how the density cliff went unnoticed for a submission.
 castro.do_sponge = 1
-castro.sponge_upper_density = 1.0e3
-castro.sponge_lower_density = 1.0e2
+castro.sponge_upper_density = 1.0e5
+castro.sponge_lower_density = 1.0e4
 castro.sponge_timescale     = 1.0e-4
 
 # Accommodation phase. The damping now targets the MODEL's velocity field
