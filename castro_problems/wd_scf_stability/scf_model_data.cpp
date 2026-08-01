@@ -12,6 +12,7 @@
 namespace scf_model
 {
     AMREX_GPU_MANAGED int n_varpi = 0;
+    AMREX_GPU_MANAGED int has_velocity = 0;
     AMREX_GPU_MANAGED int n_z = 0;
 
     AMREX_GPU_MANAGED amrex::Real varpi_lo = 0.0;
@@ -24,6 +25,7 @@ namespace scf_model
     AMREX_GPU_MANAGED amrex::Real* dens = nullptr;
     AMREX_GPU_MANAGED amrex::Real* a_phi = nullptr;
     AMREX_GPU_MANAGED amrex::Real* a_z = nullptr;
+    AMREX_GPU_MANAGED amrex::Real* v_phi = nullptr;
 
     AMREX_GPU_MANAGED amrex::Real dens_max = 0.0;
 
@@ -73,6 +75,13 @@ namespace scf_model
         while (std::getline(f, line)) {
             if (line.empty()) { last = f.tellg(); continue; }
             if (line[0] != '#') { break; }
+            // The columns comment is the one header line that is parsed
+            // rather than echoed: it is how a v2 model (with velocity)
+            // announces itself, so a v1 model still loads unchanged.
+            if (line.find("columns:") != std::string::npos &&
+                line.find("v_phi") != std::string::npos) {
+                has_velocity = 1;
+            }
             amrex::Print() << "  [scf_model] " << line << "\n";
             last = f.tellg();
         }
@@ -98,11 +107,19 @@ namespace scf_model
         dens = static_cast<amrex::Real*>(arena->alloc(n * sizeof(amrex::Real)));
         a_phi = static_cast<amrex::Real*>(arena->alloc(n * sizeof(amrex::Real)));
         a_z = static_cast<amrex::Real*>(arena->alloc(n * sizeof(amrex::Real)));
+        if (has_velocity) {
+            v_phi = static_cast<amrex::Real*>(
+                arena->alloc(n * sizeof(amrex::Real)));
+        }
 
         dens_max = 0.0;
         for (std::size_t idx = 0; idx < n; ++idx) {
             if (!(f >> dens[idx] >> a_phi[idx] >> a_z[idx])) {
                 amrex::Abort("scf_model: truncated data block in " + filename);
+            }
+            if (has_velocity && !(f >> v_phi[idx])) {
+                amrex::Abort("scf_model: truncated velocity column in "
+                             + filename);
             }
             dens_max = std::max(dens_max, dens[idx]);
         }
@@ -111,13 +128,16 @@ namespace scf_model
                        << " grid, varpi to " << varpi_hi << " cm, z in ["
                        << z_lo << ", " << z_hi << "] cm\n"
                        << "  [scf_model] max density " << dens_max
-                       << " g/cm^3\n";
+                       << " g/cm^3\n"
+                       << "  [scf_model] velocity column: "
+                       << (has_velocity ? "present" : "absent") << "\n";
     }
 
     void deallocate()
     {
         auto* arena = amrex::The_Managed_Arena();
         if (dens != nullptr) { arena->free(dens); dens = nullptr; }
+        if (v_phi != nullptr) { arena->free(v_phi); v_phi = nullptr; }
         if (a_phi != nullptr) { arena->free(a_phi); a_phi = nullptr; }
         if (a_z != nullptr) { arena->free(a_z); a_z = nullptr; }
     }

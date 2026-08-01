@@ -151,7 +151,7 @@ def _git_hash(path):
 
 
 def write_model(vp, zz, rho_m, A_phi, A_z, out_path, params,
-                diagnostics=None, density_floor=0.0):
+                diagnostics=None, density_floor=0.0, v_phi=None):
     """Write the model file and a <path>.manifest.json sidecar.
 
     Returns the manifest dict. Nothing is validated here -- call the verify_*
@@ -164,7 +164,15 @@ def write_model(vp, zz, rho_m, A_phi, A_z, out_path, params,
     with out_path.open("w") as f:
         f.write("# magnetized axisymmetric white dwarf model\n")
         f.write(f"# {CGS_NOTE}\n")
-        f.write("# columns: density A_phi A_z, z index fastest\n")
+        if v_phi is None:
+            f.write("# columns: density A_phi A_z, z index fastest\n")
+        else:
+            # v2 adds the azimuthal velocity. Rotation cannot be carried by
+            # the vector potential, and Castro's rotation support is a
+            # rotating frame at constant Omega, which a j-constant law is
+            # not -- so differential rotation has to arrive as an initial
+            # velocity field and be allowed to evolve.
+            f.write("# columns: density A_phi A_z v_phi, z index fastest\n")
         for k, v in sorted(params.items()):
             f.write(f"# param {k} = {v}\n")
         if diagnostics:
@@ -177,12 +185,17 @@ def write_model(vp, zz, rho_m, A_phi, A_z, out_path, params,
             f.write(f"{x:.10e}\n")
         for i in range(len(vp)):
             for j in range(len(zz)):
-                f.write(f"{rho_out[i, j]:.10e} {A_phi[i, j]:.10e} "
-                        f"{A_z[i, j]:.10e}\n")
+                row = (f"{rho_out[i, j]:.10e} {A_phi[i, j]:.10e} "
+                       f"{A_z[i, j]:.10e}")
+                if v_phi is not None:
+                    row += f" {v_phi[i, j]:.10e}"
+                f.write(row + "\n")
 
     manifest = {
         "file": out_path.name,
-        "format": "axisym-vector-potential-v1",
+        "format": ("axisym-vector-potential-v1" if v_phi is None
+                   else "axisym-vector-potential-v2"),
+        "has_velocity": v_phi is not None,
         "units": CGS_NOTE,
         "n_varpi": int(len(vp)),
         "n_z": int(len(zz)),

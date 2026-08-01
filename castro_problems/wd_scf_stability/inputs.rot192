@@ -1,0 +1,93 @@
+# 2 Msun ROTATING, toroidal-dominated white dwarf -- full MHD evolution.
+#
+# The configuration (models/rotating_mixed.txt, format v2):
+#   M = 2.0052 Msun, R_eq = 3.917e8 cm, R_pol = 1.501e8 cm (oblate, 0.38)
+#   differential rotation, j-constant, Omega_c = 8.193 rad/s, A = R_eq
+#   T/|W| = 0.0993, mass shedding parameter 0.469
+#   max|B_phi| = 3.23e13 G, surface dipole 1.0e9 G, B_t/B_p = 4234
+#   max|B| = 0.732 B_c, so the unquantised EOS is still inside its range
+#
+# This is the collaboration's specification: ultramassive, toroidal-dominated
+# interior, weak exterior dipole. Note what that combination implies -- a
+# 1e9 G dipole beside a 3e13 G toroidal field is a field that is toroidal to
+# within a part in a thousand, and a purely toroidal field is Tayler-unstable.
+# It is very nearly the configuration that collapsed in about 3.5 dynamical
+# times in the companion paper. The difference, and the whole question this
+# run asks, is that this star rotates and that one did not: rotation can
+# stabilise Tayler modes, and it can also destroy itself through the MRI.
+#
+# Timescales for this star:
+#   t_dyn  = 0.4752 s
+#   t_A    = 2.3829 s   (mass-weighted v_A = 1.644e8 cm/s over R_eq)
+#   P_rot  = 0.7669 s   (on the axis; the envelope is slower)
+# stop_time = 12 s is 5 t_A, 15.6 rotations and 25 t_dyn, and comfortably
+# past the 2.7 s at which the non-rotating configuration died. The MRI grows
+# on ~1/Omega = 0.12 s, so it has about a hundred e-folding times available:
+# if it is going to appear, it will.
+max_step  = 200000
+stop_time = 12.0
+
+# HALF-SHIFT geometry (docs/teoria.md Sec 6.6): prob_lo = -(N+1)/2*dx and
+# prob_hi = (N-1)/2*dx puts a cell CENTRE exactly on r = 0. With N = 192 and
+# dx = 9.375e6 cm the half-width is 9.0e8 cm, well outside R_eq = 3.917e8.
+geometry.is_periodic =  0    0    0
+geometry.coord_sys   =  0
+geometry.prob_lo     = -9.0468750000e+08 -9.0468750000e+08 -9.0468750000e+08
+geometry.prob_hi     = 8.9531250000e+08 8.9531250000e+08 8.9531250000e+08
+amr.n_cell           =  192  192  192
+
+castro.lo_bc       =  2   2   2
+castro.hi_bc       =  2   2   2
+
+castro.do_hydro = 1
+castro.do_react = 0
+castro.ppm_type = 0
+castro.use_flattening = 0
+
+# MonopoleGrav was checked against PoissonGrav on the non-rotating star and
+# agreed. That check does NOT carry over: this star is oblate at 0.38, so the
+# monopole approximation is being asked to represent a genuinely aspherical
+# potential. Re-run the comparison before trusting any quantitative result.
+castro.do_grav = 1
+gravity.gravity_type = MonopoleGrav
+gravity.drdxfac = 2
+
+castro.cfl            = 0.5
+castro.init_shrink    = 0.01
+castro.change_max     = 1.1
+castro.sum_interval   = 1
+castro.v              = 1
+amr.v                 = 1
+
+# single level: Castro's constrained-transport MHD does not do AMR
+amr.max_level       = 0
+amr.blocking_factor = 8
+amr.max_grid_size   = 32
+amr.plot_file       = plt
+amr.check_file      = chk
+amr.check_int       = 500
+amr.plot_int        = 50
+amr.derive_plot_vars = density x_velocity y_velocity z_velocity eden Temp pressure B_x B_y B_z Div_B emag_density etor_density
+
+castro.small_dens = 1.0e4
+castro.small_temp = 1.0e3
+
+castro.do_sponge = 1
+castro.sponge_upper_density = 1.0e5
+castro.sponge_lower_density = 1.0e4
+castro.sponge_timescale     = 1.0e-4
+
+# Accommodation phase. The damping now targets the MODEL's velocity field
+# rather than zero (see problem_source.H): damping to zero would spin this
+# star down and it would collapse for want of the rotational support that
+# holds it up, which would be a numerical artefact indistinguishable from the
+# physical result being looked for. What gets absorbed is the sampling
+# transient, which at 192^3 is small -- the reconstructed field retains 98.6%
+# of max|B_phi|, against 82% at 64^3.
+castro.add_ext_src = 1
+problem.damping_timescale_in_tdyn = 0.2
+problem.damping_end_time_in_tdyn = 2.0
+problem.damping_ramp_in_tdyn = 0.5
+
+problem.model_name = "rotating_mixed.txt"
+problem.surface_density_frac = 1.0e-6

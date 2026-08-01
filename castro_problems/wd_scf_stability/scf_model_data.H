@@ -42,6 +42,10 @@ namespace scf_model
     extern AMREX_GPU_MANAGED amrex::Real* dens;
     extern AMREX_GPU_MANAGED amrex::Real* a_phi;
     extern AMREX_GPU_MANAGED amrex::Real* a_z;
+    // v2 models only; a null pointer means the model is v1 and
+    // the star is not rotating.
+    extern AMREX_GPU_MANAGED amrex::Real* v_phi;
+    extern AMREX_GPU_MANAGED int has_velocity;
 
     // Peak values, filled by read(). Reported at initialisation so a run
     // whose model file is not the one intended is caught in the log rather

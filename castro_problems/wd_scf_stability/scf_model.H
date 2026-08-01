@@ -51,6 +51,26 @@ amrex::Real density_at(amrex::Real x, amrex::Real y, amrex::Real z)
     return table_at(dens, std::sqrt(x * x + y * y), z);
 }
 
+// Azimuthal velocity of a v2 (rotating) model, as Cartesian components.
+// v = v_phi e_phi with e_phi = (-y, x, 0)/varpi, so v_x = -v_phi y/varpi
+// and v_y = +v_phi x/varpi. A v1 model has no velocity table and returns
+// zero, which is the non-rotating case and not a fallback.
+AMREX_GPU_HOST_DEVICE AMREX_INLINE
+amrex::Real velocity_at(int comp, amrex::Real x, amrex::Real y, amrex::Real z)
+{
+    if (has_velocity == 0 || comp == 2) {
+        return 0.0_rt;
+    }
+    amrex::Real varpi = std::sqrt(x * x + y * y);
+    // v_phi vanishes on the axis as varpi (Omega finite), so the Cartesian
+    // components go to zero there; this is the limit, not a guard.
+    if (varpi <= 0.0_rt) {
+        return 0.0_rt;
+    }
+    amrex::Real vphi = table_at(v_phi, varpi, z);
+    return (comp == 0) ? -vphi * y / varpi : vphi * x / varpi;
+}
+
 // Cartesian components of A from the axisymmetric pair (A_phi, A_z):
 //   A = A_phi e_phi + A_z e_z,   e_phi = (-y, x, 0)/varpi
 // A_varpi is zero by construction of the potential (see the writer).

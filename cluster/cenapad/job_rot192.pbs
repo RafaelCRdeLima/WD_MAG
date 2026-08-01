@@ -1,0 +1,55 @@
+#!/bin/bash
+#PBS -N wdrot192
+#PBS -q par128
+#PBS -l nodes=2:ppn=128
+#PBS -l walltime=48:00:00
+#PBS -o wdrot192.out
+#PBS -e wdrot192.err
+#
+# 2 Msun rotating, toroidal-dominated white dwarf, 192^3, full MHD.
+#
+# Queue choice differs from job_stability.pbs, and deliberately. That run was
+# 96^3 and estimated at 1-2 h, so waiting behind a 91-deep par128 queue to get
+# more cores was a bad trade. This one is 192^3 -- eight times the cells --
+# and runs to 12 s of star time against that run's 14.3 s at a third of the
+# resolution, so the arithmetic reverses: the wait is worth the cores.
+#
+# Scale: the 96^3 run took about 10 s/step on 8 laptop ranks. At 192^3 the
+# cell count is 8x and the CFL step is 3x smaller, so roughly 24x the work,
+# against 256 ranks here. Expect O(10 h). The walltime is set well above that
+# because an unstable field subcycles and can slow by up to 10x, and being
+# truncated at the interesting moment is the one outcome to avoid.
+#
+# Submit with the address on the command line rather than in the file -- this
+# repository is public:
+#   qsub -M your@email -m ae cluster/cenapad/job_rot192.pbs
+
+cd "$PBS_O_WORKDIR"
+
+module purge
+module load openmpi/5.0.8-gcc-15.2.0
+
+echo "host:  $(hostname)"
+echo "start: $(date)"
+
+NP="$(wc -l < "${PBS_NODEFILE:-/dev/null}" 2>/dev/null || true)"
+[ -n "$NP" ] && [ "$NP" -gt 0 ] 2>/dev/null || NP="${PBS_NP:-256}"
+echo "ranks: $NP  (PBS_NP='$PBS_NP', nodefile='${PBS_NODEFILE:-unset}')"
+
+# Per-run directory: three concurrent jobs once wrote chk00000 and plt00000
+# into the same place and overwrote each other.
+RUNDIR="dir_rot192"
+mkdir -p "$RUNDIR"
+cd "$RUNDIR"
+ln -sf ../Castro3d.gnu.MPI.ex .
+ln -sf ../rotating_mixed.txt .
+ln -sf ../inputs.rot192 .
+
+mpirun -np "$NP" ./Castro3d.gnu.MPI.ex inputs.rot192 > run_rot192.log 2>&1
+RC=$?
+echo "log: $PBS_O_WORKDIR/$RUNDIR/run_rot192.log ($(grep -ac '^STEP' run_rot192.log) steps)"
+grep -a "amrex::Abort" run_rot192.log | head -1
+echo "end:   $(date)"
+# Propagate mpirun's status: without this a trailing echo becomes the script's
+# exit code and PBS reports Exit_status=0 for a run that aborted.
+exit "$RC"

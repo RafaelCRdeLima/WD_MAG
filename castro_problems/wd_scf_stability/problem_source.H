@@ -16,6 +16,7 @@
 // actual Braithwaite m=1 reorganization is allowed to run freely.
 
 #include <prob_parameters.H>
+#include <scf_model.H>
 
 using namespace amrex;
 
@@ -26,10 +27,6 @@ void problem_source (int i, int j, int k,
                      Array4<Real> const& src,
                      const Real dt, const Real time)
 {
-    amrex::ignore_unused(i);
-    amrex::ignore_unused(j);
-    amrex::ignore_unused(k);
-    amrex::ignore_unused(geomdata);
     amrex::ignore_unused(dt);
 
     if (time >= problem::damping_end_time_s) {
@@ -48,9 +45,24 @@ void problem_source (int i, int j, int k,
     Real rho = state(i,j,k,URHO);
     Real rhoInv = 1.0_rt / rho;
 
+    // Damp the DEVIATION from the model's own velocity field, not the
+    // velocity itself. For a non-rotating model these are the same thing,
+    // since the target is zero. For a rotating one they are not: damping
+    // the velocity would spin the star down during the accommodation phase
+    // and it would then collapse for want of the rotational support that
+    // holds it up -- a numerical result masquerading as a physical one.
+    // What has to be absorbed is the transient from sampling the model onto
+    // the mesh, and that transient is the deviation.
+    const Real* dx = geomdata.CellSize();
+    const Real* problo = geomdata.ProbLo();
+    Real xc = problo[0] + dx[0] * (static_cast<Real>(i) + 0.5_rt);
+    Real yc = problo[1] + dx[1] * (static_cast<Real>(j) + 0.5_rt);
+    Real zc = problo[2] + dx[2] * (static_cast<Real>(k) + 0.5_rt);
+
     Real Sr[3];
     for (int n = 0; n < 3; n++) {
-        Sr[n] = fac * state(i,j,k,UMX+n);
+        Real target = rho * scf_model::velocity_at(n, xc, yc, zc);
+        Sr[n] = fac * (state(i,j,k,UMX+n) - target);
         src(i,j,k,UMX+n) = Sr[n];
     }
 

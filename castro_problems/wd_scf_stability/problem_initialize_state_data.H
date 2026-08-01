@@ -50,12 +50,25 @@ void problem_initialize_state_data (int i, int j, int k,
         state(i,j,k,UFS+n) = state(i,j,k,URHO) * state(i,j,k,UFS+n);
     }
 
-    // No velocity perturbation. The Tayler mode has to grow from the
-    // discretisation's own asymmetry, which is the honest test: seeding it
-    // would measure the seed's growth, not the configuration's stability.
-    state(i,j,k,UMX) = 0.0_rt;
-    state(i,j,k,UMY) = 0.0_rt;
+    // Rotation, when the model carries it. Castro's own rotation support is
+    // a rotating frame at constant Omega, which a j-constant law is not, so
+    // differential rotation has to enter as an initial velocity field and
+    // then evolve. That it evolves is the point: a differentially rotating
+    // magnetised star is MRI-unstable, and whether the shear that supplies
+    // the mass survives its own instability is what this run measures.
+    //
+    // No perturbation is added on top. The Tayler and MRI modes have to grow
+    // from the discretisation's own asymmetry, which is the honest test:
+    // seeding them would measure the seed's growth, not the configuration's.
+    Real vx = scf_model::velocity_at(0, x, y, z);
+    Real vy = scf_model::velocity_at(1, x, y, z);
+
+    state(i,j,k,UMX) = state(i,j,k,URHO) * vx;
+    state(i,j,k,UMY) = state(i,j,k,URHO) * vy;
     state(i,j,k,UMZ) = 0.0_rt;
+
+    // UEDEN carries the kinetic energy; UEINT must not.
+    state(i,j,k,UEDEN) += 0.5_rt * state(i,j,k,URHO) * (vx * vx + vy * vy);
 }
 
 #endif
