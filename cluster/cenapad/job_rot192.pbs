@@ -78,7 +78,12 @@ ln -sf ../inputs.rot192 .
 # Restart from the newest checkpoint if one is there, so a run truncated by
 # the walltime is continued by resubmitting rather than repeated from zero.
 RESTART=""
-LAST="$(ls -d chk????? 2>/dev/null | sort | tail -1)"
+# chk00000 is excluded on purpose. It is the dump Castro writes during
+# initialisation, so restarting from it gains nothing over starting fresh --
+# and it is exactly the file that twice carried a half-written state from an
+# aborted run into the next one, producing "State has NaNs in the density
+# component" and costing two tests of an unrelated change.
+LAST="$(ls -d chk????? 2>/dev/null | grep -v 'chk00000$' | sort | tail -1)"
 if [ -n "$LAST" ] && [ -f "$LAST/Header" ]; then
     RESTART="amr.restart=$LAST"
     echo "restarting from $LAST"
