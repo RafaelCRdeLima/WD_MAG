@@ -1,8 +1,8 @@
 #!/bin/bash
 #PBS -N wdrot192
 #PBS -q parexp
-#PBS -l nodes=2:ppn=48
-#PBS -l walltime=12:00:00
+#PBS -l nodes=4:ppn=48
+#PBS -l walltime=04:00:00
 #PBS -o wdrot192.out
 #PBS -e wdrot192.err
 #
@@ -21,10 +21,17 @@
 # anyway: 192 ranks over 216 boxes puts the run at 2-5 h, and asking for four
 # times the time it needs only made it unschedulable.
 #
-# 2 nodes rather than 4 for the same reason. 96 ranks over 216 boxes is about
-# 2.25 boxes each, so expect 4-10 h -- slower, but a two-node window opens far
-# more often than a four-node one, and a job that runs slowly beats one that
-# does not run at all. The 12 h ceiling covers the estimate with margin.
+# Then a second attempt at 2 nodes / 12 h was refused with the same comment
+# while pbs_rstat showed NO reservation and 16 parexp nodes sat free. With
+# nodes going spare, the thing that does not fit is not the node count but the
+# TIME: the scheduler holds free nodes for a higher-priority job and backfills
+# only work that finishes before that job starts. Shrinking 4 nodes to 2 was
+# tuning the wrong variable.
+#
+# So: back to 4 nodes, since nodes are available, and a hard 4 h ceiling. At
+# 192 ranks the run is 2-5 h, so one slot may finish it; if not, the restart
+# below continues it on the next submission. A short walltime is cheap now
+# that being truncated costs a resubmission rather than the run.
 #
 # Decomposition: 192^3 with max_grid_size 32 is 6^3 = 216 boxes over 192
 # ranks, so some ranks carry two. 216 has no divisor that is also a multiple
