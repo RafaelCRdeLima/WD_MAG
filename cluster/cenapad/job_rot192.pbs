@@ -1,18 +1,20 @@
 #!/bin/bash
 #PBS -N wdrot192
-#PBS -q paralela
-#PBS -l nodes=2:ppn=128
+#PBS -q parexp
+#PBS -l nodes=4:ppn=48
 #PBS -l walltime=04:00:00
 #PBS -o wdrot192.out
 #PBS -e wdrot192.err
 #
 # 2 Msun rotating, toroidal-dominated white dwarf, 192^3, full MHD.
 #
-# Queue: paralela. Reading CENAPAD's own documentation rather than guessing
-# from qstat, paralela is the queue *for* multi-node MPI -- 2-8 nodes of 128
-# cores at up to 3 days -- while parexp is 48-core nodes at 1 day and par128
-# is single-node. The earlier attempts used parexp because the project notes
-# recorded it as simply "less crowded", which is not the same as correct.
+# Queue: parexp, and the reason is availability, not doctrine. CENAPAD's
+# documentation does designate paralela as the multi-node MPI queue (2-8
+# nodes of 128 cores, up to 3 days), so a 2-node job was moved there -- and
+# it sat queued at 12 h and again at 4 h. The pbsnodes output had the answer
+# the whole time: every 128-core node (adano10-53) was job-exclusive, while
+# 16 of the 48-core parexp nodes (adano59-80) stood free. paralela is the
+# right queue by design and the wrong one by occupancy.
 #
 # Sizing, and what the failures taught. A 4-node/24 h parexp request sat
 # queued 9.5 h, and a 2-node/12 h resubmission was refused identically, both
@@ -31,10 +33,12 @@
 # run STARTED is worth more than finishing it in a single window -- a job
 # that waits produces nothing at all.
 #
-# Decomposition: inputs.rot192 sets max_grid_size 24, giving 8^3 = 512 boxes,
-# exactly 2 per rank on 256 ranks. Perfect balance matters here beyond speed:
-# the high-capacity queues require 50% CPU efficiency and may kill a job below
-# it, and the previous 216-boxes-over-192-ranks layout sat near 56%.
+# Decomposition: inputs.rot192 sets max_grid_size 24, giving 8^3 = 512 boxes.
+# Over the 192 ranks of four 48-core nodes that is 2 or 3 boxes each, so the
+# step is set by the 3-box ranks and efficiency is 512/(192*3) = 89%. Not the
+# exact division 256 ranks would give, but far above the 56% of the original
+# 216-boxes-over-192-ranks layout, and comfortably clear of the 50% CPU
+# efficiency below which the high-capacity queues may kill a job.
 #
 # Submit with the address on the command line rather than in the file -- this
 # repository is public:
@@ -49,7 +53,7 @@ echo "host:  $(hostname)"
 echo "start: $(date)"
 
 NP="$(wc -l < "${PBS_NODEFILE:-/dev/null}" 2>/dev/null || true)"
-[ -n "$NP" ] && [ "$NP" -gt 0 ] 2>/dev/null || NP="${PBS_NP:-256}"
+[ -n "$NP" ] && [ "$NP" -gt 0 ] 2>/dev/null || NP="${PBS_NP:-192}"
 echo "ranks: $NP  (PBS_NP='$PBS_NP', nodefile='${PBS_NODEFILE:-unset}')"
 
 # Per-run directory: three concurrent jobs once wrote chk00000 and plt00000
