@@ -7,7 +7,7 @@
   },
   "file": "rotating_mixed.txt",
   "format": "axisym-vector-potential-v2",
-  "git_commit": "dd4b69f",
+  "git_commit": "6a688e8",
   "has_velocity": true,
   "n_varpi": 385,
   "n_z": 769,

@@ -76,8 +76,29 @@ amr.check_int       = 500
 amr.plot_int        = 50
 amr.derive_plot_vars = density x_velocity y_velocity z_velocity eden Temp pressure B_x B_y B_z Div_B emag_density etor_density
 
-castro.small_dens = 1.0e4
+# The floor, and the ambient above it, are two decades lower than the values
+# this problem inherited, because those were sized for a different star.
+#
+# Two runs died at t = 2.59 and 2.66 s on "Invalid density" at a surface
+# cell, and the second time the offending values were 9933, 9935 and 9972 --
+# less than 0.7% below a floor of 1.0e4. limit_fluxes_on_small_dens was
+# already holding the density right against the floor; the material simply
+# wants to be at about 9.9e3 there and the floor forbids it. With an ambient
+# of 2.0e4 sitting only 2x above the floor, the surface had nowhere to
+# rarefy into.
+#
+# The note that set 1.0e4 reasoned that the ambient must stay heavy enough to
+# keep the boundary Alfven speed finite -- true, but written for a model with
+# a 2.45e12 G surface field. This star's dipole is 1.0e9 G, three orders
+# weaker, so at rho = 1e2 the ambient Alfven speed is about 2.8e7 cm/s
+# against an interior sound speed near 1e9, and constrains nothing.
+#
+# The old ambient also carried 0.059 Msun of spurious mass over the box,
+# which is why Castro reported 2.064 Msun for a 2.005 Msun star. At 1.0e2
+# that falls to 3e-4 Msun.
+castro.small_dens = 1.0e0
 castro.small_temp = 1.0e3
+problem.ambient_density = 1.0e2
 
 # Robustness at the stellar surface, added after the first run aborted there.
 # limit_fluxes_on_small_dens makes the hydro limit its own fluxes so a cell
@@ -89,9 +110,15 @@ castro.small_temp = 1.0e3
 castro.limit_fluxes_on_small_dens = 1
 castro.max_subcycles = 32
 
+# The sponge window moves down with the ambient, and this is not merely for
+# consistency. At an upper density of 1.0e5 the sponge was damping the star's
+# whole outer envelope, not just the ambient, and the angular momentum shows
+# it: L_z fell 4.2% in 2.6 s. For a star held up BY its rotation, a sponge
+# quietly eating its angular momentum is a systematic that would eventually
+# produce a collapse having nothing to do with physics.
 castro.do_sponge = 1
-castro.sponge_upper_density = 1.0e5
-castro.sponge_lower_density = 1.0e4
+castro.sponge_upper_density = 1.0e3
+castro.sponge_lower_density = 1.0e2
 castro.sponge_timescale     = 1.0e-4
 
 # Accommodation phase. The damping now targets the MODEL's velocity field
