@@ -1,0 +1,156 @@
+#!/bin/bash
+#PBS -N wdrot256
+#PBS -q paralela
+#PBS -l nodes=2:ppn=128
+#PBS -l walltime=03:00:00
+#PBS -o wdrot256.out
+#PBS -e wdrot256.err
+#
+# 2 Msun rotating, toroidal-dominated white dwarf, 192^3, full MHD.
+#
+# Queue: paralela, chosen on queue depth rather than on doctrine.
+#
+# Read off the scheduler, the machine is full -- zero free nodes in every
+# queue -- so nothing starts anywhere immediately. What differs is how many
+# jobs are ahead when capacity frees:
+#
+#   paralela   5 queued,   7 running
+#   parexp    11 queued,   0 running   <- its nodes have been absorbed
+#   par16     79 queued,  34 running
+#   par128   102 queued,  32 running
+#
+# parexp is now the worst place to be: eleven jobs waiting and nothing at all
+# running, which is where two of ours had been sitting. paralela drains first.
+#
+# It also balances exactly. inputs.rot256 sets max_grid_size 32, so 256^3 is
+# 8^3 = 512 boxes, and two 128-core nodes give 256 ranks -- 2 boxes each. That
+# is the same decomposition that worked at 192^3, with larger boxes.
+#
+# Walltime 3 h, following the lesson that long requests do not backfill:
+# 24 h waited 9.5 h, 12 h waited on two queues, 4 h started in seconds, 3 h
+# ran. This run needs about 6 h -- 3.16x the 192^3 work (2.37x the cells and
+# 1.33x the steps, since the CFL step scales with dx) against 1 h 51 measured
+# there -- so it will take two or three chained windows rather than one. That
+# is what the chaining below is for; asking for 6 h in one window would trade
+# a known 3 h wait for an unknown one.
+#
+# Submit with the address on the command line rather than in the file -- this
+# repository is public:
+#   qsub -M your@email -m ae cluster/cenapad/job_rot256.pbs
+
+cd "$PBS_O_WORKDIR"
+
+module purge
+module load openmpi/5.0.8-gcc-15.2.0
+
+echo "host:  $(hostname)"
+echo "start: $(date)"
+
+NP="$(wc -l < "${PBS_NODEFILE:-/dev/null}" 2>/dev/null || true)"
+[ -n "$NP" ] && [ "$NP" -gt 0 ] 2>/dev/null || NP="${PBS_NP:-256}"
+echo "ranks: $NP  (PBS_NP='$PBS_NP', nodefile='${PBS_NODEFILE:-unset}')"
+
+# Per-run directory: three concurrent jobs once wrote chk00000 and plt00000
+# into the same place and overwrote each other.
+RUNDIR="dir_rot256"
+mkdir -p "$RUNDIR"
+cd "$RUNDIR"
+
+# Refuse to start beside another instance. Two jobs did land in this
+# directory at once and the second restarted from the first's half-written
+# checkpoint.
+if [ -f RUNNING ] && kill -0 "$(cat RUNNING 2>/dev/null)" 2>/dev/null; then
+    echo "another instance is live in $RUNDIR (pid $(cat RUNNING)); refusing"
+    exit 1
+fi
+echo "$$" > RUNNING
+trap 'rm -f "$PBS_O_WORKDIR/$RUNDIR/RUNNING"' EXIT
+ln -sf ../Castro3d.gnu.MPI.ex .
+ln -sf ../rotating_mixed.txt .
+ln -sf ../inputs.rot256 .
+
+# Restart from the newest checkpoint if one is there, so a run truncated by
+# the walltime is continued by resubmitting rather than repeated from zero.
+RESTART=""
+# chk00000 is excluded on purpose. It is the dump Castro writes during
+# initialisation, so restarting from it gains nothing over starting fresh --
+# and it is exactly the file that twice carried a half-written state from an
+# aborted run into the next one, producing "State has NaNs in the density
+# component" and costing two tests of an unrelated change.
+LAST="$(ls -d chk????? 2>/dev/null | grep -v 'chk00000$' | sort | tail -1)"
+if [ -n "$LAST" ] && [ -f "$LAST/Header" ]; then
+    RESTART="amr.restart=$LAST"
+    echo "restarting from $LAST"
+else
+    echo "starting from the initial model"
+fi
+
+mpirun -np "$NP" ./Castro3d.gnu.MPI.ex inputs.rot256 $RESTART \
+    >> run_rot256.log 2>&1
+RC=$?
+echo "log: $PBS_O_WORKDIR/$RUNDIR/run_rot256.log ($(grep -ac '^STEP' run_rot256.log) steps)"
+grep -a "amrex::Abort" run_rot256.log | head -1
+echo "end:   $(date)"
+
+# Chain the next window automatically. Backfill windows have been short --
+# 4 h was refused with 17 nodes free -- so the run has to cross several of
+# them, and babysitting that by hand costs more than the run.
+#
+# Three guards, because a job that resubmits itself is a job that can run
+# away. It stops after CHAIN_MAX submissions; it stops unless this window
+# actually produced a NEW checkpoint, so a run that aborts immediately does
+# not respawn; and it stops once the log shows the target time reached.
+CHAIN_MAX=8
+# Defaulted to 0: on the first window chain_count does not exist, N was empty,
+# and the CHAIN_MAX test below printed
+#   "[: : integer expression expected"
+# into wdrot192.err. It was harmless there only because the run finished in
+# one window and stopped for a different reason.
+N="$(cat ../chain_count 2>/dev/null || true)"
+N="${N:-0}"
+STEPS="${STEPS:-0}"
+LAST_NOW="$(ls -d chk????? 2>/dev/null | sort | tail -1)"
+STEPS="$(grep -ac '^STEP' run_rot256.log 2>/dev/null || true)"
+STEPS="${STEPS:-0}"
+REACHED="$(grep -a '^STEP' run_rot256.log | tail -1 | sed 's/.*TIME = \([0-9.e+-]*\).*/\1/')"
+DONE="$(awk -v t="${REACHED:-0}" 'BEGIN{print (t+0 >= 11.9) ? 1 : 0}')"
+
+if [ "$N" -ge "$CHAIN_MAX" ]; then
+    echo "chain: stopping, $N submissions already"
+elif [ "$DONE" = "1" ]; then
+    echo "chain: stopping, reached t = $REACHED s"
+elif [ "$STEPS" -lt 1 ]; then
+    # An abort during initialisation still leaves chk00000 behind, and the
+    # first version of this guard counted that as progress: the window took
+    # zero steps, resubmitted anyway, and the next job restarted from a
+    # checkpoint the first was still writing. That produced
+    # "State has NaNs in the density component" and wasted a test.
+    echo "chain: stopping, the window took no steps at all"
+elif [ -z "$LAST_NOW" ] || [ "$LAST_NOW" = "$LAST" ]; then
+    echo "chain: stopping, this window produced no new checkpoint (was '$LAST', now '$LAST_NOW')"
+else
+    echo "$((N+1))" > ../chain_count
+    echo "chain: submission $((N+1)) of $CHAIN_MAX, continuing from $LAST_NOW (t = $REACHED s)"
+    # By absolute path, not "$0": inside a running job $0 is the mom's spool
+    # copy of the script, which is not guaranteed to be readable at the moment
+    # qsub is called.
+    #
+    # The mail flags have to be repeated as well -- they were given on the
+    # command line of the FIRST submission only, so every chained window after
+    # it would otherwise run silently. The address is read from a file next to
+    # the run directory rather than written here, because this repository is
+    # public. Create it once, and it is not tracked:
+    #     echo you@example.com > $PBS_O_WORKDIR/mailto
+    # Without it the chain still runs, just without notifications.
+    MAILTO="$(cat "$PBS_O_WORKDIR/mailto" 2>/dev/null || true)"
+    if [ -n "$MAILTO" ]; then
+        set -- -M "$MAILTO" -m ae
+    else
+        set --
+        echo "chain: no $PBS_O_WORKDIR/mailto, continuing without notifications"
+    fi
+    cd "$PBS_O_WORKDIR" && qsub "$@" "$PBS_O_WORKDIR/job_rot256.pbs"
+fi
+# Propagate mpirun's status: without this a trailing echo becomes the script's
+# exit code and PBS reports Exit_status=0 for a run that aborted.
+exit "$RC"

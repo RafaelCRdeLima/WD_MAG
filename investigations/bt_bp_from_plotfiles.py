@@ -44,6 +44,8 @@ import numpy as np
 import yt
 
 RHO_CUT = float(os.environ.get("RHO_CUT", 1.0e5))
+CASTRO_TO_GAUSS = np.sqrt(4.0 * np.pi)
+B_CRIT = 4.4140e13   # the field above which the unquantised ztwd EOS is out of range
 
 yt.set_log_level("error")
 
@@ -76,9 +78,14 @@ def split(fn):
     # Bt_over_Bp_amplitude, a ratio of maxima, and that is what it has to be
     # compared against. The energy ratio weights the whole volume and is a
     # different number.
-    b_tor_max = float(np.abs(btor).max())
-    b_pol_max = float(np.sqrt(bpol2).max())
-    b_max = float(np.sqrt(bx * bx + by * by + bz * bz).max())
+    #
+    # Reported in GAUSS. Castro's MHD state is in Heaviside-Lorentz units,
+    # B' = B/sqrt(4 pi) -- see problem_initialize_mhd_data.H. Reading the raw
+    # state as gauss understates every field by 3.5449. The energies need no
+    # conversion: 0.5*B'^2 is already B^2/(8 pi) in erg/cm^3.
+    b_tor_max = CASTRO_TO_GAUSS * float(np.abs(btor).max())
+    b_pol_max = CASTRO_TO_GAUSS * float(np.sqrt(bpol2).max())
+    b_max = CASTRO_TO_GAUSS * float(np.sqrt(bx * bx + by * by + bz * bz).max())
 
     return (float(ds.current_time), e_tor, e_pol, float(rho[sel].max()),
             b_tor_max, b_pol_max, b_max)
@@ -86,8 +93,11 @@ def split(fn):
 
 def main(paths):
     print(f"# RHO_CUT = {RHO_CUT:g} g/cm^3")
+    print(f"# energies in erg; peak fields in GAUSS (state is Heaviside-Lorentz,"
+          f" converted by sqrt(4 pi)); B_c = {B_CRIT:.3e} G")
     print(f"# {'t':>9} {'E_tor':>12} {'E_pol':>12} {'Et/Ep':>12} {'Et/Emag':>10}"
-          f" {'Btor_max':>12} {'Bpol_max':>12} {'B_max':>12} {'Bt/Bp_amp':>12} {'rho_max':>11}")
+          f" {'Btor_max_G':>12} {'Bpol_max_G':>12} {'B_max_G':>12} {'Bt/Bp_amp':>12}"
+          f" {'B/B_c':>10} {'rho_max':>11}")
     rows = []
     for fn in paths:
         try:
@@ -99,17 +109,19 @@ def main(paths):
         ratio = e_tor / e_pol if e_pol > 0 else float("inf")
         frac = e_tor / e_mag if e_mag > 0 else float("nan")
         amp = b_tor_max / b_pol_max if b_pol_max > 0 else float("inf")
+        bbc = b_max / B_CRIT
         print(f"{t:11.5f} {e_tor:12.5e} {e_pol:12.5e} {ratio:12.4e} {frac:10.7f}"
-              f" {b_tor_max:12.5e} {b_pol_max:12.5e} {b_max:12.5e} {amp:12.5e} {rho_max:11.4e}",
+              f" {b_tor_max:12.5e} {b_pol_max:12.5e} {b_max:12.5e} {amp:12.5e}"
+              f" {bbc:10.5f} {rho_max:11.4e}",
               flush=True)
-        rows.append((t, e_tor, e_pol, ratio, frac, b_tor_max, b_pol_max, b_max, amp, rho_max))
+        rows.append((t, e_tor, e_pol, ratio, frac, b_tor_max, b_pol_max, b_max, amp, bbc, rho_max))
 
     if not rows:
         return 1
     rows.sort()
     with open("bt_bp.csv", "w") as fh:
         fh.write("t,E_tor,E_pol,Et_over_Ep,Et_over_Emag,"
-                 "Btor_max,Bpol_max,B_max,Bt_over_Bp_amp,rho_max\n")
+                 "Btor_max_G,Bpol_max_G,B_max_G,Bt_over_Bp_amp,B_over_Bc,rho_max\n")
         for row in rows:
             fh.write(",".join(f"{v:.8e}" for v in row) + "\n")
     print(f"# {len(rows)} of {len(paths)} plotfiles -> bt_bp.csv", file=sys.stderr)

@@ -52,3 +52,7 @@ papers/wd-braithwaite-relaxation/*.log
 papers/wd-braithwaite-relaxation/*.fls
 papers/wd-braithwaite-relaxation/*.fdb_latexmk
 papers/wd-braithwaite-relaxation/*.blg
+
+# The chained PBS jobs read the notification address from here; this
+# repository is public, so the address stays out of it.
+mailto

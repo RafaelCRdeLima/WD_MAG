@@ -80,6 +80,14 @@ void process (const std::string& pltfile, Real rho_cut)
     // Bt_over_Bp_amplitude, a ratio of maxima, and that is what it has to be
     // compared against. The energy ratio weights the whole volume and is a
     // different number.
+    //
+    // Reported in GAUSS. Castro's MHD state is in Heaviside-Lorentz units,
+    // B' = B/sqrt(4 pi) -- see problem_initialize_mhd_data.H, which applies
+    // the factor once on the way in. Reading the raw state as gauss
+    // understates every field by 3.5449 and made the reconstructed peak look
+    // like 27% of the model's max|B_phi| when it is really 99%. The energies
+    // need no conversion: 0.5*B'^2 is already B^2/(8 pi) in erg/cm^3.
+    constexpr Real castro_to_gauss = 3.5449077018110318_rt;  // sqrt(4 pi)
     Real b_tor_max = 0.0;
     Real b_pol_max = 0.0;
     Real b_max = 0.0;
@@ -144,9 +152,9 @@ void process (const std::string& pltfile, Real rho_cut)
 
         e_tor += amrex::get<0>(rr);
         e_pol += amrex::get<1>(rr);
-        b_tor_max = amrex::max(b_tor_max, amrex::get<2>(rr));
-        b_pol_max = amrex::max(b_pol_max, amrex::get<3>(rr));
-        b_max     = amrex::max(b_max,     amrex::get<4>(rr));
+        b_tor_max = amrex::max(b_tor_max, castro_to_gauss * amrex::get<2>(rr));
+        b_pol_max = amrex::max(b_pol_max, castro_to_gauss * amrex::get<3>(rr));
+        b_max     = amrex::max(b_max,     castro_to_gauss * amrex::get<4>(rr));
     }
 
     ParallelDescriptor::ReduceRealSum(e_tor);
@@ -172,6 +180,11 @@ void process (const std::string& pltfile, Real rho_cut)
                   << std::setw(14) << b_max
                   << std::setw(14) << (b_pol_max > 0.0 ? b_tor_max / b_pol_max
                                                        : std::numeric_limits<Real>::infinity())
+                  // The ztwd EOS assumes an unquantised electron gas, which
+                  // needs B below the critical field. The model starts at
+                  // 0.73 B_c, so this column says when the run leaves the
+                  // range its own equation of state is valid in.
+                  << std::setw(13) << b_max / 4.4140e13
                   << '\n' << std::flush;
     }
 }
@@ -214,8 +227,10 @@ void main_main ()
     }
 
     amrex::Print() << "# rho_cut = " << rho_cut << '\n';
+    amrex::Print() << "# energies in erg; peak fields in GAUSS (state is Heaviside-Lorentz,"
+                      " converted by sqrt(4 pi)); B_c = 4.414e13 G\n";
     amrex::Print() << "#          t         E_tor         E_pol         Et/Ep     Et/Emag"
-                   << "     Btor_max      Bpol_max         B_max     Bt/Bp_amp\n";
+                   << "   Btor_max_G    Bpol_max_G       B_max_G     Bt/Bp_amp        B/B_c\n";
 
     for (auto const& pltfile : plotfiles) {
         process(pltfile, rho_cut);

@@ -1,0 +1,184 @@
+# 2 Msun ROTATING, toroidal-dominated white dwarf -- full MHD evolution.
+#
+# THE CONVERGENCE POINT. Identical in every respect to inputs.rot192 except
+# the grid: same box, same model, same gravity, same floor, same sponge, same
+# damping. It exists to answer one question the 192^3 run cannot answer about
+# itself.
+#
+# That run showed the poloidal energy growing exponentially from t ~ 1.3 s,
+# 4441x above the t = 0 interpolation floor by t = 3.9, with the field
+# amplitude e-folding in 0.6 t_A -- the Alfvenic rate expected of the Tayler
+# kink in a toroidal-dominated field. The fit is clean (r = 0.995) and stable
+# across windows. But it is one resolution, and a rate measured at one
+# resolution is not a measurement. This project has already been caught by
+# exactly that: the 128^3 control settled onto a plateau at 38% of rho_c that
+# looked like a new equilibrium and was an artefact.
+#
+# The prediction, if the growth is physical: sigma is unchanged here, and only
+# the ONSET moves. The seed is the interpolation error, which falls as dx^3
+# (measured: E_pol(t=0) fell 8.6x from 96^3 to 192^3), so at 256^3 the seed is
+# 2.4x smaller and the same exponential should start about ln(2.4)/sigma =
+# 0.6 s later. A different sigma means the growth belongs to the grid.
+#
+# The configuration (models/rotating_mixed.txt, format v2):
+#   M = 2.0052 Msun, R_eq = 3.917e8 cm, R_pol = 1.501e8 cm (oblate, 0.38)
+#   differential rotation, j-constant, Omega_c = 8.193 rad/s, A = R_eq
+#   T/|W| = 0.0993, mass shedding parameter 0.469
+#   max|B_phi| = 3.23e13 G, surface dipole 1.0e9 G, B_t/B_p = 4234
+#   max|B| = 0.732 B_c, so the unquantised EOS is still inside its range
+#
+# This is the collaboration's specification: ultramassive, toroidal-dominated
+# interior, weak exterior dipole. Note what that combination implies -- a
+# 1e9 G dipole beside a 3e13 G toroidal field is a field that is toroidal to
+# within a part in a thousand, and a purely toroidal field is Tayler-unstable.
+# It is very nearly the configuration that collapsed in about 3.5 dynamical
+# times in the companion paper. The difference, and the whole question this
+# run asks, is that this star rotates and that one did not: rotation can
+# stabilise Tayler modes, and it can also destroy itself through the MRI.
+#
+# Timescales for this star:
+#   t_dyn  = 0.4752 s
+#   t_A    = 2.3829 s   (mass-weighted v_A = 1.644e8 cm/s over R_eq)
+#   P_rot  = 0.7669 s   (on the axis; the envelope is slower)
+# stop_time = 12 s is 5 t_A, 15.6 rotations and 25 t_dyn, and comfortably
+# past the 2.7 s at which the non-rotating configuration died. The MRI grows
+# on ~1/Omega = 0.12 s, so it has about a hundred e-folding times available:
+# if it is going to appear, it will.
+max_step  = 200000
+stop_time = 12.0
+
+# HALF-SHIFT geometry (docs/teoria.md Sec 6.6): prob_lo = -(N+1)/2*dx and
+# prob_hi = (N-1)/2*dx puts a cell CENTRE exactly on r = 0. With N = 256 and
+# dx = 7.03125e6 cm the half-width is 9.0e8 cm, well outside R_eq = 3.917e8.
+# The physical box is identical to the 192^3 run's, 1.8e9 cm on a side, so
+# this is a resolution change and nothing else.
+geometry.is_periodic =  0    0    0
+geometry.coord_sys   =  0
+geometry.prob_lo     = -9.0351562500e+08 -9.0351562500e+08 -9.0351562500e+08
+geometry.prob_hi     = 8.9648437500e+08 8.9648437500e+08 8.9648437500e+08
+amr.n_cell           =  256  256  256
+
+castro.lo_bc       =  2   2   2
+castro.hi_bc       =  2   2   2
+
+castro.do_hydro = 1
+castro.do_react = 0
+castro.ppm_type = 0
+castro.use_flattening = 0
+
+# PoissonGrav, not MonopoleGrav, and for this star that is not a refinement.
+#
+# The SCF builds the equilibrium by solving Poisson to l_max = 16. Castro's
+# MonopoleGrav keeps only l = 0. On the spherical star of the companion paper
+# the two agreed, and that agreement was recorded -- but this star has
+# R_pol/R_eq = 0.38, so its quadrupole is enormous and the two cannot agree.
+# The model then arrives balanced against one gravity and evolved under
+# another, and it rings.
+#
+# The evidence that this is what was happening: two runs with different
+# surface treatments traced almost identical density curves, oscillating
+# +-20% about 3.0e9 and always returning -- 2.933e9 at t = 0.19, 3.68e9 at
+# 1.18, 2.99e9 at 1.79, 3.18e9 at 2.09. Not a collapse and not an
+# instability, but a star pulsating at about 2-4 t_dyn because it was not in
+# equilibrium under the gravity actually applied to it. A surface moving that
+# hard is what pushed edge cells through the density floor, at the equator in
+# one run and off the pole in another.
+#
+# max_multipole_order was set to 8 here and every run that carried it died
+# with "State has NaNs in the density component" before taking a single step,
+# including a field-free control with div B = 0 -- while every MonopoleGrav
+# run took hundreds of steps. The multipole boundary condition assumes the
+# mass is compactly supported well inside the domain, and this problem's
+# ambient of 2.0e4 g/cm^3 fills the box out to the boundary, so that
+# assumption fails. Left at the default until it is tested on its own.
+castro.do_grav = 1
+gravity.gravity_type = PoissonGrav
+gravity.drdxfac = 2
+
+castro.cfl            = 0.5
+castro.init_shrink    = 0.01
+castro.change_max     = 1.1
+castro.sum_interval   = 1
+castro.v              = 1
+amr.v                 = 1
+
+# single level: Castro's constrained-transport MHD does not do AMR
+amr.max_level       = 0
+amr.blocking_factor = 8
+# 32 at 256^3 reproduces exactly the decomposition that balanced at 192^3:
+# 8^3 = 512 boxes over the 256 ranks of two 128-core paralela nodes, 2 each.
+# It also satisfies the constraint that cost a run earlier -- max_grid_size
+# must be divisible by blocking_factor, and 32/8 = 4.
+#
+# Ghost-cell overhead is LOWER here than at 192^3: the boxes are 32^3 rather
+# than 24^3, so the halo is 2.05x the interior against 2.37x. Bigger boxes at
+# the same box count is the one place where the finer grid is cheaper.
+amr.max_grid_size   = 32
+amr.plot_file       = plt
+amr.check_file      = chk
+amr.check_int       = 500
+amr.plot_int        = 50
+amr.derive_plot_vars = density x_velocity y_velocity z_velocity eden Temp pressure B_x B_y B_z Div_B emag_density etor_density
+
+# The floor sits two decades below the ambient, and ONLY the floor was moved.
+#
+# Two runs died at t = 2.59 and 2.66 s on "Invalid density" at a surface cell,
+# the second time at 9933 against a floor of 1.0e4 -- 0.7% below it. With
+# limit_fluxes_on_small_dens already pinning the density to the floor, the
+# material simply wants to be at about 9.9e3 there and an ambient of 2.0e4
+# left it only a factor of 2 to work in. Dropping the floor to 1.0e2 gives it
+# 200x.
+#
+# The ambient stays at its default 2.0e4, and that is the correction to an
+# attempt that lowered it to 1.0e2 alongside the floor. The model cuts the
+# star at surface_density_frac = 1e-6 of rho_c, which is 3.0e3, so an ambient
+# ABOVE that value means max(rho_model, ambient) ends the star on a plateau
+# with nothing discontinuous about it. An ambient BELOW it manufactures a
+# factor-30 cliff at the surface instead, and that run died at t = 0.0686 s
+# -- forty times sooner -- with NEGATIVE densities of -172 and -1623 at
+# (varpi, z) = (5.1e7, -1.6e8), which is |z|/R_pol = 1.06, just off the pole.
+# A rarefaction crossing zero, not a floor problem.
+#
+# The cost of keeping the ambient here is 0.059 Msun of spurious mass over
+# the box, which is the gap between the 2.064 Msun Castro reports and the
+# 2.005 Msun model. That is bookkeeping and can be subtracted; a density
+# cliff cannot be subtracted.
+castro.small_dens = 1.0e2
+castro.small_temp = 1.0e3
+
+# Robustness at the stellar surface, added after the first run aborted there.
+# limit_fluxes_on_small_dens makes the hydro limit its own fluxes so a cell
+# cannot be drained below small_dens in the first place, which is the failure
+# that happened rather than a general instability -- mass was conserved to
+# 6e-5 and the central density was flat at the time. max_subcycles is raised
+# from its default of 10 to give the retry mechanism more room before it
+# gives up on a single bad cell.
+castro.limit_fluxes_on_small_dens = 1
+castro.max_subcycles = 32
+
+# The sponge window stays where it was, for now. It is worth flagging that at
+# an upper density of 1.0e5 it damps the star's outer envelope and not only
+# the ambient, and L_z fell 4.2% in 2.6 s -- for a star held up BY rotation
+# that is a systematic worth chasing. But it is chased on its own, after the
+# surface is stable: three parameters were changed at once here and the run
+# got worse, which is how the density cliff went unnoticed for a submission.
+castro.do_sponge = 1
+castro.sponge_upper_density = 1.0e5
+castro.sponge_lower_density = 1.0e4
+castro.sponge_timescale     = 1.0e-4
+
+# Accommodation phase. The damping now targets the MODEL's velocity field
+# rather than zero (see problem_source.H): damping to zero would spin this
+# star down and it would collapse for want of the rotational support that
+# holds it up, which would be a numerical artefact indistinguishable from the
+# physical result being looked for. What gets absorbed is the sampling
+# transient, which is already small and gets smaller: the reconstructed field
+# retains 82% of max|B_phi| at 64^3, 96.0% at 96^3 and 98.9% at 192^3, all
+# measured with tools/fbtbp.cpp against the model's 3.2308e13 G.
+castro.add_ext_src = 1
+problem.damping_timescale_in_tdyn = 0.2
+problem.damping_end_time_in_tdyn = 2.0
+problem.damping_ramp_in_tdyn = 0.5
+
+problem.model_name = "rotating_mixed.txt"
+problem.surface_density_frac = 1.0e-6
