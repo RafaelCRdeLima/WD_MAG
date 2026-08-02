@@ -19,7 +19,11 @@ read side by side.
       by one cell. The grey band is one cell, 9.375e6 cm, around R_pol --
       that is 6% of it, and it is why no structure smaller than that in the
       R_pol curve means anything.
-  (c) the oblateness, with the model's 0.383 marked. The measured value at
+  (c) the volume, as V/V_0. It is R_vol cubed and so carries no information
+      the panel above does not, but the cube is the whole point: +36% in
+      radius is +151% in volume, and reading the magnitude off a cube root
+      is not something to ask of anyone.
+  (d) the oblateness, with the model's 0.383 marked. The measured value at
       t = 0 is 0.425 and the difference is discretisation, not evolution:
       R_pol lands on a cell boundary and R_eq is cut short by the density
       threshold biting into a shallow equatorial profile.
@@ -70,11 +74,11 @@ def main():
     d = load()
     t = d["t"]
 
-    fig, (ax_m, ax_r, ax_o) = plt.subplots(
-        3, 1, figsize=(COL_IN, COL_IN * 1.7), sharex=True,
-        gridspec_kw={"height_ratios": [1.0, 1.25, 0.85], "hspace": 0.12},
+    fig, (ax_m, ax_r, ax_v, ax_o) = plt.subplots(
+        4, 1, figsize=(COL_IN, COL_IN * 2.05), sharex=True,
+        gridspec_kw={"height_ratios": [0.95, 1.25, 0.85, 0.8], "hspace": 0.12},
     )
-    for ax in (ax_m, ax_r, ax_o):
+    for ax in (ax_m, ax_r, ax_v, ax_o):
         ax.grid(True, color=C_GRID, linewidth=0.4, alpha=0.9)
         ax.set_axisbelow(True)
         ax.set_xlim(0, 12)
@@ -109,7 +113,18 @@ def main():
     ax_r.set_ylim(1.2, 5.6)
     ax_r.text(0.02, 0.93, "(b)", transform=ax_r.transAxes, fontsize=7, va="top")
 
-    # (c) oblateness ------------------------------------------------------
+    # (c) volume ----------------------------------------------------------
+    vol = (d["R_vol_e8"] / d["R_vol_e8"][0]) ** 3
+    ax_v.axhline(1.0, color=C_MUTED, linewidth=0.6, linestyle=(0, (3, 2)))
+    ax_v.plot(t, vol, color=C_VOL, linewidth=1.1)
+    ax_v.set_ylabel(r"$V/V_0$")
+    ax_v.set_ylim(0.55, 2.85)
+    ax_v.text(0.02, 0.92, "(c)", transform=ax_v.transAxes, fontsize=7, va="top")
+    ax_v.annotate(rf"$\times{vol.max():.2f}$", xy=(t[np.argmax(vol)], vol.max()),
+                  xytext=(5, -1), textcoords="offset points",
+                  fontsize=6.2, color=C_INK, ha="left", va="center")
+
+    # (d) oblateness ------------------------------------------------------
     ax_o.plot(t, d["Rpol_over_Req"], color=C_MASS, linewidth=1.1)
     ax_o.axhline(OBLATE_MODEL, color=C_MUTED, linewidth=0.6, linestyle=(0, (3, 2)))
     ax_o.text(11.8, OBLATE_MODEL - 0.012, "modelo  0.383", fontsize=5.8,
@@ -117,7 +132,7 @@ def main():
     ax_o.set_ylabel(r"$R_{\rm pol}/R_{\rm eq}$")
     ax_o.set_xlabel("t (s)")
     ax_o.set_ylim(0.33, 0.74)
-    ax_o.text(0.02, 0.92, "(c)", transform=ax_o.transAxes, fontsize=7, va="top")
+    ax_o.text(0.02, 0.92, "(d)", transform=ax_o.transAxes, fontsize=7, va="top")
 
     fig.savefig(HERE / "mass_radius_192.pdf")
     fig.savefig(HERE / "mass_radius_192.png", dpi=200)
@@ -125,6 +140,8 @@ def main():
     M = d["M_Msun"]
     print(f"massa: {M.min():.5f} a {M.max():.5f} Msun, amplitude {100*(M.max()-M.min())/M[0]:.3f}%")
     print(f"R_vol: {d['R_vol_e8'].min():.3f} a {d['R_vol_e8'].max():.3f} e8 cm")
+    v = (d["R_vol_e8"] / d["R_vol_e8"][0]) ** 3
+    print(f"V/V0 : {v.min():.2f} a {v.max():.2f}  (fator {v.max()/v.min():.2f})")
     print(f"wrote {HERE/'mass_radius_192.pdf'}")
 
 
