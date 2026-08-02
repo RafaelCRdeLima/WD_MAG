@@ -106,7 +106,11 @@ CHAIN_MAX=8
 #   "[: : integer expression expected"
 # into wdrot192.err. It was harmless there only because the run finished in
 # one window and stopped for a different reason.
-N="$(cat ../chain_count 2>/dev/null || true)"
+# Inside RUNDIR, not beside it. Two chained jobs -- the 192^3 continuation and
+# the 256^3 convergence point -- run at the same time out of the same Exec
+# directory, and with ../chain_count they shared one counter: each window would
+# read the other's count and overwrite it. Per-run it cannot happen.
+N="$(cat chain_count 2>/dev/null || true)"
 N="${N:-0}"
 STEPS="${STEPS:-0}"
 LAST_NOW="$(ls -d chk????? 2>/dev/null | sort | tail -1)"
@@ -129,7 +133,7 @@ elif [ "$STEPS" -lt 1 ]; then
 elif [ -z "$LAST_NOW" ] || [ "$LAST_NOW" = "$LAST" ]; then
     echo "chain: stopping, this window produced no new checkpoint (was '$LAST', now '$LAST_NOW')"
 else
-    echo "$((N+1))" > ../chain_count
+    echo "$((N+1))" > chain_count
     echo "chain: submission $((N+1)) of $CHAIN_MAX, continuing from $LAST_NOW (t = $REACHED s)"
     # By absolute path, not "$0": inside a running job $0 is the mom's spool
     # copy of the script, which is not guaranteed to be readable at the moment

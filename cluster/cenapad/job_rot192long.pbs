@@ -1,10 +1,10 @@
 #!/bin/bash
-#PBS -N wdrot192
+#PBS -N wdrot192long
 #PBS -q paralela
 #PBS -l nodes=2:ppn=128
 #PBS -l walltime=03:00:00
-#PBS -o wdrot192.out
-#PBS -e wdrot192.err
+#PBS -o wdrot192long.out
+#PBS -e wdrot192long.err
 #
 # 2 Msun rotating, toroidal-dominated white dwarf, 192^3, full MHD.
 #
@@ -22,16 +22,21 @@
 # parexp is now the worst place to be: eleven jobs waiting and nothing at all
 # running, which is where two of ours had been sitting. paralela drains first.
 #
-# It also balances exactly. inputs.rot192 sets max_grid_size 24, so 192^3 is
-# 8^3 = 512 boxes, and two 128-core nodes give 256 ranks -- 2 boxes each.
+# It also balances exactly. inputs.rot192long sets max_grid_size 32, so 256^3 is
+# 8^3 = 512 boxes, and two 128-core nodes give 256 ranks -- 2 boxes each. That
+# is the same decomposition that worked at 192^3, with larger boxes.
 #
-# Walltime 3 h, following the day's lesson that long requests do not backfill:
-# 24 h waited 9.5 h, 12 h waited on two queues, 4 h started in seconds. The
-# run is 1.5-4 h at 256 ranks and the checkpoint restart covers a truncation.
+# Walltime 3 h, following the lesson that long requests do not backfill:
+# 24 h waited 9.5 h, 12 h waited on two queues, 4 h started in seconds, 3 h
+# ran. This run needs about 6 h -- 3.16x the 192^3 work (2.37x the cells and
+# 1.33x the steps, since the CFL step scales with dx) against 1 h 51 measured
+# there -- so it will take two or three chained windows rather than one. That
+# is what the chaining below is for; asking for 6 h in one window would trade
+# a known 3 h wait for an unknown one.
 #
 # Submit with the address on the command line rather than in the file -- this
 # repository is public:
-#   qsub -M your@email -m ae cluster/cenapad/job_rot192.pbs
+#   qsub -M your@email -m ae cluster/cenapad/job_rot192long.pbs
 
 cd "$PBS_O_WORKDIR"
 
@@ -62,7 +67,7 @@ echo "$$" > RUNNING
 trap 'rm -f "$PBS_O_WORKDIR/$RUNDIR/RUNNING"' EXIT
 ln -sf ../Castro3d.gnu.MPI.ex .
 ln -sf ../rotating_mixed.txt .
-ln -sf ../inputs.rot192 .
+ln -sf ../inputs.rot192long .
 
 # Restart from the newest checkpoint if one is there, so a run truncated by
 # the walltime is continued by resubmitting rather than repeated from zero.
@@ -80,7 +85,7 @@ else
     echo "starting from the initial model"
 fi
 
-mpirun -np "$NP" ./Castro3d.gnu.MPI.ex inputs.rot192 $RESTART \
+mpirun -np "$NP" ./Castro3d.gnu.MPI.ex inputs.rot192long $RESTART \
     >> run_rot192.log 2>&1
 RC=$?
 echo "log: $PBS_O_WORKDIR/$RUNDIR/run_rot192.log ($(grep -ac '^STEP' run_rot192.log) steps)"
@@ -95,7 +100,12 @@ echo "end:   $(date)"
 # away. It stops after CHAIN_MAX submissions; it stops unless this window
 # actually produced a NEW checkpoint, so a run that aborts immediately does
 # not respawn; and it stops once the log shows the target time reached.
-CHAIN_MAX=8
+CHAIN_MAX=12
+# Defaulted to 0: on the first window chain_count does not exist, N was empty,
+# and the CHAIN_MAX test below printed
+#   "[: : integer expression expected"
+# into wdrot192.err. It was harmless there only because the run finished in
+# one window and stopped for a different reason.
 # Inside RUNDIR, not beside it. Two chained jobs -- the 192^3 continuation and
 # the 256^3 convergence point -- run at the same time out of the same Exec
 # directory, and with ../chain_count they shared one counter: each window would
@@ -107,7 +117,7 @@ LAST_NOW="$(ls -d chk????? 2>/dev/null | sort | tail -1)"
 STEPS="$(grep -ac '^STEP' run_rot192.log 2>/dev/null || true)"
 STEPS="${STEPS:-0}"
 REACHED="$(grep -a '^STEP' run_rot192.log | tail -1 | sed 's/.*TIME = \([0-9.e+-]*\).*/\1/')"
-DONE="$(awk -v t="${REACHED:-0}" 'BEGIN{print (t+0 >= 11.9) ? 1 : 0}')"
+DONE="$(awk -v t="${REACHED:-0}" 'BEGIN{print (t+0 >= 59.9) ? 1 : 0}')"
 
 if [ "$N" -ge "$CHAIN_MAX" ]; then
     echo "chain: stopping, $N submissions already"
@@ -125,7 +135,25 @@ elif [ -z "$LAST_NOW" ] || [ "$LAST_NOW" = "$LAST" ]; then
 else
     echo "$((N+1))" > chain_count
     echo "chain: submission $((N+1)) of $CHAIN_MAX, continuing from $LAST_NOW (t = $REACHED s)"
-    cd "$PBS_O_WORKDIR" && qsub "$0"
+    # By absolute path, not "$0": inside a running job $0 is the mom's spool
+    # copy of the script, which is not guaranteed to be readable at the moment
+    # qsub is called.
+    #
+    # The mail flags have to be repeated as well -- they were given on the
+    # command line of the FIRST submission only, so every chained window after
+    # it would otherwise run silently. The address is read from a file next to
+    # the run directory rather than written here, because this repository is
+    # public. Create it once, and it is not tracked:
+    #     echo you@example.com > $PBS_O_WORKDIR/mailto
+    # Without it the chain still runs, just without notifications.
+    MAILTO="$(cat "$PBS_O_WORKDIR/mailto" 2>/dev/null || true)"
+    if [ -n "$MAILTO" ]; then
+        set -- -M "$MAILTO" -m ae
+    else
+        set --
+        echo "chain: no $PBS_O_WORKDIR/mailto, continuing without notifications"
+    fi
+    cd "$PBS_O_WORKDIR" && qsub "$@" "$PBS_O_WORKDIR/job_rot192long.pbs"
 fi
 # Propagate mpirun's status: without this a trailing echo becomes the script's
 # exit code and PBS reports Exit_status=0 for a run that aborted.
