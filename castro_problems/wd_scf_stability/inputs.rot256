@@ -95,7 +95,27 @@ castro.do_grav = 1
 gravity.gravity_type = PoissonGrav
 gravity.drdxfac = 2
 
-castro.cfl            = 0.5
+# 0.3, not the 0.5 the other runs use, and only from the restart at chk02000.
+#
+# Both windows of the first attempt died at the SAME step, 2154, t = 5.146 s,
+# with "too many subcycles" -- 32 failed retries of one step, against a
+# default of 10 that had already been raised. Restarting from the checkpoint
+# reproduced it exactly, so it is deterministic and resubmitting cannot help.
+#
+# t = 5.15 s is where the instability saturates: at 192^3 the poloidal energy
+# peaks at 5.37 and the amplitude ratio bottoms at 5.20. The flow is at its
+# most violent precisely there, so the first thing to try is a smaller step
+# rather than a looser floor or more retries, both of which treat the symptom.
+#
+# Changing this at the restart rather than from t = 0 is deliberate and it
+# helps rather than hurts. The growth phase -- t = 1.3 to 4.0, the window the
+# rate is fitted in and the whole point of this run -- is already on disk,
+# computed at cfl = 0.5, identical to the 192^3 run it has to be compared
+# against. Only the post-saturation evolution is affected.
+#
+# Cost: dt falls by 0.6, so the remaining 6.85 s needs about 4200 steps
+# instead of 2500, two or three more chained windows.
+castro.cfl            = 0.3
 castro.init_shrink    = 0.01
 castro.change_max     = 1.1
 castro.sum_interval   = 1
