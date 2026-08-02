@@ -136,9 +136,34 @@ amr.blocking_factor = 8
 amr.max_grid_size   = 32
 amr.plot_file       = plt
 amr.check_file      = chk
-amr.check_int       = 500
-amr.plot_int        = 50
-amr.derive_plot_vars = density x_velocity y_velocity z_velocity eden Temp pressure B_x B_y B_z Div_B emag_density etor_density
+# Output cadence by TIME, not by step, and this is not a preference.
+#
+# At 256^3 a plotfile is 2.8 GB against 1.2 GB at 192^3, and cfl = 0.3 puts
+# 1.67x more steps between the same two instants. Left at plot_int = 50 the
+# run to t = 12 would write about 324 plotfiles: 0.9 TB. plot_per = 0.5 gives
+# 14 files over the remaining 7.2 s, 40 GB, and spaces them uniformly in
+# seconds rather than in steps -- which is what every analysis of this run
+# actually wants, and what plot_int never gave.
+#
+# The growth phase is already sampled densely: the first attempt left 44
+# plotfiles between t = 0 and 5.15 s at the old cadence, which is what the
+# comparison against 192^3 is built on. Nothing is lost by going coarse now.
+amr.plot_per        = 0.5
+amr.check_int       = 2000
+
+# Div_B, emag_density and etor_density are dropped, and this fixes a second
+# problem as well as saving space. All three are computed from several
+# face-centred components packed into one cell-centred FAB and are garbage --
+# Div_B reaching 3e146 where it should be ~0. Worse, the overflow reaches the
+# per-FAB min/max block of Level_0/Cell_H as `inf`, and AMReX's own plotfile
+# tools then abort in the header parse before reading anything. Every one of
+# the 70 plotfiles of the 192^3 run had to be patched by hand
+# (tools/patch_plotfile_inf.sh) to be readable at all. Not writing them means
+# not having to.
+#
+# pressure and eden go too: nothing reads them, and Temp is identically zero
+# under the zero-temperature ztwd EOS.
+amr.derive_plot_vars = density x_velocity y_velocity z_velocity B_x B_y B_z
 
 # The floor sits two decades below the ambient, and ONLY the floor was moved.
 #
