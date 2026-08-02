@@ -10,11 +10,13 @@
 //   Tayler feeds on the toroidal field's own energy, needs no rotation, and
 //          its fastest mode is the m = 1 kink.
 //
-// At 192^3 the m = 0 and m = 1 components of the poloidal field grew at the
-// same rate and the test was inconclusive. The rate also RISES with
-// resolution -- 1.369/s at 192^3 against 2.007/s at 256^3, climbing toward
-// the analytic MRI value -- which is the signature of an under-resolved MRI,
-// lambda_MRI/dx going 13.4 to 17.9 against the ~25 it needs.
+// ANSWERED, for the 192^3 run: m = 1. The poloidal field is m = 1 dominated
+// from t = 2.5 s, |Bz_m1|/|Bz_m0| reaching 21 at t = 4.0, while B_phi stays
+// largely axisymmetric. That rules out the axisymmetric MRI -- which in any
+// case cannot exist on this grid, since lambda_MRI built from the VERTICAL
+// field (v_A,pol = 3.7e4 cm/s) is 2.9e4 cm, three thousandths of a cell.
+// What remains is the m = 1 kink, or the non-axisymmetric toroidal-field MRI,
+// which this diagnostic cannot separate from it.
 //
 // The projection is done as a direct sum over cells rather than by
 // interpolating onto rings, which needs no interpolation and no slice file:

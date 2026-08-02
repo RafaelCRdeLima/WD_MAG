@@ -12,20 +12,47 @@
 # condition ringing on the grid, and 26 hours spent watching it damp would be
 # 26 hours measuring discretisation.
 #
-# What replaces it is better. The instability that destroys the field looks
-# like the MRI rather than Tayler: the growth rate RISES with resolution,
-# 1.369/s at 192^3 against 2.007/s at 256^3, toward the 2.05/s that the
-# j-constant rotation law predicts for the MRI at varpi = R_eq. The MRI
-# transports angular momentum outward, and this star carries 2.005 Msun
-# against a Chandrasekhar mass of 1.456 -- half a solar mass of it held up by
-# the differential rotation the instability exists to erase. Whether the star
-# survives that is a question about tens of seconds, not twelve.
+# What replaces it: the field is destroyed and the star is not, and we do not
+# know where that ends. By t = 12 s the toroidal energy is down by a factor of
+# 20 and 95% of the magnetic energy is gone, while the mass above the density
+# cut has not moved by more than 0.42%. Angular momentum is leaving too --
+# L_z fell 2.6% from its peak -- and this star carries 2.005 Msun against a
+# Chandrasekhar mass of 1.456, with half a solar mass of that standing on
+# differential rotation. Twelve seconds does not settle whether it keeps it.
 #
-# The resolution caveat cuts in our favour here, which is the point. An
-# under-resolved MRI grows too SLOWLY, so this run attacks the star more
-# weakly than reality would. If it dies anyway, it dies -- a one-sided bound
-# that costs a quarter of what 256^3 would. If it survives, that proves
-# nothing and the question moves to a finer grid.
+# WHICH instability, corrected. An earlier version of this file argued the
+# MRI, on a lambda_MRI/dx of 13.4 at 192^3 and 17.9 at 256^3. That number was
+# computed with the mass-weighted Alfven speed of the TOTAL field, which in
+# this star is the toroidal one. The axisymmetric Balbus-Hawley mode is driven
+# by the VERTICAL field, and this configuration is toroidal to a part in ten
+# million: B_pol,rms = 7.6e8 G gives v_A,pol = 3.7e4 cm/s and
+#
+#     lambda_MRI = 2 pi v_A,pol / Omega = 2.9e4 cm = 0.003 cells at 192^3
+#
+# Resolving it would take N ~ 60000. The axisymmetric MRI is not
+# under-resolved here; it is absent.
+#
+# And the modes say the same thing. tools/fmodes over all 50 plotfiles of the
+# 192^3 run: the poloidal field is m = 1 dominated from t = 2.5 onward, with
+# |Bz_m1|/|Bz_m0| reaching 21 at t = 4.0, while B_phi stays largely
+# axisymmetric (m1/m0 climbing only to 0.14). An axisymmetric instability
+# would look like the opposite.
+#
+# What that leaves is the m = 1 kink -- Tayler -- or the non-axisymmetric
+# toroidal-field MRI, which is also m >= 1 and which the mode number alone
+# cannot separate from it. The measured rate sits inside the range of the
+# Alfven frequency across the star: omega_A = v_A/varpi runs from 0.42/s
+# averaged to 2.9/s at the B_phi peak, against measured amplitude e-foldings
+# of 1.46 s at 192^3 and 1.00 s at 256^3.
+#
+# The rate rising with resolution is then not an MRI converging but the kink
+# being less damped on the finer grid, so it remains a lower bound.
+#
+# The resolution caveat cuts in our favour, which is the point. The mode is
+# still damped by the grid at this resolution -- sigma is a lower bound -- so
+# this run attacks the star more weakly than reality would. If it dies anyway,
+# it dies. If it survives, that proves nothing and the question moves to a
+# finer grid.
 #
 # The configuration (models/rotating_mixed.txt, format v2):
 #   M = 2.0052 Msun, R_eq = 3.917e8 cm, R_pol = 1.501e8 cm (oblate, 0.38)
