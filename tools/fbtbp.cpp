@@ -76,6 +76,13 @@ void process (const std::string& pltfile, Real rho_cut)
 
     Real e_tor = 0.0;
     Real e_pol = 0.0;
+    // Peak field strengths as well as energies: the model manifest reports
+    // Bt_over_Bp_amplitude, a ratio of maxima, and that is what it has to be
+    // compared against. The energy ratio weights the whole volume and is a
+    // different number.
+    Real b_tor_max = 0.0;
+    Real b_pol_max = 0.0;
+    Real b_max = 0.0;
 
     for (int ilev = 0; ilev <= fine_level; ++ilev) {
 
@@ -111,12 +118,13 @@ void process (const std::string& pltfile, Real rho_cut)
         }
         auto const& ma = mask.const_arrays();
 
-        auto rr = ParReduce(TypeList<ReduceOpSum,ReduceOpSum>{}, TypeList<Real,Real>{}, rho,
+        auto rr = ParReduce(TypeList<ReduceOpSum,ReduceOpSum,ReduceOpMax,ReduceOpMax,ReduceOpMax>{},
+                            TypeList<Real,Real,Real,Real,Real>{}, rho,
                     [=] AMREX_GPU_DEVICE (int bno, int i, int j, int k)
-                        -> GpuTuple<Real,Real>
+                        -> GpuTuple<Real,Real,Real,Real,Real>
                     {
-                        if (ma[bno](i,j,k) != 0)       { return {0.0_rt, 0.0_rt}; }
-                        if (ra[bno](i,j,k) <= rho_cut) { return {0.0_rt, 0.0_rt}; }
+                        if (ma[bno](i,j,k) != 0)       { return {0.0_rt, 0.0_rt, 0.0_rt, 0.0_rt, 0.0_rt}; }
+                        if (ra[bno](i,j,k) <= rho_cut) { return {0.0_rt, 0.0_rt, 0.0_rt, 0.0_rt, 0.0_rt}; }
 
                         const Real x = xlo + (Real(i) + 0.5_rt) * dx0;
                         const Real y = ylo + (Real(j) + 0.5_rt) * dx1;
@@ -127,17 +135,25 @@ void process (const std::string& pltfile, Real rho_cut)
                         const Real bz = za[bno](i,j,k);
 
                         const Real btor = (varpi > 0.0_rt) ? (-y*bx + x*by) / varpi : 0.0_rt;
-                        const Real bpol2 = amrex::max(bx*bx + by*by + bz*bz - btor*btor, 0.0_rt);
+                        const Real b2 = bx*bx + by*by + bz*bz;
+                        const Real bpol2 = amrex::max(b2 - btor*btor, 0.0_rt);
 
-                        return {0.5_rt * btor * btor * dv, 0.5_rt * bpol2 * dv};
+                        return {0.5_rt * btor * btor * dv, 0.5_rt * bpol2 * dv,
+                                std::abs(btor), std::sqrt(bpol2), std::sqrt(b2)};
                     });
 
         e_tor += amrex::get<0>(rr);
         e_pol += amrex::get<1>(rr);
+        b_tor_max = amrex::max(b_tor_max, amrex::get<2>(rr));
+        b_pol_max = amrex::max(b_pol_max, amrex::get<3>(rr));
+        b_max     = amrex::max(b_max,     amrex::get<4>(rr));
     }
 
     ParallelDescriptor::ReduceRealSum(e_tor);
     ParallelDescriptor::ReduceRealSum(e_pol);
+    ParallelDescriptor::ReduceRealMax(b_tor_max);
+    ParallelDescriptor::ReduceRealMax(b_pol_max);
+    ParallelDescriptor::ReduceRealMax(b_max);
 
     const Real e_mag = e_tor + e_pol;
 
@@ -150,6 +166,12 @@ void process (const std::string& pltfile, Real rho_cut)
                                                    : std::numeric_limits<Real>::infinity())
                   << std::fixed << std::setprecision(7)
                   << std::setw(12) << (e_mag > 0.0 ? e_tor / e_mag : 0.0)
+                  << std::scientific << std::setprecision(5)
+                  << std::setw(14) << b_tor_max
+                  << std::setw(14) << b_pol_max
+                  << std::setw(14) << b_max
+                  << std::setw(14) << (b_pol_max > 0.0 ? b_tor_max / b_pol_max
+                                                       : std::numeric_limits<Real>::infinity())
                   << '\n' << std::flush;
     }
 }
@@ -192,7 +214,8 @@ void main_main ()
     }
 
     amrex::Print() << "# rho_cut = " << rho_cut << '\n';
-    amrex::Print() << "#          t         E_tor         E_pol         Et/Ep     Et/Emag\n";
+    amrex::Print() << "#          t         E_tor         E_pol         Et/Ep     Et/Emag"
+                   << "     Btor_max      Bpol_max         B_max     Bt/Bp_amp\n";
 
     for (auto const& pltfile : plotfiles) {
         process(pltfile, rho_cut);

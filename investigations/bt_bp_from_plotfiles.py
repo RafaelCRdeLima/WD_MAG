@@ -71,31 +71,45 @@ def split(fn):
 
     e_tor = 0.5 * float(np.sum(btor * btor * dv))
     e_pol = 0.5 * float(np.sum(bpol2 * dv))
-    return float(ds.current_time), e_tor, e_pol, float(rho[sel].max())
+
+    # Peak strengths as well as energies: the model manifest reports
+    # Bt_over_Bp_amplitude, a ratio of maxima, and that is what it has to be
+    # compared against. The energy ratio weights the whole volume and is a
+    # different number.
+    b_tor_max = float(np.abs(btor).max())
+    b_pol_max = float(np.sqrt(bpol2).max())
+    b_max = float(np.sqrt(bx * bx + by * by + bz * bz).max())
+
+    return (float(ds.current_time), e_tor, e_pol, float(rho[sel].max()),
+            b_tor_max, b_pol_max, b_max)
 
 
 def main(paths):
     print(f"# RHO_CUT = {RHO_CUT:g} g/cm^3")
-    print(f"# {'t':>9} {'E_tor':>12} {'E_pol':>12} {'Et/Ep':>12} {'Et/Emag':>10} {'rho_max':>11}")
+    print(f"# {'t':>9} {'E_tor':>12} {'E_pol':>12} {'Et/Ep':>12} {'Et/Emag':>10}"
+          f" {'Btor_max':>12} {'Bpol_max':>12} {'B_max':>12} {'Bt/Bp_amp':>12} {'rho_max':>11}")
     rows = []
     for fn in paths:
         try:
-            t, e_tor, e_pol, rho_max = split(fn)
+            t, e_tor, e_pol, rho_max, b_tor_max, b_pol_max, b_max = split(fn)
         except Exception as exc:                       # a truncated plotfile must not stop the sweep
             print(f"# {fn}: FAILED -- {type(exc).__name__}: {exc}", file=sys.stderr, flush=True)
             continue
         e_mag = e_tor + e_pol
         ratio = e_tor / e_pol if e_pol > 0 else float("inf")
         frac = e_tor / e_mag if e_mag > 0 else float("nan")
-        print(f"{t:11.5f} {e_tor:12.5e} {e_pol:12.5e} {ratio:12.4e} {frac:10.7f} {rho_max:11.4e}",
+        amp = b_tor_max / b_pol_max if b_pol_max > 0 else float("inf")
+        print(f"{t:11.5f} {e_tor:12.5e} {e_pol:12.5e} {ratio:12.4e} {frac:10.7f}"
+              f" {b_tor_max:12.5e} {b_pol_max:12.5e} {b_max:12.5e} {amp:12.5e} {rho_max:11.4e}",
               flush=True)
-        rows.append((t, e_tor, e_pol, ratio, frac, rho_max))
+        rows.append((t, e_tor, e_pol, ratio, frac, b_tor_max, b_pol_max, b_max, amp, rho_max))
 
     if not rows:
         return 1
     rows.sort()
     with open("bt_bp.csv", "w") as fh:
-        fh.write("t,E_tor,E_pol,Et_over_Ep,Et_over_Emag,rho_max\n")
+        fh.write("t,E_tor,E_pol,Et_over_Ep,Et_over_Emag,"
+                 "Btor_max,Bpol_max,B_max,Bt_over_Bp_amp,rho_max\n")
         for row in rows:
             fh.write(",".join(f"{v:.8e}" for v in row) + "\n")
     print(f"# {len(rows)} of {len(paths)} plotfiles -> bt_bp.csv", file=sys.stderr)
