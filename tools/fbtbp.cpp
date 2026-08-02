@@ -92,6 +92,17 @@ void process (const std::string& pltfile, Real rho_cut)
     Real b_pol_max = 0.0;
     Real b_max = 0.0;
 
+    // Mass and shape, over the same cells the field is measured on. The log
+    // already carries a MASS diagnostic, but it is the mass of the whole box
+    // including the 2.0e4 g/cm^3 ambient -- 2.064 Msun against the model's
+    // 2.005 -- so it answers whether the scheme conserves mass, not whether
+    // the star keeps it. These are above the density cut, so they answer the
+    // second question. No radius is diagnosed anywhere else.
+    Real mass = 0.0;
+    Real volume = 0.0;
+    Real r_eq = 0.0;         // widest cylindrical radius reached
+    Real r_pol = 0.0;        // greatest height reached
+
     for (int ilev = 0; ilev <= fine_level; ++ilev) {
 
         const Array<Real,AMREX_SPACEDIM> dx = pf.cellSize(ilev);
@@ -109,8 +120,10 @@ void process (const std::string& pltfile, Real rho_cut)
 
         const Real xlo = problo[0];
         const Real ylo = problo[1];
+        const Real zlo = problo[2];
         const Real dx0 = dx[0];
         const Real dx1 = dx[1];
+        const Real dx2 = dx[2];
 
         // A cell covered by a finer level must not be counted twice. The
         // finest level gets an all-zero mask so the reduction below stays a
@@ -155,6 +168,30 @@ void process (const std::string& pltfile, Real rho_cut)
         b_tor_max = amrex::max(b_tor_max, castro_to_gauss * amrex::get<2>(rr));
         b_pol_max = amrex::max(b_pol_max, castro_to_gauss * amrex::get<3>(rr));
         b_max     = amrex::max(b_max,     castro_to_gauss * amrex::get<4>(rr));
+
+        // Mass and shape, in a second reduction rather than a wider tuple:
+        // the field one is already five outputs and the two have nothing to
+        // do with each other.
+        auto gg = ParReduce(TypeList<ReduceOpSum,ReduceOpSum,ReduceOpMax,ReduceOpMax>{},
+                            TypeList<Real,Real,Real,Real>{}, rho,
+                    [=] AMREX_GPU_DEVICE (int bno, int i, int j, int k)
+                        -> GpuTuple<Real,Real,Real,Real>
+                    {
+                        if (ma[bno](i,j,k) != 0)       { return {0.0_rt, 0.0_rt, 0.0_rt, 0.0_rt}; }
+                        const Real r = ra[bno](i,j,k);
+                        if (r <= rho_cut)              { return {0.0_rt, 0.0_rt, 0.0_rt, 0.0_rt}; }
+
+                        const Real x = xlo + (Real(i) + 0.5_rt) * dx0;
+                        const Real y = ylo + (Real(j) + 0.5_rt) * dx1;
+                        const Real z = zlo + (Real(k) + 0.5_rt) * dx2;
+
+                        return {r * dv, dv, std::sqrt(x*x + y*y), std::abs(z)};
+                    });
+
+        mass   += amrex::get<0>(gg);
+        volume += amrex::get<1>(gg);
+        r_eq  = amrex::max(r_eq,  amrex::get<2>(gg));
+        r_pol = amrex::max(r_pol, amrex::get<3>(gg));
     }
 
     ParallelDescriptor::ReduceRealSum(e_tor);
@@ -162,6 +199,10 @@ void process (const std::string& pltfile, Real rho_cut)
     ParallelDescriptor::ReduceRealMax(b_tor_max);
     ParallelDescriptor::ReduceRealMax(b_pol_max);
     ParallelDescriptor::ReduceRealMax(b_max);
+    ParallelDescriptor::ReduceRealSum(mass);
+    ParallelDescriptor::ReduceRealSum(volume);
+    ParallelDescriptor::ReduceRealMax(r_eq);
+    ParallelDescriptor::ReduceRealMax(r_pol);
 
     const Real e_mag = e_tor + e_pol;
 
@@ -185,6 +226,16 @@ void process (const std::string& pltfile, Real rho_cut)
                   // 0.73 B_c, so this column says when the run leaves the
                   // range its own equation of state is valid in.
                   << std::setw(13) << b_max / 4.4140e13
+                  // Volume-equivalent radius alongside the two extents: R_eq
+                  // and R_pol are set by the outermost single cell above the
+                  // cut and a filament reaches further than the body does,
+                  // while R_vol cannot be moved by one cell.
+                  << std::setw(14) << mass / 1.98892e33
+                  << std::setw(13) << r_eq / 1.0e8
+                  << std::setw(13) << r_pol / 1.0e8
+                  << std::setw(13) << std::cbrt(3.0 * volume / (4.0 * M_PI)) / 1.0e8
+                  << std::fixed << std::setprecision(4)
+                  << std::setw(12) << (r_eq > 0.0 ? r_pol / r_eq : 0.0)
                   << '\n' << std::flush;
     }
 }
@@ -229,8 +280,11 @@ void main_main ()
     amrex::Print() << "# rho_cut = " << rho_cut << '\n';
     amrex::Print() << "# energies in erg; peak fields in GAUSS (state is Heaviside-Lorentz,"
                       " converted by sqrt(4 pi)); B_c = 4.414e13 G\n";
+    amrex::Print() << "# mass in Msun and radii in 1e8 cm, both over the cells above rho_cut,"
+                      " so they are the STAR and not the box\n";
     amrex::Print() << "#          t         E_tor         E_pol         Et/Ep     Et/Emag"
-                   << "   Btor_max_G    Bpol_max_G       B_max_G     Bt/Bp_amp        B/B_c\n";
+                   << "   Btor_max_G    Bpol_max_G       B_max_G     Bt/Bp_amp        B/B_c"
+                   << "       M/Msun      R_eq_e8     R_pol_e8     R_vol_e8   Rpol/Req\n";
 
     for (auto const& pltfile : plotfiles) {
         process(pltfile, rho_cut);
