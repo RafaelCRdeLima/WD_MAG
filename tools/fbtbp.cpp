@@ -64,6 +64,7 @@ void process (const std::string& pltfile, Real rho_cut)
     }
 
     const Vector<std::string>& names = pf.varNames();
+    const bool have_vel = has_var(names, "x_velocity") && has_var(names, "y_velocity");
     for (auto const& want : {"density", "B_x", "B_y", "B_z"}) {
         if (! has_var(names, want)) {
             amrex::Print() << "# " << pltfile << ": skipped, no " << want << '\n';
@@ -102,6 +103,17 @@ void process (const std::string& pltfile, Real rho_cut)
     Real volume = 0.0;
     Real r_eq = 0.0;         // widest cylindrical radius reached
     Real r_pol = 0.0;        // greatest height reached
+
+    // Rotation. The log carries a global ANG MOM Z but nothing that says how
+    // fast the star actually turns, and for a differentially rotating star one
+    // number cannot: Omega falls by half between the axis and the equator in
+    // the initial model. So: the angular momentum and moment of inertia of the
+    // star, whose ratio is a mass-weighted mean Omega, and Omega itself
+    // averaged over an inner and an outer shell.
+    Real lz = 0.0;           // int rho (x v_y - y v_x) dV
+    Real inertia = 0.0;      // int rho varpi^2 dV
+    Real om_in_num = 0.0, om_in_den = 0.0;    // varpi < 0.15 R_eq
+    Real om_out_num = 0.0, om_out_den = 0.0;  // 0.85 to 1.15 R_eq
 
     for (int ilev = 0; ilev <= fine_level; ++ilev) {
 
@@ -192,6 +204,42 @@ void process (const std::string& pltfile, Real rho_cut)
         volume += amrex::get<1>(gg);
         r_eq  = amrex::max(r_eq,  amrex::get<2>(gg));
         r_pol = amrex::max(r_pol, amrex::get<3>(gg));
+
+        // Rotation, in a plain host loop: five accumulators is past what a
+        // tuple reduction is comfortable with, and this is not the hot path.
+        if (have_vel) {
+            const MultiFab& vx = pf.get(ilev, "x_velocity");
+            const MultiFab& vy = pf.get(ilev, "y_velocity");
+            constexpr Real R_EQ = 3.917259e8;    // of the initial model
+            for (MFIter mfi(rho); mfi.isValid(); ++mfi) {
+                const Box& bx = mfi.validbox();
+                auto const& ra_ = rho.const_array(mfi);
+                auto const& ua = vx.const_array(mfi);
+                auto const& va = vy.const_array(mfi);
+                auto const& mk = mask.const_array(mfi);
+                const auto lo = amrex::lbound(bx);
+                const auto hi = amrex::ubound(bx);
+                for (int k = lo.z; k <= hi.z; ++k) {
+                for (int j = lo.y; j <= hi.y; ++j) {
+                for (int i = lo.x; i <= hi.x; ++i) {
+                    if (mk(i,j,k) != 0) { continue; }
+                    const Real r = ra_(i,j,k);
+                    if (r <= rho_cut) { continue; }
+                    const Real x = xlo + (Real(i) + 0.5_rt) * dx0;
+                    const Real y = ylo + (Real(j) + 0.5_rt) * dx1;
+                    const Real w2 = x*x + y*y;
+                    if (w2 <= 0.0) { continue; }
+                    const Real dm = r * dv;
+                    const Real jz = x * va(i,j,k) - y * ua(i,j,k);   // varpi * v_phi
+                    lz      += dm * jz;
+                    inertia += dm * w2;
+                    const Real om = jz / w2;
+                    const Real w = std::sqrt(w2);
+                    if (w < 0.15_rt * R_EQ)                       { om_in_num  += dm*om; om_in_den  += dm; }
+                    else if (w > 0.85_rt*R_EQ && w < 1.15_rt*R_EQ) { om_out_num += dm*om; om_out_den += dm; }
+                }}}
+            }
+        }
     }
 
     ParallelDescriptor::ReduceRealSum(e_tor);
@@ -203,6 +251,12 @@ void process (const std::string& pltfile, Real rho_cut)
     ParallelDescriptor::ReduceRealSum(volume);
     ParallelDescriptor::ReduceRealMax(r_eq);
     ParallelDescriptor::ReduceRealMax(r_pol);
+    ParallelDescriptor::ReduceRealSum(lz);
+    ParallelDescriptor::ReduceRealSum(inertia);
+    ParallelDescriptor::ReduceRealSum(om_in_num);
+    ParallelDescriptor::ReduceRealSum(om_in_den);
+    ParallelDescriptor::ReduceRealSum(om_out_num);
+    ParallelDescriptor::ReduceRealSum(om_out_den);
 
     const Real e_mag = e_tor + e_pol;
 
@@ -236,6 +290,11 @@ void process (const std::string& pltfile, Real rho_cut)
                   << std::setw(13) << std::cbrt(3.0 * volume / (4.0 * M_PI)) / 1.0e8
                   << std::fixed << std::setprecision(4)
                   << std::setw(12) << (r_eq > 0.0 ? r_pol / r_eq : 0.0)
+                  << std::scientific << std::setprecision(5)
+                  << std::setw(14) << lz
+                  << std::setw(13) << (inertia > 0.0 ? lz / inertia : 0.0)
+                  << std::setw(13) << (om_in_den  > 0.0 ? om_in_num / om_in_den   : 0.0)
+                  << std::setw(13) << (om_out_den > 0.0 ? om_out_num / om_out_den : 0.0)
                   << '\n' << std::flush;
     }
 }
@@ -284,7 +343,8 @@ void main_main ()
                       " so they are the STAR and not the box\n";
     amrex::Print() << "#          t         E_tor         E_pol         Et/Ep     Et/Emag"
                    << "   Btor_max_G    Bpol_max_G       B_max_G     Bt/Bp_amp        B/B_c"
-                   << "       M/Msun      R_eq_e8     R_pol_e8     R_vol_e8   Rpol/Req\n";
+                   << "       M/Msun      R_eq_e8     R_pol_e8     R_vol_e8   Rpol/Req"
+                   << "         Lz_star     Om_mean      Om_core       Om_eq\n";
 
     for (auto const& pltfile : plotfiles) {
         process(pltfile, rho_cut);
