@@ -16,15 +16,32 @@ Three panels.
       transport as magnetic rather than anything else in the scheme -- there
       is no explicit viscosity in these runs, and no explicit resistivity.
 
-  (b) Omega in the three shells. The initial profile spans a factor of three
-      from core to outer shell.
+  (b) The decomposition L_z = I * Omega_mean, normalised at t = 12 s. This
+      panel answers the obvious objection to (a): the star loses angular
+      momentum while its angular velocity does not fall. It cannot, because I
+      is not constant -- the star contracts, R_vol by 11% and R_eq by 15%, so I
+      falls faster than L_z does and Omega = L_z/I rises anyway. A skater does
+      the same thing, minus the losses.
 
-  (c) Omega_out/Omega_core, the differential rotation itself. If the field had
+      Normalised at t = 12 s and not at t = 0 or at the peak of L_z: both of
+      those sit inside the initial transient, where the star breathes by a
+      factor of 2.5 in volume and I with it, so the reference value depends on
+      which phase of the pulsation it lands in. Curves are smoothed over one
+      pulsation period first, and Omega is then formed from the smoothed L_z
+      and I so the three close exactly.
+
+  (c) Omega in the three shells. The initial profile spans a factor of three
+      from core to outer shell. Note the shells are at fixed fractions of the
+      INITIAL R_eq, so part of the decline in the outer one is the star having
+      shrunk out from under it; panel (e), split by mass, does not have that
+      bias.
+
+  (d) Omega_out/Omega_core, the differential rotation itself. If the field had
       done its work this would climb towards 1. It does not, and that is why
       the star survives: it never loses the differential rotation that holds
       2 Msun above the Chandrasekhar mass.
 
-  (d) L_z of the outer half of the MASS over that of the inner half. Split by
+  (e) L_z of the outer half of the MASS over that of the inner half. Split by
       mass, not by radius: shells at fixed varpi are Eulerian and the star
       breathes by 14% every 1.5 s, so material crosses them constantly and a
       fixed shell would measure the pulsation instead of the transport. The
@@ -89,11 +106,11 @@ def main():
     d = load()
     t = d["t"]
 
-    fig, (ax_l, ax_o, ax_r, ax_j) = plt.subplots(
-        4, 1, figsize=(COL_IN, COL_IN * 2.15), sharex=True,
-        gridspec_kw={"height_ratios": [0.95, 1.0, 0.9, 0.9], "hspace": 0.12},
+    fig, (ax_l, ax_i, ax_o, ax_r, ax_j) = plt.subplots(
+        5, 1, figsize=(COL_IN, COL_IN * 2.6), sharex=True,
+        gridspec_kw={"height_ratios": [0.9, 0.9, 1.0, 0.85, 0.85], "hspace": 0.12},
     )
-    for ax in (ax_l, ax_o, ax_r, ax_j):
+    for ax in (ax_l, ax_i, ax_o, ax_r, ax_j):
         ax.grid(True, color=C_GRID, linewidth=0.4, alpha=0.9)
         ax.set_axisbelow(True)
         ax.set_xlim(0, t.max())
@@ -114,7 +131,29 @@ def main():
     ax_l.set_ylabel(r"$L_z$  ($10^{50}$ g cm$^2$ s$^{-1}$)")
     ax_l.text(0.06, 0.10, "(a)", transform=ax_l.transAxes, fontsize=7, va="bottom")
 
-    # (b) the three shells -------------------------------------------------
+    # (b) L_z = I * Omega, normalised at the peak of L_z --------------------
+    inertia = d["Lz_star"] / d["Om_mean"]
+    m = t >= 12.0
+    # Smooth first, then normalise by the SMOOTHED value at the reference
+    # time. Normalising by the raw value there put the curves off 1 by up to
+    # 15%, because L_z peaks at a trough of the 1.5 s pulsation and I is
+    # oscillating hard with it.
+    sl = smooth(t[m], d["Lz_star"][m], P_PULSE)
+    si = smooth(t[m], inertia[m], P_PULSE)
+    for ys, col, lab in ((sl / sl[0], C_LZ, r"$L_z$"),
+                         (si / si[0], C_MID, r"$I$"),
+                         ((sl / si) / (sl[0] / si[0]), C_CORE, r"$\bar\Omega = L_z/I$")):
+        ax_i.plot(t[m], ys, color=col, linewidth=1.1)
+        ax_i.text(59.2, ys[-1], " " + lab, color=col, fontsize=6.5,
+                  ha="right", va="center")
+    print(f"  t=12 -> 60:  L_z {100*(sl[-1]/sl[0]-1):+.1f}%   I {100*(si[-1]/si[0]-1):+.1f}%"
+          f"   Om {100*((sl[-1]/si[-1])/(sl[0]/si[0])-1):+.1f}%")
+    ax_i.axhline(1.0, color=C_MUTED, linewidth=0.6, linestyle=(0, (3, 2)))
+    ax_i.set_ylabel(r"relative to $t = 12$ s")
+    ax_i.set_ylim(0.88, 1.09)
+    ax_i.text(0.02, 0.92, "(b)", transform=ax_i.transAxes, fontsize=7, va="top")
+
+    # (c) the three shells -------------------------------------------------
     # Labels in the gaps between the curves, not on them: the shells are well
     # separated in Omega and that separation is the point of the panel.
     for key, col, lab, ytext in (
@@ -125,7 +164,7 @@ def main():
         ax_o.text(28.0, ytext, lab, color=col, fontsize=6.0, ha="center")
     ax_o.set_ylim(1.35, 9.0)
     ax_o.set_ylabel(r"$\Omega$  (rad s$^{-1}$)")
-    ax_o.text(0.02, 0.92, "(b)", transform=ax_o.transAxes, fontsize=7, va="top")
+    ax_o.text(0.02, 0.92, "(c)", transform=ax_o.transAxes, fontsize=7, va="top")
 
     # (c) the differential rotation ----------------------------------------
     ratio = d["Om_out"] / d["Om_core"]
@@ -142,7 +181,7 @@ def main():
     ax_r.set_ylabel(r"$\Omega_{\rm out}/\Omega_{\rm core}$")
     ax_r.set_xlabel("t (s)")
     ax_r.set_ylim(0, 1.15)
-    ax_r.text(0.02, 0.92, "(c)", transform=ax_r.transAxes, fontsize=7, va="top")
+    ax_r.text(0.02, 0.92, "(d)", transform=ax_r.transAxes, fontsize=7, va="top")
 
     # (d) angular momentum, inner mass half against outer -------------------
     q = d["Lz_ratio"]
@@ -151,7 +190,7 @@ def main():
     ax_j.plot(t[good], smooth(t[good], q[good], P_PULSE), color=C_LZ, linewidth=1.3)
     ax_j.set_ylabel(r"$L_z^{\rm outer}/L_z^{\rm inner}$")
     ax_j.set_xlabel("t (s)")
-    ax_j.text(0.02, 0.92, "(d)", transform=ax_j.transAxes, fontsize=7, va="top")
+    ax_j.text(0.02, 0.92, "(e)", transform=ax_j.transAxes, fontsize=7, va="top")
     ax_r.set_xlabel("")
 
     fig.savefig(HERE / "rotation_192.pdf")
