@@ -76,10 +76,11 @@ RUNS = {
     # 192^3 spans the whole run, so it gets the two late instants the 256^3
     # has not reached: the field is essentially gone by then and the star is
     # in the steady 1.5 s pulsation.
-    # Only the instants that have BOTH cuts. The three late 192^3 slices
-    # (t = 15, 18, 21) and the whole 256^3 set are meridional only so far.
-    "192": ("slices",    ["plt00000", "plt00400", "plt00700",
-                          "plt01150", "plt01550", "plt03436"]),
+    # 192^3 spans the whole run and gets the late instants the 256^3 has not
+    # reached: by t = 18-21 the field is mostly gone and the star is in the
+    # steady 1.5 s pulsation.
+    "192": ("slices",    ["plt00000", "plt00400", "plt00700", "plt01150",
+                          "plt01550", "plt03436", "plt05012", "plt05805"]),
     "256": ("slices256", ["plt00000", "plt00550", "plt00950",
                           "plt01700", "plt02150"]),
 }
