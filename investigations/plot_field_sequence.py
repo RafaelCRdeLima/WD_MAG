@@ -2,29 +2,32 @@
 
 Run:  scf/.venv/bin/python3 investigations/plot_field_sequence.py [192|256]
 
-Reads slices/*_mer.txt (192^3) or slices256/*_mer.txt (256^3), written by
-tools/fslice.cpp. The meridional cut is the one that separates the two
-components without any rotation of coordinates: at y = 0 the out-of-plane
-component B_y IS B_phi, and the in-plane (B_x, B_z) IS the poloidal field.
+Reads slices/*_eq.txt and slices/*_mer.txt (192^3), or the slices256/
+equivalents, written by tools/fslice.cpp.
+
+EACH COMPONENT IN THE PLANE WHERE IT IS IN-PLANE. This is the whole design and
+an earlier version got it wrong: both rows were meridional, so the in-plane
+field on both was the POLOIDAL one, and the B_phi row ended up carrying
+dipolar-looking lines over a toroidal colour map. A toroidal field drawn that
+way does not look toroidal.
+
+  top     equatorial cut, z = 0. Here B_phi is IN the plane, so the streamlines
+          of (B_x, B_y) are the toroidal field lines themselves -- circles
+          while the star is axisymmetric, and their departure from circles is
+          the instability. Colour is B_phi.
+  bottom  meridional cut, y = 0. Here the in-plane (B_x, B_z) IS the poloidal
+          field, and its streamlines are the poloidal loops. Colour is |B_pol|.
 
 Two rows over the same times.
 
-  top     B_phi, signed, on a diverging scale symmetric about zero, so grey
-          means no field rather than mid-range. At t = 0 the two lobes of
-          opposite sign are the antisymmetry B_phi(x) = -B_phi(-x), not two
-          different fields.
-  bottom  |B_pol|, a magnitude, so a single hue light to dark, starting at the
-          same 1e11 G below which the toroidal map is grey. Sharing the
-          threshold is what lets the two rows be compared: at t = 0 the
-          poloidal panel is nearly empty because the poloidal field really is
-          three decades below the toroidal one.
+B_phi is signed and gets a diverging scale symmetric about zero, so grey means
+no field rather than mid-range. |B_pol| is a magnitude and gets one hue, light
+to dark. Both start at the same 1e10 G, because two maps meant to be compared
+have to share a threshold in gauss.
 
-Both rows carry the in-plane streamlines, which in this plane ARE the poloidal
-field lines. On the bottom they belong to the quantity being coloured; on the
-top they are what places the toroidal structure relative to the poloidal
-geometry, and without them the B_phi row cannot be read against the other.
-They are integrated from B, not drawn as contours of a flux function -- there
-is no flux function once axisymmetry goes, which is the whole result.
+The streamlines are integrated from B, not drawn as contours of a flux
+function -- there is no flux function once axisymmetry goes, which is the
+result.
 
 Both rows share their colour scale across all times and across the two
 resolutions, so panels can be compared by eye. That is the point of fixing
@@ -73,8 +76,10 @@ RUNS = {
     # 192^3 spans the whole run, so it gets the two late instants the 256^3
     # has not reached: the field is essentially gone by then and the star is
     # in the steady 1.5 s pulsation.
-    "192": ("slices",    ["plt00000", "plt00400", "plt00700", "plt01150",
-                          "plt01550", "plt03436", "plt05012", "plt05805"]),
+    # Only the instants that have BOTH cuts. The three late 192^3 slices
+    # (t = 15, 18, 21) and the whole 256^3 set are meridional only so far.
+    "192": ("slices",    ["plt00000", "plt00400", "plt00700",
+                          "plt01150", "plt01550", "plt03436"]),
     "256": ("slices256", ["plt00000", "plt00550", "plt00950",
                           "plt01700", "plt02150"]),
 }
@@ -116,28 +121,32 @@ def main():
 
     im_t = im_p = None
     for col, path in enumerate(paths):
+        # --- top: equatorial, where B_phi is in the plane -------------------
+        te, xe, ye, rhoe, bxe, bye, bze = read(Path(str(path).replace("_mer", "_eq")))
+        varpi = np.hypot(xe, ye)
+        bphi = np.where(varpi > 0, (-ye * bxe + xe * bye) / np.where(varpi > 0, varpi, 1), 0.0)
+        xs_e, ys_e = xe / 1e8, ye / 1e8
+        im_t = axes[0, col].pcolormesh(
+            xs_e, ys_e, bphi, cmap=CMAP_TOR, shading="auto",
+            norm=SymLogNorm(linthresh=B_LINTHRESH, vmin=-B_SCALE, vmax=B_SCALE, base=10))
+        axes[0, col].streamplot(xs_e[0], ys_e[:, 0], bxe, bye, color=C_STREAM_TOR,
+                                linewidth=0.3, density=0.6, arrowsize=0.3,
+                                broken_streamlines=False)
+
+        # --- bottom: meridional, where (B_x, B_z) is the poloidal field -----
         t, x, z, rho, bx, by, bz = read(path)
         xs, zs = x / 1e8, z / 1e8
-
-        im_t = axes[0, col].pcolormesh(
-            xs, zs, by, cmap=CMAP_TOR, shading="auto",
-            norm=SymLogNorm(linthresh=B_LINTHRESH, vmin=-B_SCALE, vmax=B_SCALE, base=10))
-
         bpol = np.hypot(bx, bz)
         im_p = axes[1, col].pcolormesh(
             xs, zs, np.maximum(bpol, BPOL_LO), cmap=CMAP_POL, shading="auto",
             norm=LogNorm(vmin=BPOL_LO, vmax=BPOL_HI))
+        axes[1, col].streamplot(xs[0], zs[:, 0], bx, bz, color=C_LINE,
+                                linewidth=0.3, density=0.6, arrowsize=0.3,
+                                broken_streamlines=False)
 
-        # Same streamlines on both rows. Lighter over the diverging map, which
-        # is busier than the single-hue one and would lose the colour to them.
-        for row, col_line, lw in ((0, C_STREAM_TOR, 0.25), (1, C_LINE, 0.3)):
-            axes[row, col].streamplot(xs[0], zs[:, 0], bx, bz, color=col_line,
-                                      linewidth=lw, density=0.6, arrowsize=0.3,
-                                      broken_streamlines=False)
-
-        for row in (0, 1):
+        for row, cx, cy, rr in ((0, xs_e, ys_e, rhoe), (1, xs, zs, rho)):
             ax = axes[row, col]
-            ax.contour(xs, zs, rho, levels=[RHO_SURFACE], colors=[C_INK],
+            ax.contour(cx, cy, rr, levels=[RHO_SURFACE], colors=[C_INK],
                        linewidths=0.45, linestyles=[(0, (2, 1.5))])
             ax.set_xlim(-5.5, 5.5)
             ax.set_ylim(-5.5, 5.5)
@@ -150,8 +159,8 @@ def main():
         axes[0, col].set_title(rf"$t = {t:.2f}$ s", fontsize=7.5, pad=3)
         axes[1, col].set_xlabel(r"$x$  ($10^8$ cm)")
 
-    axes[0, 0].set_ylabel(r"$B_\phi$" "\n" r"$z$  ($10^8$ cm)")
-    axes[1, 0].set_ylabel(r"$|B_{\rm pol}|$" "\n" r"$z$  ($10^8$ cm)")
+    axes[0, 0].set_ylabel(r"$B_\phi$,  $z=0$" "\n" r"$y$  ($10^8$ cm)")
+    axes[1, 0].set_ylabel(r"$|B_{\rm pol}|$,  $y=0$" "\n" r"$z$  ($10^8$ cm)")
 
     cax_t = fig.add_axes([0.895, 0.545, 0.010, 0.335])
     cb_t = fig.colorbar(im_t, cax=cax_t)
