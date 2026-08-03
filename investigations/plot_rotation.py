@@ -24,6 +24,13 @@ Three panels.
       the star survives: it never loses the differential rotation that holds
       2 Msun above the Chandrasekhar mass.
 
+  (d) L_z of the outer half of the MASS over that of the inner half. Split by
+      mass, not by radius: shells at fixed varpi are Eulerian and the star
+      breathes by 14% every 1.5 s, so material crosses them constantly and a
+      fixed shell would measure the pulsation instead of the transport. The
+      radius enclosing half the mass is tracked per snapshot (r_half) and the
+      cut made there.
+
 The curves carry the 1.498 s pulsation, which aliases badly against any coarse
 sampling; the running mean over one period is drawn on top of (c) so the trend
 can be read without reading the ripple as signal.
@@ -82,11 +89,11 @@ def main():
     d = load()
     t = d["t"]
 
-    fig, (ax_l, ax_o, ax_r) = plt.subplots(
-        3, 1, figsize=(COL_IN, COL_IN * 1.7), sharex=True,
-        gridspec_kw={"height_ratios": [1.0, 1.0, 0.95], "hspace": 0.12},
+    fig, (ax_l, ax_o, ax_r, ax_j) = plt.subplots(
+        4, 1, figsize=(COL_IN, COL_IN * 2.15), sharex=True,
+        gridspec_kw={"height_ratios": [0.95, 1.0, 0.9, 0.9], "hspace": 0.12},
     )
-    for ax in (ax_l, ax_o, ax_r):
+    for ax in (ax_l, ax_o, ax_r, ax_j):
         ax.grid(True, color=C_GRID, linewidth=0.4, alpha=0.9)
         ax.set_axisbelow(True)
         ax.set_xlim(0, t.max())
@@ -137,6 +144,16 @@ def main():
     ax_r.set_ylim(0, 1.15)
     ax_r.text(0.02, 0.92, "(c)", transform=ax_r.transAxes, fontsize=7, va="top")
 
+    # (d) angular momentum, inner mass half against outer -------------------
+    q = d["Lzoutin"]
+    good = np.isfinite(q) & (q > 0)
+    ax_j.plot(t[good], q[good], color=C_MUTED, linewidth=0.6)
+    ax_j.plot(t[good], smooth(t[good], q[good], P_PULSE), color=C_LZ, linewidth=1.3)
+    ax_j.set_ylabel(r"$L_z^{\rm outer}/L_z^{\rm inner}$")
+    ax_j.set_xlabel("t (s)")
+    ax_j.text(0.02, 0.92, "(d)", transform=ax_j.transAxes, fontsize=7, va="top")
+    ax_r.set_xlabel("")
+
     fig.savefig(HERE / "rotation_192.pdf")
     fig.savefig(HERE / "rotation_192.png", dpi=200)
 
@@ -144,6 +161,9 @@ def main():
     print(f"Lz_star: {d['Lz_star'][0]:.4e} -> {d['Lz_star'][-1]:.4e} "
           f"({100*(d['Lz_star'][-1]/d['Lz_star'][0]-1):+.2f}%)")
     print(f"Om_out/Om_core: {r0:.3f} -> {r1:.3f}  ({100*(r1/r0-1):+.1f}%)")
+    q = d["Lzoutin"]; g = np.isfinite(q) & (q > 0)
+    print(f"Lz_out/Lz_in:   {q[g][:5].mean():.3f} -> {q[g][-5:].mean():.3f}"
+          f"  ({100*(q[g][-5:].mean()/q[g][:5].mean()-1):+.1f}%)")
     print(f"wrote {HERE/'rotation_192.pdf'}")
 
 

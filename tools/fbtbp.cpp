@@ -121,6 +121,16 @@ void process (const std::string& pltfile, Real rho_cut)
     Real om_mid_num = 0.0, om_mid_den = 0.0;  // 0.45 to 0.55 R_eq
     Real om_out_num = 0.0, om_out_den = 0.0;  // 0.65 to 0.75 R_eq
 
+    // Angular momentum split by MASS fraction, not by radius. Shells at fixed
+    // varpi are Eulerian and the star breathes by 14% in radius every 1.5 s,
+    // so material crosses them constantly and L_z in a fixed shell measures
+    // the pulsation rather than the transport. Binning finely in varpi and
+    // then cutting at the radius that encloses half the mass follows the star
+    // as it expands and contracts.
+    constexpr int NBIN = 240;
+    constexpr Real RBIN_MAX = 1.5_rt * 3.917259e8;
+    std::vector<Real> mbin(NBIN, 0.0), lbin(NBIN, 0.0);
+
     for (int ilev = 0; ilev <= fine_level; ++ilev) {
 
         const Array<Real,AMREX_SPACEDIM> dx = pf.cellSize(ilev);
@@ -241,6 +251,9 @@ void process (const std::string& pltfile, Real rho_cut)
                     inertia += dm * w2;
                     const Real om = jz / w2;
                     const Real w = std::sqrt(w2);
+                    const int ib = static_cast<int>(w / (RBIN_MAX / Real(NBIN)));
+                    if (ib >= 0 && ib < NBIN) { mbin[ib] += dm; lbin[ib] += dm * jz; }
+
                     if (w < 0.15_rt * R_EQ)                       { om_in_num  += dm*om; om_in_den  += dm; }
                     else if (w > 0.45_rt*R_EQ && w < 0.55_rt*R_EQ) { om_mid_num += dm*om; om_mid_den += dm; }
                     else if (w > 0.65_rt*R_EQ && w < 0.75_rt*R_EQ) { om_out_num += dm*om; om_out_den += dm; }
@@ -266,6 +279,20 @@ void process (const std::string& pltfile, Real rho_cut)
     ParallelDescriptor::ReduceRealSum(om_mid_den);
     ParallelDescriptor::ReduceRealSum(om_out_num);
     ParallelDescriptor::ReduceRealSum(om_out_den);
+    ParallelDescriptor::ReduceRealSum(mbin.data(), NBIN);
+    ParallelDescriptor::ReduceRealSum(lbin.data(), NBIN);
+
+    // Cumulative in radius, then cut at half the mass.
+    Real mtot = 0.0;
+    for (int i = 0; i < NBIN; ++i) { mtot += mbin[i]; }
+    Real macc = 0.0, lz_in = 0.0, r_half = 0.0;
+    int isplit = NBIN;
+    for (int i = 0; i < NBIN; ++i) {
+        if (macc + mbin[i] > 0.5 * mtot) { isplit = i; r_half = (Real(i) + 0.5_rt) * (RBIN_MAX/Real(NBIN)); break; }
+        macc += mbin[i]; lz_in += lbin[i];
+    }
+    Real lz_out = 0.0;
+    for (int i = isplit; i < NBIN; ++i) { lz_out += lbin[i]; }
 
     const Real e_mag = e_tor + e_pol;
 
@@ -305,6 +332,10 @@ void process (const std::string& pltfile, Real rho_cut)
                   << std::setw(13) << (om_in_den  > 0.0 ? om_in_num / om_in_den   : 0.0)
                   << std::setw(13) << (om_mid_den > 0.0 ? om_mid_num / om_mid_den : 0.0)
                   << std::setw(13) << (om_out_den > 0.0 ? om_out_num / om_out_den : 0.0)
+                  << std::setw(14) << lz_in
+                  << std::setw(14) << lz_out
+                  << std::setw(12) << (lz_in > 0.0 ? lz_out / lz_in : 0.0)
+                  << std::setw(12) << r_half / 1.0e8
                   << '\n' << std::flush;
     }
 }
@@ -354,7 +385,8 @@ void main_main ()
     amrex::Print() << "#          t         E_tor         E_pol         Et/Ep     Et/Emag"
                    << "   Btor_max_G    Bpol_max_G       B_max_G     Bt/Bp_amp        B/B_c"
                    << "       M/Msun      R_eq_e8     R_pol_e8     R_vol_e8   Rpol/Req"
-                   << "         Lz_star     Om_mean      Om_core       Om_mid       Om_out\n";
+                   << "         Lz_star     Om_mean      Om_core       Om_mid       Om_out"
+                   << "        Lz_inner      Lz_outer   Lzout/in    r_half_e8\n";
 
     for (auto const& pltfile : plotfiles) {
         process(pltfile, rho_cut);
