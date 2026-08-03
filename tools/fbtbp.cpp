@@ -112,8 +112,14 @@ void process (const std::string& pltfile, Real rho_cut)
     // averaged over an inner and an outer shell.
     Real lz = 0.0;           // int rho (x v_y - y v_x) dV
     Real inertia = 0.0;      // int rho varpi^2 dV
-    Real om_in_num = 0.0, om_in_den = 0.0;    // varpi < 0.15 R_eq
-    Real om_out_num = 0.0, om_out_den = 0.0;  // 0.85 to 1.15 R_eq
+    // Shells at fixed fractions of the INITIAL R_eq, chosen to stay inside the
+    // star at every phase of the pulsation. The first version put the outer
+    // shell at 0.85-1.15 R_eq and it was empty in ten of thirty snapshots: the
+    // star breathes between R_eq = 3.15 and 3.8e8 cm while that shell starts
+    // at 3.33e8, so whenever it contracted there was nothing to measure.
+    Real om_in_num = 0.0,  om_in_den = 0.0;   // varpi < 0.15 R_eq
+    Real om_mid_num = 0.0, om_mid_den = 0.0;  // 0.45 to 0.55 R_eq
+    Real om_out_num = 0.0, om_out_den = 0.0;  // 0.65 to 0.75 R_eq
 
     for (int ilev = 0; ilev <= fine_level; ++ilev) {
 
@@ -236,7 +242,8 @@ void process (const std::string& pltfile, Real rho_cut)
                     const Real om = jz / w2;
                     const Real w = std::sqrt(w2);
                     if (w < 0.15_rt * R_EQ)                       { om_in_num  += dm*om; om_in_den  += dm; }
-                    else if (w > 0.85_rt*R_EQ && w < 1.15_rt*R_EQ) { om_out_num += dm*om; om_out_den += dm; }
+                    else if (w > 0.45_rt*R_EQ && w < 0.55_rt*R_EQ) { om_mid_num += dm*om; om_mid_den += dm; }
+                    else if (w > 0.65_rt*R_EQ && w < 0.75_rt*R_EQ) { om_out_num += dm*om; om_out_den += dm; }
                 }}}
             }
         }
@@ -255,6 +262,8 @@ void process (const std::string& pltfile, Real rho_cut)
     ParallelDescriptor::ReduceRealSum(inertia);
     ParallelDescriptor::ReduceRealSum(om_in_num);
     ParallelDescriptor::ReduceRealSum(om_in_den);
+    ParallelDescriptor::ReduceRealSum(om_mid_num);
+    ParallelDescriptor::ReduceRealSum(om_mid_den);
     ParallelDescriptor::ReduceRealSum(om_out_num);
     ParallelDescriptor::ReduceRealSum(om_out_den);
 
@@ -294,6 +303,7 @@ void process (const std::string& pltfile, Real rho_cut)
                   << std::setw(14) << lz
                   << std::setw(13) << (inertia > 0.0 ? lz / inertia : 0.0)
                   << std::setw(13) << (om_in_den  > 0.0 ? om_in_num / om_in_den   : 0.0)
+                  << std::setw(13) << (om_mid_den > 0.0 ? om_mid_num / om_mid_den : 0.0)
                   << std::setw(13) << (om_out_den > 0.0 ? om_out_num / om_out_den : 0.0)
                   << '\n' << std::flush;
     }
@@ -344,7 +354,7 @@ void main_main ()
     amrex::Print() << "#          t         E_tor         E_pol         Et/Ep     Et/Emag"
                    << "   Btor_max_G    Bpol_max_G       B_max_G     Bt/Bp_amp        B/B_c"
                    << "       M/Msun      R_eq_e8     R_pol_e8     R_vol_e8   Rpol/Req"
-                   << "         Lz_star     Om_mean      Om_core       Om_eq\n";
+                   << "         Lz_star     Om_mean      Om_core       Om_mid       Om_out\n";
 
     for (auto const& pltfile : plotfiles) {
         process(pltfile, rho_cut);
