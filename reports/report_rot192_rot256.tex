@@ -3,7 +3,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
-\usepackage[margin=2.4cm]{geometry}
+\usepackage[margin=2.3cm]{geometry}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
@@ -12,394 +12,368 @@
 \usepackage{caption}
 
 \captionsetup{font=small,labelfont=bf}
-\setlength{\parskip}{0.4em}
+\setlength{\parskip}{0.35em}
 
 \newcommand{\Msun}{M_\odot}
 \newcommand{\Req}{R_{\mathrm{eq}}}
 \newcommand{\Rpol}{R_{\mathrm{pol}}}
+\newcommand{\Rvol}{R_{\mathrm{vol}}}
 \newcommand{\Btor}{B_\varphi}
 \newcommand{\Bpol}{B_{\mathrm{pol}}}
 \newcommand{\Etor}{E_{\mathrm{tor}}}
 \newcommand{\Epol}{E_{\mathrm{pol}}}
+\newcommand{\Emag}{E_{\mathrm{mag}}}
 
 \title{\textbf{Three-dimensional MHD evolution of an ultramassive white dwarf\\
 with differential rotation and a mixed field}\\[0.3em]
-\large Results at $192^3$ and $256^3$ --- interim report}
+\large Initial and final states at $192^3$ and $256^3$ --- interim report}
 \author{Rafael C.\ R.\ de Lima}
-\date{2 August 2026}
+\date{3 August 2026}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
 \noindent
-We evolve a $2.005\,\Msun$ equilibrium with strong differential rotation and a
-toroidal-dominated field in three-dimensional MHD, at two resolutions. The
-central result is a separation: \textbf{the star survives and keeps its mass
-while its ordered magnetic field is destroyed}. Over $12\,\mathrm{s}$ the
-magnetic energy falls by $95\%$ and the toroidal-to-poloidal ratio drops from
-$3\times10^5$ to $10$, while the mass varies by $0.42\%$ with no trend. The
-instability responsible is non-axisymmetric, dominated by $m=1$, and grows in a
-few Alfv\'en times. Its growth rate is \emph{not} converged: it rises by $47\%$
-from $192^3$ to $256^3$, so the measured value is a lower bound. Two runs are
-still in progress, the $192^3$ one already past $t = 22\,\mathrm{s}$.
+A $2.005\,\Msun$ equilibrium with strong differential rotation and a
+toroidal-dominated field, evolved in three-dimensional ideal MHD at two
+resolutions. \textbf{The star survives and keeps its mass; its ordered field
+does not.} At $192^3$, run to $t = 60$\,s, the magnetic energy falls by a
+factor of $2170$ and the toroidal-to-poloidal amplitude ratio from $338$ to
+$1.07$, while the mass stays within $0.3\%$ and the differential rotation is
+not erased. The instability is non-axisymmetric, $m=1$, and grows in a few
+Alfv\'en times. Its rate is not converged --- it rises $47\%$ from $192^3$ to
+$256^3$ --- and the post-saturation decay is not converged either, in the
+opposite direction. The $256^3$ run reaches $t = 8.5$\,s so far.
 \end{abstract}
 
 %======================================================================
-\section{What is being simulated}
+\section{Initial state}
 
-\subsection{The configuration}
-
-The object is a white dwarf of $M = 2.005\,\Msun$, that is \textbf{38\% above
-the Chandrasekhar limit} for $\mu_e = 2$ ($1.456\,\Msun$). The excess is held up
-by differential rotation, and that is the physical reason the star is so
-flattened: $\Req = 3.917\times10^8$\,cm against $\Rpol = 1.501\times10^8$\,cm,
-or $\Rpol/\Req = 0.383$.
+\subsection{The star}
 
 \begin{table}[h]
-\centering
-\small
-\begin{tabular}{lll}
+\centering\small
+\begin{tabular}{llr}
 \toprule
-Mass & $2.0052\,\Msun$ & $1.38\,M_{\mathrm{Ch}}$ \\
-Central density & $3.0\times10^{9}$ g\,cm$^{-3}$ & \\
-Radii & $\Req = 3.917\times10^8$ cm & $\Rpol = 1.501\times10^8$ cm \\
-Rotation & $\Omega_c = 8.193$ rad\,s$^{-1}$ & $j$-constant law, $A = \Req$ \\
-$T/|W|$ & $0.0993$ & mass-shedding parameter $0.469$ \\
-Toroidal field & $\max|\Btor| = 3.23\times10^{13}$ G & $0.732\,B_c$ \\
-Poloidal field & surface dipole $1.0\times10^{9}$ G & \\
-Amplitude ratio & $B_t/B_p = 4234$ & $\Etor/E_{\mathrm{mag}} = 0.99999995$ \\
-Timescales & $t_{\mathrm{dyn}} = 0.475$ s & $t_A = 2.383$ s, $P_{\mathrm{rot}} = 0.767$ s \\
+Mass & $M$ & $2.0052\,\Msun$ \\
+ & $M/M_{\mathrm{Ch}}$ ($\mu_e = 2$) & $\mathbf{1.38}$ \\
+Central density & $\rho_c$ & $3.00\times10^{9}$ g\,cm$^{-3}$ \\
+Mean density & $\langle\rho\rangle$ & $3.30\times10^{7}$ g\,cm$^{-3}$ \\
+Equatorial radius & $\Req$ & $3.917\times10^8$ cm \\
+Polar radius & $\Rpol$ & $1.501\times10^8$ cm \\
+Oblateness & $\Rpol/\Req$ & $\mathbf{0.383}$ \\
+Volume-equivalent radius & $\Rvol$ & $3.07\times10^8$ cm \\
+\midrule
+Rotation law & $\Omega(\varpi) = \Omega_c A^2/(A^2+\varpi^2)$ & $A = 1.834\times10^8$ cm \\
+Central angular velocity & $\Omega_c$ & $8.193$ rad\,s$^{-1}$ \quad ($P = 0.77$ s) \\
+Equatorial angular velocity & $\Omega(\Req)$ & $1.47$ rad\,s$^{-1}$ \quad ($P = 4.3$ s) \\
+Degree of differential rotation & $\Omega_c/\Omega(\Req)$ & $\mathbf{5.6}$ \\
+Equatorial velocity & $v_{\mathrm{eq}}$ & $6.2\times10^3$ km\,s$^{-1}$ = $0.021\,c$ \\
+Rotational support & $T/|W|$ & $0.0993$ \\
+Mass shedding & $\Omega_{\mathrm{eq}}^2\Req/g_{\mathrm{eq}}$ & $0.469$ \\
+\midrule
+Dynamical time & $t_{\mathrm{dyn}}$ & $0.475$ s \\
+Alfv\'en time & $t_A$ & $2.383$ s \\
+Central rotation period & $P_{\mathrm{rot}}$ & $0.767$ s \\
 \bottomrule
 \end{tabular}
-\caption{Properties of the initial model \texttt{rotating\_mixed.txt}.}
+\caption{The configuration. It lies $38\%$ above the Chandrasekhar mass and can
+only exist because of the differential rotation, which is also why it is so
+flattened. It is not at breakup ($47\%$ of shedding) and is below both bar-mode
+thresholds ($T/|W| = 0.099$ against $0.14$ secular and $0.27$ dynamical). The
+surface period of $4.3$\,s is some three times shorter than the fastest white
+dwarf spin claimed in the literature; this is a merger-remnant-like
+configuration, not a model of an observed star.}
 \end{table}
-
-The rotation law is $j$-constant,
-$\Omega(\varpi) = \Omega_c A^2/(A^2+\varpi^2)$ with $A = \Req$. It is the most
-differential case of that family and leaves the star \emph{marginally} stable by
-the Rayleigh criterion ($\mathrm{d}j/\mathrm{d}\varpi = 0$).
 
 \subsection{The fields}
 
-The field is \textbf{mixed but toroidal-dominated to one part in $10^7$ by
-energy}. The poloidal component exists as a weak $10^9$\,G surface dipole;
-integrated, $\Epol/|W| = 5.2\times10^{-10}$. This is the collaboration's
-specification --- strong toroidal interior, weak exterior dipole --- and it is
-precisely the combination that makes a nearly purely toroidal field
-Tayler-unstable.
-
-\subsection{Equation of state}
-
-\texttt{ztwd}: a \textbf{zero-temperature, fully degenerate} electron gas with
-$\mu_e = 2$. It is \textbf{barotropic}, $P = P(\rho)$: all temperature
-derivatives vanish identically and the heat capacities are zero. Two
-consequences follow, taken up in Sec.~\ref{sec:caveats} --- there is no thermal
-reservoir to receive dissipated energy, and the stratification is neutral, with
-no buoyancy to limit magnetic instabilities.
-
-\subsection{Numerical method}
-
-\begin{itemize}\itemsep2pt
-\item \textbf{Code:} \textsc{Castro} 26.07 on AMReX; ideal MHD with constrained
-      transport, so div$\,\mathbf{B}$ is preserved by construction; HLLD Riemann
-      solver; PPM off.
-\item \textbf{Grid:} 3D Cartesian, single level --- \textsc{Castro}'s
-      constrained transport does not support AMR. Box of $1.8\times10^9$\,cm per
-      side, identical at both resolutions.
-\item \textbf{Resolutions:} $192^3$ ($\mathrm{d}x = 9.375\times10^6$\,cm) and
-      $256^3$ ($7.031\times10^6$\,cm).
-\item \textbf{Gravity:} \texttt{PoissonGrav}, full 3D Poisson solve. Not
-      monopole --- with $\Rpol/\Req = 0.38$ the quadrupole is large and a
-      monopole approximation makes the star ring.
-\item \textbf{Initial condition:} the axisymmetric model is built by
-      Grad--Shafranov/SCF on a $385\times769$ $(\varpi,z)$ grid and interpolated
-      onto the Cartesian mesh from the vector potential. The reconstruction
-      retains $96.0\%$ of the peak $|\Btor|$ at $96^3$ and $98.9\%$ at $192^3$.
-      The field enters in Heaviside--Lorentz units,
-      $\mathbf{B}' = \mathbf{B}/\sqrt{4\pi}$.
-\item \textbf{Robustness:} density floor $10^2$\,g\,cm$^{-3}$ against an ambient
-      of $2.0\times10^4$; sponge between $10^4$ and $10^5$; velocity damping over
-      the first $2\,t_{\mathrm{dyn}}$, targeted at the \emph{model's} velocity
-      field rather than at zero.
-\item \textbf{CFL:} $0.5$ at $192^3$; $0.3$ at $256^3$ from $t \simeq 4.8$\,s,
-      needed to get through saturation.
-\end{itemize}
-
-\subsection{Diagnostics}
-
-\textsc{Castro}'s native magnetic diagnostics (\texttt{emag\_density},
-\texttt{etor\_density}, \texttt{Div\_B}) proved unusable: all three pack
-face-centred components of different index types into a single cell-centred FAB
-and read past the end of the data box, with \texttt{Div\_B} reaching
-$3\times10^{146}$ where it should be $\sim0$. The components $B_x, B_y, B_z$ are
-written correctly, and every number here was rebuilt from them with purpose-written
-tools (\texttt{fbtbp}, \texttt{fmodes}, \texttt{fslice}), using
-\[
-\Btor = \frac{-y\,B_x + x\,B_y}{\varpi}, \qquad
-B_{\mathrm{pol}}^2 = B_x^2 + B_y^2 + B_z^2 - \Btor^2 .
-\]
-Mass and radii are integrated over cells with $\rho > 10^5$\,g\,cm$^{-3}$, so
-they refer to the \emph{star} and not to the box.
-
-%======================================================================
-\section{Results}
-
-\subsection{The star survives; the field does not}
-
-This is the central result and it holds at both resolutions.
-
 \begin{table}[h]
-\centering
-\small
+\centering\small
 \begin{tabular}{lrrr}
 \toprule
-& $t = 0$ & $t = 12$\,s & ratio \\
+& analytic model & $192^3$ grid & $256^3$ grid \\
 \midrule
-Stellar mass ($\Msun$) & 2.00667 & 2.00160 & $0.9975$ \\
-$\Etor$ (erg) & $6.035\times10^{49}$ & $2.947\times10^{48}$ & $\mathbf{0.049}$ \\
-$E_{\mathrm{mag}}$ (erg) & $6.035\times10^{49}$ & $3.078\times10^{48}$ & $0.051$ \\
-$\Etor/\Epol$ & $3.11\times10^{5}$ & $22.6$ & \\
-$\max|\Btor|$ (G) & $3.196\times10^{13}$ & $3.539\times10^{13}$ & $1.11$ \\
+$\max|\Btor|$ (G) & $3.231\times10^{13}$ & $3.196\times10^{13}$ & $3.204\times10^{13}$ \\
+$\max|\Bpol|$ (G) & $7.63\times10^{9}$ & $9.46\times10^{10}$ & $8.41\times10^{10}$ \\
+$\max|B|/B_c$ & $0.732$ & $0.724$ & $0.726$ \\
+\midrule
+$\Emag$ (erg) & $6.035\times10^{49}$ & $6.035\times10^{49}$ & $6.056\times10^{49}$ \\
+$\Etor/\Emag$ & $0.99999995$ & $0.999997$ & $0.999998$ \\
+$\Etor/\Epol$ & $\mathbf{2.18\times10^{7}}$ & $3.11\times10^{5}$ & $5.22\times10^{5}$ \\
+$\max|\Btor|/\max|\Bpol|$ & $\mathbf{4234}$ & $338$ & $381$ \\
+\midrule
+$\Epol/|W|$ & $5.2\times10^{-10}$ & --- & --- \\
+Toroidal filling factor & --- & $1.23\%$ & --- \\
 \bottomrule
 \end{tabular}
-\caption{Initial and final state of the $192^3$ run. The mass is conserved to
-$0.42\%$ in amplitude over the whole series, with no trend, while the magnetic
-energy falls by a factor of 20.}
+\caption{Mixed field, toroidal-dominated to one part in $10^7$ by energy: a
+$10^9$\,G exterior dipole beside a $3\times10^{13}$\,G interior toroidal field.
+The peak toroidal field is reconstructed on the grid to $98.9\%$ of the model
+value at $192^3$; the poloidal component is not, because interpolating an
+axisymmetric model onto a Cartesian mesh injects poloidal field an order of
+magnitude above the true one. \emph{The poloidal quantities at $t=0$ are
+therefore numerical floors, not physics}, and the growth measured later is
+counted against them. The filling factor is
+$8\pi\Etor/\max|\Btor|^2$ over the stellar volume.}
 \end{table}
 
-Note the last line: \textbf{the peak field does not fall --- it rises by 11\%}.
-What disappears is the large-scale organisation, not the local strength.
-Defining an effective volume by
-$V_{\mathrm{eff}} = 8\pi \Etor/\max|\Btor|^2$, the fraction of the star occupied
-by the toroidal field falls from $1.23\%$ to $0.066\%$: a factor of 18 in
-concentration. The field becomes filamentary.
+\subsection{Equation of state and method}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{ll}
+\toprule
+Equation of state & \texttt{ztwd}: zero-temperature degenerate electrons, $\mu_e = 2$ \\
+ & \textbf{barotropic}, $P = P(\rho)$; all $\partial/\partial T$ vanish, $c_V = c_P = 0$ \\
+Code & \textsc{Castro} 26.07 / AMReX; ideal MHD, constrained transport, HLLD \\
+Grid & 3D Cartesian, single level, box $1.8\times10^9$ cm per side \\
+ & $192^3$: $\mathrm{d}x = 9.375\times10^6$ cm \quad $256^3$: $7.031\times10^6$ cm \\
+Gravity & \texttt{PoissonGrav}, full 3D solve (the quadrupole is large at $\Rpol/\Req = 0.38$) \\
+Initial condition & Grad--Shafranov/SCF on $385\times769$ $(\varpi,z)$, interpolated from $\mathbf{A}$ \\
+CFL & $0.5$ at $192^3$; $0.3$ at $256^3$ past $t \simeq 4.8$\,s \\
+Floor / sponge & $\rho_{\min} = 10^2$ against ambient $2\times10^4$; sponge $10^4$--$10^5$ \\
+Diagnostics & rebuilt from $B_x,B_y,B_z$; the native \texttt{emag\_density}, \\
+ & \texttt{etor\_density} and \texttt{Div\_B} derives are corrupt (see Sec.~\ref{sec:caveats}) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%======================================================================
+\section{Final states}
+
+\subsection{Same instant, both grids}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lrrr}
+\toprule
+$t \simeq 5.2$\,s & $192^3$ & $256^3$ & ratio \\
+\midrule
+$\Etor$ (erg) & $1.965\times10^{49}$ & $1.784\times10^{49}$ & $0.91$ \\
+$\Epol$ (erg) & $1.791\times10^{48}$ & $2.510\times10^{48}$ & $1.40$ \\
+$\Emag/\Emag(0)$ & $35.5\%$ & $33.6\%$ & \\
+$\Etor/\Epol$ & $11.0$ & $7.1$ & \\
+$\max|\Btor|$ (G) & $4.539\times10^{13}$ & $4.045\times10^{13}$ & $0.89$ \\
+$\max|\Bpol|$ (G) & $3.827\times10^{13}$ & $3.104\times10^{13}$ & $0.81$ \\
+$\max|\Btor|/\max|\Bpol|$ & $1.19$ & $1.30$ & \\
+$\max|B|/B_c$ & $1.118$ & $0.931$ & \\
+$M$ ($\Msun$) & $2.0035$ & $2.0031$ & \\
+$\Rvol$ ($10^8$ cm) & $3.51$ & $2.97$ & \\
+\bottomrule
+\end{tabular}
+\caption{The two grids at the same physical time, at the end of the growth
+phase. They agree on the state to within tens of percent, but not on the rate
+that got there --- see Sec.~\ref{sec:conv}.}
+\end{table}
+
+\subsection{The end state, $192^3$}
+
+Only the $192^3$ run has reached a steady late state; it was carried to
+$t = 60$\,s and stopped changing well before that.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lrrr}
+\toprule
+$192^3$ & $t = 0$ & $t = 38.5$\,s & change \\
+\midrule
+\multicolumn{4}{l}{\emph{The star}}\\
+$M$ ($\Msun$) & $2.00667$ & $2.00618$ & $\mathbf{-0.02\%}$ \\
+$\Rvol$ ($10^8$ cm) & $3.068$ & $2.716$ & $-11\%$ \\
+$\Req$ ($10^8$ cm) & $3.750$ & $3.204$ & $-15\%$ \\
+$\Rpol/\Req$ & $0.425$ & $0.556$ & rounder \\
+$\Omega_{\mathrm{core}}/\Omega_{\mathrm{mean}}$ & $1.72$ & $1.70$ & \textbf{unchanged} \\
+\midrule
+\multicolumn{4}{l}{\emph{The field}}\\
+$\Emag$ (erg) & $6.035\times10^{49}$ & $2.782\times10^{46}$ & $\mathbf{/\,2170}$ \\
+$\Etor$ (erg) & $6.035\times10^{49}$ & $2.658\times10^{46}$ & $/\,2270$ \\
+$\Epol$ (erg) & $1.942\times10^{44}$ & $1.236\times10^{45}$ & $\times 6.4$ \\
+$\Etor/\Epol$ & $3.11\times10^{5}$ & $21.5$ & $/\,1.4\times10^{4}$ \\
+$\max|\Btor|$ (G) & $3.196\times10^{13}$ & $1.227\times10^{12}$ & $/\,26$ \\
+$\max|\Bpol|$ (G) & $9.46\times10^{10}$ & $1.148\times10^{12}$ & $\times 12$ \\
+$\max|\Btor|/\max|\Bpol|$ & $\mathbf{338}$ & $\mathbf{1.07}$ & $/\,316$ \\
+$\max|B|/B_c$ & $0.724$ & $0.031$ & \\
+\bottomrule
+\end{tabular}
+\caption{Initial and end state at $192^3$. The star keeps its mass to $0.02\%$
+and its differential rotation; the field is reduced by three orders of
+magnitude in energy and ends with its two components equal in peak strength.}
+\label{tab:end}
+\end{table}
+
+Three points in Table~\ref{tab:end} carry most of the physics.
+
+\paragraph{The mass does not move.} $0.02\%$ from start to end, $0.3\%$ in
+amplitude along the way, while the magnetic energy of the same star falls by a
+factor of $2170$. Whatever destroys the field does not unbind the star.
+
+\paragraph{The differential rotation survives.}
+$\Omega_{\mathrm{core}}/\Omega_{\mathrm{mean}}$ is $1.72$ over the first
+snapshots and $1.70$ over the last: the shape of the rotation profile is the
+same at $t = 60$\,s as at the start. The magnetic transport was real --- $L_z$
+falls at $0.206\%$\,s$^{-1}$ while the toroidal field lives and $0.099\%$\,s$^{-1}$
+after it is gone, a factor of $2.1$ --- but it never had the time or the
+strength to erase the rotation that holds $2\,\Msun$ above the Chandrasekhar
+mass. \emph{The star survives because it never lost what supports it.}
+
+\paragraph{``Destroyed'' means disordered, not weakened --- until late.} At
+$t = 5.2$\,s the peak toroidal field is \emph{higher} than initially,
+$4.54\times10^{13}$ against $3.20\times10^{13}$\,G, while the energy has fallen
+by a factor of three: the field is concentrating into filaments, its effective
+volume dropping from $1.49\times10^{24}$ to $2.40\times10^{23}$\,cm$^3$. Only
+afterwards does the peak collapse as well, to $1.23\times10^{12}$\,G.
+
+%======================================================================
+\section{The evolution between them}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/field_sequence_192.png}
 \caption{$192^3$. \textbf{Top:} equatorial cut $z=0$, where $\Btor$ lies in the
-plane, so the streamlines of $(B_x,B_y)$ \emph{are} the toroidal field lines --
-circles while the star is axisymmetric, and their departure from circles is the
-instability. Colour is $\Btor$. \textbf{Bottom:} meridional cut $y=0$, where
-$(B_x,B_z)$ \emph{is} the poloidal field and the lines are its loops. Colour is
-$|\Bpol|$. Both maps start at the same $10^{10}$\,G, so the near-empty poloidal
-panel at $t=0$ is the statement that the poloidal field is three decades below
-the toroidal one. Dashed: $\rho = 10^6$\,g\,cm$^{-3}$. Same scales as
-Fig.~\ref{fig:seq256}.}
+plane, so the streamlines \emph{are} the toroidal field lines --- circles while
+the star is axisymmetric. \textbf{Bottom:} meridional cut $y=0$, where the
+in-plane field \emph{is} the poloidal one. Colour is $\Btor$ and $|\Bpol|$
+respectively, both starting at $10^{10}$\,G so the two rows are comparable; the
+near-empty poloidal panel at $t=0$ is the statement that the poloidal field is
+three decades below the toroidal one. Same scales as Fig.~\ref{fig:seq256}.}
 \label{fig:seq192}
 \end{figure}
 
-Fig.~\ref{fig:seq192} shows the process. Seen face-on, the toroidal field starts
-as concentric circles, develops spiral arms by $t \simeq 4$\,s with patches of
-\emph{reversed} sign, and ends as interleaved bands of both signs -- the same
-$m=1$ structure the mode decomposition measures, and the same filamentation the
-volume-filling number gives. The poloidal field does the opposite: it starts as
-a clean dipole carrying $10^{-7}$ of the magnetic energy, below the colour floor
-entirely, and ends up filling the star with its lines tangled beyond any flux
-function.
+The field goes through three phases, all visible in Fig.~\ref{fig:seq192}.
 
-\subsection{Density, mass, radius and volume}
+\begin{table}[h]
+\centering\small
+\begin{tabular}{llll}
+\toprule
+Phase & Window & Rate & Signature \\
+\midrule
+Growth & $t = 1.3$--$4.0$\,s & $\sigma = 1.369$ s$^{-1}$ ($r=0.994$) & $\Epol$ exponential; \\
+& & $e$-fold of amplitude $0.61\,t_A$ & $m=1$ takes over \\
+Saturation & $t \simeq 5.3$\,s & --- & $\Epol$ peaks at $10^4\times$ its floor; \\
+& & & $\max\Btor/\max\Bpol \to 1.19$ \\
+Decay & $t = 5.4$--$30$\,s & $e$-fold $3.6$--$4.0$\,s & $\Etor$ falls $10^3$ \\
+Residual & $t > 30$\,s & $e$-fold $37$\,s & $\Emag \simeq 3\times10^{46}$ erg, flat \\
+\bottomrule
+\end{tabular}
+\caption{Phases of the field evolution at $192^3$. The decay stalls after
+$t \simeq 30$\,s: the field does not go to zero but settles at a disordered
+residual of order $10^{12}$\,G.}
+\end{table}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.62\textwidth]{figures/mass_radius_192.pdf}
-\caption{$192^3$ to $t=12$\,s. (a) stellar mass against a $\pm1\%$ band; (b) the
-three radii, with one grid cell drawn as a band around $\Rpol$; (c) volume;
-(d) oblateness. The offset in $\Rpol/\Req$ at $t=0$ --- $0.425$ measured against
-$0.383$ in the model --- is discretisation, not evolution: $\Rpol$ quantises onto
-multiples of $\mathrm{d}x$ and $\Req$ is cut short by the density threshold
-biting into a shallow equatorial profile.}
-\label{fig:massradius}
-\end{figure}
+\paragraph{The mode is $m=1$.} An azimuthal Fourier projection gives
+$|m{=}1|/|m{=}0| = 1.2\times10^{-16}$ at $t=0$ --- the initial condition is
+axisymmetric to machine precision. From $t \simeq 2.5$\,s the poloidal field is
+$m=1$ dominated, with $|B_{z,m=1}|/|B_{z,m=0}|$ reaching $21$ at $t=4$\,s, and
+the toroidal $m=1$ saturates at $\simeq 10\%$ of the axisymmetric component.
+This rules out the axisymmetric MRI, which could not exist here in any case:
+built from the \emph{vertical} field, $\lambda_{\mathrm{MRI}} = 2.9\times10^4$\,cm,
+or $0.003$ of a cell. What remains is the Tayler kink or the non-axisymmetric
+toroidal-field MRI, which the mode number alone cannot separate.
 
-The mass stays between $1.99971$ and $2.00822\,\Msun$ --- $0.42\%$ in amplitude,
-no trend --- and converges towards the model value, $2.00515$, as the ambient
-material captured by the cut disperses. \textbf{The star loses no matter},
-despite losing $95\%$ of its magnetic energy.
-
-What it does instead is pulsate, hard: the volume swings by a factor of $3.46$
-over the run, peaking at $2.51\,V_0$ at $t = 1.8$\,s. The mean density runs from
-$1.31$ to $4.53\times10^{7}$\,g\,cm$^{-3}$. By $t = 12$\,s the star is
-\emph{smaller} than it began ($0.74\,V_0$) but with half its initial central
-density: it has become markedly \textbf{less centrally concentrated}, with
-$\rho_c/\langle\rho\rangle$ falling from 91 to 34.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.62\textwidth]{figures/long_run_192.pdf}
-\caption{$192^3$ extended to $t = 22$\,s (run in progress). (a) central density;
-(b) axial angular momentum, with the two fitted braking rates. The dashed
-vertical marks the restart at $t=12$\,s from \texttt{chk03436}; it is a restart,
-not a discontinuity.}
-\label{fig:long}
-\end{figure}
-
-Past the initial transient the pulsation \textbf{does not damp}: it locks into a
-clean periodic mode (Fig.~\ref{fig:long}a) with
-\[
-P = 1.498\ \mathrm{s} = 3.15\,t_{\mathrm{dyn}} = 1.95\,P_{\mathrm{rot}},
-\qquad \text{amplitude } \pm14.4\%\ \text{in } \rho_{\max},
-\]
-its envelope decaying with an $e$-folding near $140$\,s. Successive peaks:
-$1.531$, $1.530$, $1.540$, $1.528$, $1.530$, $1.532$ ($\times10^9$).
-
-\subsection{Evolution of the fields}
+\paragraph{The star pulsates and does not stop.} Past the initial transient,
+$\rho_{\max}$ settles into a clean periodic oscillation of period $1.498$\,s
+($3.15\,t_{\mathrm{dyn}}$, $1.95$ rotations) at $\pm14.4\%$, with an envelope
+$e$-folding near $140$\,s. It is still running at $t=60$\,s.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.62\textwidth]{figures/bt_bp_192.pdf}
-\caption{$192^3$ to $t=12$\,s. (a) toroidal and poloidal energies, with the
-$t=0$ numerical floor of $\Epol$ marked and the exponential fit to the growth
-phase; (b) the two toroidal-to-poloidal ratios, in energy and in peak amplitude,
-which saturate in different places; (c) peak field against the Landau critical
-field.}
-\label{fig:btbp}
+\includegraphics[width=0.49\textwidth]{figures/mass_radius_192.pdf}
+\hfill
+\includegraphics[width=0.49\textwidth]{figures/long_run_192.pdf}
+\caption{\textbf{Left, $192^3$ to $t=12$\,s:} mass against a $\pm1\%$ band; the
+three radii with one grid cell drawn around $\Rpol$; volume; oblateness.
+\textbf{Right, to $t=22$\,s:} central density, and axial angular momentum with
+the two braking rates fitted. The dashed vertical is the restart at $t=12$\,s.}
 \end{figure}
-
-The field goes through three distinct phases (Fig.~\ref{fig:btbp}):
-
-\paragraph{Growth, $t = 1.3$--$4.0$\,s.} The poloidal energy grows
-exponentially, $\sigma = 1.369$\,s$^{-1}$ with $r = 0.994$, starting from
-$1.94\times10^{44}$\,erg --- which is the interpolation floor, not physics. The
-$e$-folding of the \emph{amplitude} is $1.46$\,s $= 0.61\,t_A$.
-
-\paragraph{Saturation, $t \simeq 5.3$\,s.} $\Epol$ reaches
-$1.88\times10^{48}$\,erg, nearly $10^4$ times the floor. The amplitude ratio
-$\max|\Btor|/\max|\Bpol|$ falls to $1.19$: the poloidal field catches the
-toroidal one in peak strength. In energy it only reaches $10\%$, because the
-toroidal field occupies far more volume --- the two ratios saturate in different
-places and quoting either alone misdescribes the state.
-
-\paragraph{Decay, $t > 5.4$\,s.} $\Etor$ falls with an $e$-folding of
-$3.44$\,s $= 1.44\,t_A$. At $t = 12$\,s, $4.9\%$ of the initial toroidal energy
-remains.
-
-\paragraph{The instability is $m=1$.} An azimuthal Fourier decomposition (the
-\texttt{fmodes} tool, a direct projection over cells with no interpolation)
-gives $|m{=}1|/|m{=}0| = 1.2\times10^{-16}$ at $t = 0$ --- the initial condition
-is axisymmetric to machine precision. From $t \simeq 2.5$\,s \textbf{the poloidal
-field becomes $m=1$ dominated}, with $|B_{z,m=1}|/|B_{z,m=0}|$ reaching 21 at
-$t = 4$\,s, while the toroidal field stays largely axisymmetric ($m1/m0$ climbing
-only to $0.14$). In the final state the toroidal $m=1$ saturates at $\simeq10\%$
-of the axisymmetric component.
-
-This rules out the axisymmetric Balbus--Hawley MRI, which in any case could not
-exist on this grid: built from the \emph{vertical} field
-($B_{\mathrm{pol,rms}} = 7.6\times10^8$\,G,
-$v_{A,\mathrm{pol}} = 3.7\times10^4$\,cm\,s$^{-1}$), the most unstable wavelength
-is $\lambda_{\mathrm{MRI}} = 2.9\times10^4$\,cm, or $0.003$ of a cell. What
-remains is the Tayler kink or the non-axisymmetric toroidal-field MRI, both
-$m\ge1$, which the azimuthal mode number alone cannot separate.
-
-\subsection{Angular momentum}
-
-$L_z$ falls at $0.206\%$\,s$^{-1}$ while the toroidal field lives and at
-$0.099\%$\,s$^{-1}$ afterwards (Fig.~\ref{fig:long}b) --- \textbf{a factor of 2.1
-slower once $95\%$ of the magnetic energy is gone}. This is direct evidence that
-the angular momentum transport was magnetic. At the present rate, another $10\%$
-of $L_z$ would take $\sim\!100$\,s.
 
 %======================================================================
 \section{Numerical convergence}
 \label{sec:conv}
 
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lccl}
+\toprule
+& $192^3$ & $256^3$ & verdict \\
+\midrule
+Mass range ($\Msun$) & $1.9997$--$2.0082$ & $2.0021$--$2.0073$ & converged \\
+$\Rvol(t=0)$ ($10^8$ cm) & $3.068$ & $3.069$ & converged ($0.03\%$) \\
+\midrule
+$\sigma$ from $\Epol$ (s$^{-1}$) & $1.369$ & $2.007$ & \textbf{$+47\%$, not converged} \\
+$\sigma$ from the $m=1$ mode (s$^{-1}$) & $1.968$ & $2.752$ & $+40\%$, same factor \\
+$\Epol(t=0)$, the floor (erg) & $1.94\times10^{44}$ & $1.16\times10^{44}$ & finer seed is smaller \\
+$\min(\max\Btor/\max\Bpol)$ & $1.19$ & $\mathbf{0.805}$ & instability goes further \\
+\midrule
+Decay $e$-fold, $t = 6.5$--$8.5$\,s & $3.8$\,s & $7.3$\,s & \textbf{$\times1.9$, not converged} \\
+First volume peak & $2.51\,V_0$ & $1.79\,V_0$ & early pulsation is numerical \\
+\bottomrule
+\end{tabular}
+\caption{Three verdicts. Mass and volume are converged. The growth rate rises
+with resolution and the decay rate falls, both by about a factor of two per
+refinement, so the measured growth is a lower bound and the measured decay an
+upper bound: the coarse grid exaggerates the violence at both ends. The early
+large-amplitude pulsation is largely the initial condition ringing on the mesh.}
+\end{table}
+
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.62\textwidth]{figures/convergence_192_256.pdf}
-\caption{$192^3$ against $256^3$ over the growth phase. (a) poloidal energy with
-the fits; (b) volume; (c) amplitude ratio with equipartition marked.}
-\label{fig:conv}
+\includegraphics[width=0.55\textwidth]{figures/convergence_192_256.pdf}
+\caption{$192^3$ against $256^3$ over the growth phase: poloidal energy with
+the fits, volume, and the amplitude ratio with equipartition marked.}
 \end{figure}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/field_sequence_256.png}
 \caption{$256^3$, same layout, planes and colour scales as
-Fig.~\ref{fig:seq192}, at the corresponding instants.}
+Fig.~\ref{fig:seq192}.}
 \label{fig:seq256}
 \end{figure}
 
-Three tests, three different verdicts.
-
-\paragraph{Converged: mass and volume.} The mass lies in
-$1.99971$--$2.00822\,\Msun$ at $192^3$ and $2.00208$--$2.00730$ at $256^3$; the
-volume-equivalent radius differs by $0.03\%$ at $t=0$. There is no figure to
-make.
-
-\paragraph{Not converged: the growth rate.} This is the point that has to
-accompany any version of the result:
-\begin{center}
-\small
-\begin{tabular}{lccc}
-\toprule
-& $192^3$ & $256^3$ & ratio \\
-\midrule
-$\sigma$ from the poloidal energy & $1.369$ s$^{-1}$ & $2.007$ s$^{-1}$ & $1.47$ \\
-$\sigma$ from the $m=1$ mode of $\Btor$ & $1.968$ s$^{-1}$ & $2.752$ s$^{-1}$ & $1.40$ \\
-$\Epol(t=0)$, the numerical floor & $1.94\times10^{44}$ & $1.16\times10^{44}$ & $0.60$ \\
-$\min(\max|\Btor|/\max|\Bpol|)$ & $1.19$ & $\mathbf{0.805}$ & \\
-\bottomrule
-\end{tabular}
-\end{center}
-The rate \emph{rises} by $47\%$ with resolution, measured by two independent
-diagnostics that agree on the factor, and the finer grid starts from a
-\emph{smaller} seed. It also carries the instability further: the poloidal field
-overtakes the toroidal in peak strength at $256^3$ and never does at $192^3$.
-\textbf{The measured $\sigma$ is a lower bound}, and so is the strength of the
-instability.
-
-\paragraph{Numerical: the early pulsation.} The first volume peak falls from
-$2.51\,V_0$ to $1.79$ and the second from an amplitude of $0.49$ to $0.11$
-(Fig.~\ref{fig:conv}b). The breathing that dominates the first few seconds is
-largely the initial condition ringing on the grid. The persistent $1.50$\,s mode
-that appears after $t=12$\,s is a different phenomenon and has not yet been
-tested against resolution.
-
-A note on cost: settling the rate would take $384^3$, about five times the cost
-of $256^3$. The alternative --- and probably the right one --- is to introduce
-explicit resistivity, giving the problem a physical dissipation scale instead of
-letting the mesh set it. \textsc{Castro} does not currently implement it.
+Settling the rate would need $384^3$, about five times the cost of $256^3$. The
+alternative, and probably the right one, is explicit resistivity, giving the
+problem a physical dissipation scale instead of letting the mesh set it;
+\textsc{Castro} does not currently implement it.
 
 %======================================================================
 \section{Caveats}
 \label{sec:caveats}
 
-\begin{enumerate}\itemsep3pt
-\item \textbf{The EOS is barotropic.} With \texttt{ztwd} there is no thermal
-      reservoir: the $5.7\times10^{49}$\,erg that leave the field have no
-      physical destination and are dissipated at the grid scale. We can state
-      that the ordered field is destroyed; we cannot say where the energy went,
-      nor how much heating it would cause in a real star. The stratification is
-      also neutral, with no buoyancy to limit the mode --- in a stratified star
-      the rate would be lower, which makes $\sigma$ a \emph{physical} upper bound
-      at the same time as it is a \emph{numerical} lower bound.
-\item \textbf{Part of the run lies outside the EOS validity range.} The peak
-      field reaches $1.41\,B_c$ at $t = 4.0$\,s and exceeds the Landau critical
-      field in $44\%$ of the sampled instants. \texttt{ztwd} assumes an
-      unquantised gas.
-\item \textbf{Tayler versus toroidal MRI is unresolved.} Both are $m\ge1$. The
-      non-rotating case from the companion work does not decide it: there the
-      star collapses radially in $2.5$\,s, through the axial column where
-      $\Btor$ vanishes, and the non-axisymmetric mode is never reached. Set
-      against that, the present result is that \textbf{rotation trades one fate
-      for another}: the star stops collapsing and starts losing its field.
+\begin{enumerate}\itemsep2pt
+\item \textbf{The EOS is barotropic.} \texttt{ztwd} has no thermal reservoir, so
+      the $6\times10^{49}$\,erg that leave the field have no physical
+      destination and are dissipated at the grid scale. We can say the ordered
+      field is destroyed; we cannot say where the energy went. The
+      stratification is also neutral, with no buoyancy to limit the mode --- in
+      a stratified star the rate would be lower, making $\sigma$ a
+      \emph{physical} upper bound while it is a \emph{numerical} lower bound.
+\item \textbf{Part of the run is outside the EOS validity range.} $\max|B|$
+      reaches $1.41\,B_c$ at $t = 4.0$\,s and exceeds the Landau critical field
+      in $44\%$ of the sampled instants between $t \simeq 2$ and $9$\,s. The
+      late state, at $0.03\,B_c$, is well inside.
+\item \textbf{The poloidal field at $t=0$ is a numerical floor.} Cartesian
+      interpolation of an axisymmetric model injects $\Epol$ some $70$ times
+      above the model's value even at $256^3$. All poloidal growth is measured
+      against that floor, which is why it is quoted alongside.
+\item \textbf{$256^3$ has not reached a final state.} It stands at $t = 8.5$\,s
+      of a $12$\,s target, so every statement about the late evolution rests on
+      one resolution.
+\item \textbf{Native magnetic diagnostics are unusable.} \texttt{emag\_density},
+      \texttt{etor\_density} and \texttt{Div\_B} pack face-centred components of
+      different index types into one cell-centred FAB and read past the end of
+      the box, \texttt{Div\_B} reaching $3\times10^{146}$ where it should be
+      $\sim0$. Everything here is rebuilt from $B_x,B_y,B_z$, which are correct.
 \end{enumerate}
 
 %======================================================================
-\section{Status of the simulations}
+\section*{Status}
 
-\begin{itemize}\itemsep2pt
-\item \textbf{Extended $192^3$} (\texttt{wdrot192long}): running, already past
-      $t = 22$\,s, target $60$\,s. The time step has quadrupled since $t=12$\,s
-      as the field died, so it should finish well inside the nine windows
-      budgeted.
-\item \textbf{$256^3$} (\texttt{wdrot256}): running, $t \simeq 7.3$\,s of $12$.
-      With CFL $0.3$ it crossed $t = 5.146$\,s, where two earlier attempts
-      aborted deterministically.
-\end{itemize}
+$192^3$: complete, $t = 60$\,s. \quad
+$256^3$: running, $t = 8.5$\,s of $12$\,s.
 
-Everything --- inputs, submission scripts, diagnostic tools, data and figure
-code --- is under version control in the \texttt{WD\_MAG} repository.
+Inputs, submission scripts, diagnostic tools, data and figure code are under
+version control in the \texttt{WD\_MAG} repository.
 
 \end{document}
