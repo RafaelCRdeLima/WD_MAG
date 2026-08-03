@@ -13,7 +13,11 @@ Two rows over the same times.
           means no field rather than mid-range. At t = 0 the two lobes of
           opposite sign are the antisymmetry B_phi(x) = -B_phi(-x), not two
           different fields.
-  bottom  |B_pol|, a magnitude, so a single hue light to dark.
+  bottom  |B_pol|, a magnitude, so a single hue light to dark, starting at the
+          same 1e11 G below which the toroidal map is grey. Sharing the
+          threshold is what lets the two rows be compared: at t = 0 the
+          poloidal panel is nearly empty because the poloidal field really is
+          three decades below the toroidal one.
 
 Both rows carry the in-plane streamlines, which in this plane ARE the poloidal
 field lines. On the bottom they belong to the quantity being coloured; on the
@@ -48,8 +52,22 @@ C_STREAM_TOR = "#6b6a66"   # lighter, so it does not fight the diverging map
 
 RHO_SURFACE = 1.0e6
 B_SCALE = 7.5e13          # covers the peak reached at 256^3 (6.2e13 G)
-B_LINTHRESH = 1.0e11
-BPOL_LO, BPOL_HI = 1.0e9, 7.5e13
+B_LINTHRESH = 1.0e10
+
+# The two rows share a threshold, and it has to be the same NUMBER of gauss or
+# they cannot be compared. An earlier version had the poloidal map start at
+# 1e9 while the toroidal one went grey below 1e11: the poloidal panel then gave
+# colour to field a hundred times weaker than anything the toroidal panel
+# showed, both rows painted the same stellar silhouette, and the figure read as
+# if the two components were one map in two colour schemes. They are not --
+# inside the star the median |B_tor|/|B_pol| is 1878 at t = 0, 25 at t = 5.4
+# and 9 at t = 21.
+#
+# 1e10 rather than 1e11, because matching them at the higher value emptied the
+# poloidal row almost completely and hid the growth that is half the result.
+# At 1e10 the t = 0 poloidal panel is still blank -- the field there really is
+# 5.5e8, below the floor -- while the later panels show it filling in.
+BPOL_LO, BPOL_HI = B_LINTHRESH, B_SCALE
 
 RUNS = {
     # 192^3 spans the whole run, so it gets the two late instants the 256^3
