@@ -13,10 +13,14 @@ Two rows over the same times.
           means no field rather than mid-range. At t = 0 the two lobes of
           opposite sign are the antisymmetry B_phi(x) = -B_phi(-x), not two
           different fields.
-  bottom  |B_pol|, a magnitude, so a single hue light to dark. Streamlines of
-          (B_x, B_z) on top of it: in this plane they ARE the poloidal field
-          lines, integrated from B rather than drawn as contours of a flux
-          function -- there is no flux function once axisymmetry goes.
+  bottom  |B_pol|, a magnitude, so a single hue light to dark.
+
+Both rows carry the in-plane streamlines, which in this plane ARE the poloidal
+field lines. On the bottom they belong to the quantity being coloured; on the
+top they are what places the toroidal structure relative to the poloidal
+geometry, and without them the B_phi row cannot be read against the other.
+They are integrated from B, not drawn as contours of a flux function -- there
+is no flux function once axisymmetry goes, which is the whole result.
 
 Both rows share their colour scale across all times and across the two
 resolutions, so panels can be compared by eye. That is the point of fixing
@@ -40,6 +44,7 @@ FULL_IN = 180.0 / 25.4
 C_NEG, C_MID, C_POS = "#2a78d6", "#f0efec", "#e34948"    # diverging pair + grey
 POL_RAMP = ["#efeaf7", "#8c7fd0", "#4a3aa7", "#241a54"]  # one hue, light to dark
 C_MUTED, C_INK, C_LINE = "#898781", "#0b0b0b", "#52514e"
+C_STREAM_TOR = "#6b6a66"   # lighter, so it does not fight the diverging map
 
 RHO_SURFACE = 1.0e6
 B_SCALE = 7.5e13          # covers the peak reached at 256^3 (6.2e13 G)
@@ -104,9 +109,13 @@ def main():
         im_p = axes[1, col].pcolormesh(
             xs, zs, np.maximum(bpol, BPOL_LO), cmap=CMAP_POL, shading="auto",
             norm=LogNorm(vmin=BPOL_LO, vmax=BPOL_HI))
-        axes[1, col].streamplot(xs[0], zs[:, 0], bx, bz, color=C_LINE,
-                                linewidth=0.3, density=0.6, arrowsize=0.3,
-                                broken_streamlines=False)
+
+        # Same streamlines on both rows. Lighter over the diverging map, which
+        # is busier than the single-hue one and would lose the colour to them.
+        for row, col_line, lw in ((0, C_STREAM_TOR, 0.25), (1, C_LINE, 0.3)):
+            axes[row, col].streamplot(xs[0], zs[:, 0], bx, bz, color=col_line,
+                                      linewidth=lw, density=0.6, arrowsize=0.3,
+                                      broken_streamlines=False)
 
         for row in (0, 1):
             ax = axes[row, col]
