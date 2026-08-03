@@ -145,7 +145,7 @@ def main():
     ax_r.text(0.02, 0.92, "(c)", transform=ax_r.transAxes, fontsize=7, va="top")
 
     # (d) angular momentum, inner mass half against outer -------------------
-    q = d["Lzoutin"]
+    q = d["Lz_ratio"]
     good = np.isfinite(q) & (q > 0)
     ax_j.plot(t[good], q[good], color=C_MUTED, linewidth=0.6)
     ax_j.plot(t[good], smooth(t[good], q[good], P_PULSE), color=C_LZ, linewidth=1.3)
@@ -161,7 +161,7 @@ def main():
     print(f"Lz_star: {d['Lz_star'][0]:.4e} -> {d['Lz_star'][-1]:.4e} "
           f"({100*(d['Lz_star'][-1]/d['Lz_star'][0]-1):+.2f}%)")
     print(f"Om_out/Om_core: {r0:.3f} -> {r1:.3f}  ({100*(r1/r0-1):+.1f}%)")
-    q = d["Lzoutin"]; g = np.isfinite(q) & (q > 0)
+    q = d["Lz_ratio"]; g = np.isfinite(q) & (q > 0)
     print(f"Lz_out/Lz_in:   {q[g][:5].mean():.3f} -> {q[g][-5:].mean():.3f}"
           f"  ({100*(q[g][-5:].mean()/q[g][:5].mean()-1):+.1f}%)")
     print(f"wrote {HERE/'rotation_192.pdf'}")
