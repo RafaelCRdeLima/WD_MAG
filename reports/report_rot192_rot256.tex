@@ -10,6 +10,8 @@
 \usepackage{xcolor}
 \usepackage[colorlinks=true,linkcolor=black,urlcolor=blue]{hyperref}
 \usepackage{caption}
+\usepackage{natbib}
+\bibpunct{(}{)}{;}{a}{}{,}
 
 \captionsetup{font=small,labelfont=bf}
 \setlength{\parskip}{0.35em}
@@ -219,6 +221,18 @@ Three points in Table~\ref{tab:end} carry most of the physics.
 amplitude along the way, while the magnetic energy of the same star falls by a
 factor of $2170$. Whatever destroys the field does not unbind the star.
 
+\paragraph{Losing $L_z$ and spinning up is expected here.} $L_z = I\bar\Omega$
+and $I$ is not constant: between $t = 12$ and $60$\,s the star loses $2.8\%$ of
+its angular momentum, contracts enough to lose $8.8\%$ of its moment of
+inertia, and gains $6.6\%$ in $\bar\Omega$ (Fig.~\ref{fig:rot}b). This is not
+an oddity of the simulation. It is the behaviour known for rotating white
+dwarfs near the maximum mass, where a configuration shedding angular momentum
+contracts and spins up rather than spinning down --- the spin-up branch
+discussed by \citet{boshkayev2013}. Their analysis is uniformly rotating and
+general relativistic while this configuration is differentially rotating,
+Newtonian and magnetised, so the correspondence is in the mechanism and not in
+the numbers.
+
 \paragraph{The differential rotation not only survives, it strengthens.}
 Fig.~\ref{fig:rot} is the diagnostic the long run was extended to provide. The
 magnetic transport is real and its signature is unambiguous: $L_z$ falls at
@@ -421,5 +435,12 @@ $256^3$: running, $t = 8.5$\,s of $12$\,s.
 
 Inputs, submission scripts, diagnostic tools, data and figure code are under
 version control in the \texttt{WD\_MAG} repository.
+
+\begin{thebibliography}{9}
+\bibitem[Boshkayev et al.(2013)]{boshkayev2013}
+Boshkayev, K., Rueda, J.~A., Ruffini, R., \& Siutsou, I. 2013,
+\textit{On General Relativistic Uniformly Rotating White Dwarfs},
+ApJ, 762, 117.
+\end{thebibliography}
 
 \end{document}
