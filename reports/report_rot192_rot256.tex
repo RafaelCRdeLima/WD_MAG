@@ -40,8 +40,10 @@ toroidal-dominated field, evolved in three-dimensional ideal MHD at two
 resolutions. \textbf{The star survives and keeps its mass; its ordered field
 does not.} At $192^3$, run to $t = 60$\,s, the magnetic energy falls by a
 factor of $2170$ and the toroidal-to-poloidal amplitude ratio from $338$ to
-$1.07$, while the mass stays within $0.3\%$ and the differential rotation is
-not erased. The instability is non-axisymmetric, $m=1$, and grows in a few
+$1.07$, while the mass stays within $0.3\%$. The differential rotation is not
+erased --- it \emph{steepens}, $\Omega_{\mathrm{out}}/\Omega_{\mathrm{core}}$
+falling from $0.34$ to $0.27$, because the transport takes angular momentum out
+of the outer layers and out of the star. The instability is $m=1$ and grows in a few
 Alfv\'en times. Its rate is not converged --- it rises $47\%$ from $192^3$ to
 $256^3$ --- and the post-saturation decay is not converged either, in the
 opposite direction. The $256^3$ run reaches $t = 8.5$\,s so far.
@@ -184,7 +186,10 @@ $M$ ($\Msun$) & $2.00667$ & $2.00618$ & $\mathbf{-0.02\%}$ \\
 $\Rvol$ ($10^8$ cm) & $3.068$ & $2.716$ & $-11\%$ \\
 $\Req$ ($10^8$ cm) & $3.750$ & $3.204$ & $-15\%$ \\
 $\Rpol/\Req$ & $0.425$ & $0.556$ & rounder \\
-$\Omega_{\mathrm{core}}/\Omega_{\mathrm{mean}}$ & $1.72$ & $1.70$ & \textbf{unchanged} \\
+$\Omega_{\mathrm{core}}$ (rad\,s$^{-1}$)$^{\dagger}$ & $7.86$ & $7.59$ & $-3\%$ \\
+$\Omega_{\mathrm{out}}$ (rad\,s$^{-1}$)$^{\dagger}$ & $2.56$ & $1.92$ & $-25\%$ \\
+$\Omega_{\mathrm{out}}/\Omega_{\mathrm{core}}$$^{\dagger}$ & $0.341$ & $0.266$ & $\mathbf{-22\%}$ \\
+$L_z$ ($10^{50}$ g cm$^2$ s$^{-1}$)$^{\dagger}$ & $1.979$ & $2.101$ & $-5.5\%$ from peak \\
 \midrule
 \multicolumn{4}{l}{\emph{The field}}\\
 $\Emag$ (erg) & $6.035\times10^{49}$ & $2.782\times10^{46}$ & $\mathbf{/\,2170}$ \\
@@ -198,8 +203,11 @@ $\max|B|/B_c$ & $0.724$ & $0.031$ & \\
 \bottomrule
 \end{tabular}
 \caption{Initial and end state at $192^3$. The star keeps its mass to $0.02\%$
-and its differential rotation; the field is reduced by three orders of
-magnitude in energy and ends with its two components equal in peak strength.}
+and \emph{strengthens} its differential rotation; the field is reduced by three
+orders of magnitude in energy and ends with its two components equal in peak
+strength. $^{\dagger}$Rotation and $L_z$ are quoted at $t = 60$\,s, the end of
+the run; the field and shape columns at $t = 38.5$\,s, the last instant
+processed with the field diagnostics.}
 \label{tab:end}
 \end{table}
 
@@ -209,14 +217,22 @@ Three points in Table~\ref{tab:end} carry most of the physics.
 amplitude along the way, while the magnetic energy of the same star falls by a
 factor of $2170$. Whatever destroys the field does not unbind the star.
 
-\paragraph{The differential rotation survives.}
-$\Omega_{\mathrm{core}}/\Omega_{\mathrm{mean}}$ is $1.72$ over the first
-snapshots and $1.70$ over the last: the shape of the rotation profile is the
-same at $t = 60$\,s as at the start. The magnetic transport was real --- $L_z$
-falls at $0.206\%$\,s$^{-1}$ while the toroidal field lives and $0.099\%$\,s$^{-1}$
-after it is gone, a factor of $2.1$ --- but it never had the time or the
-strength to erase the rotation that holds $2\,\Msun$ above the Chandrasekhar
-mass. \emph{The star survives because it never lost what supports it.}
+\paragraph{The differential rotation not only survives, it strengthens.}
+Fig.~\ref{fig:rot} is the diagnostic the long run was extended to provide. The
+magnetic transport is real and its signature is unambiguous: $L_z$ falls at
+$0.21\%$\,s$^{-1}$ while the toroidal field lives and $0.10\%$\,s$^{-1}$ after it
+is gone. With no explicit viscosity and no explicit resistivity in these runs,
+nothing else in the scheme brakes anything, so that factor of two identifies
+the agent.
+
+But the transport does not homogenise the star. Had it done so,
+$\Omega_{\mathrm{out}}/\Omega_{\mathrm{core}}$ would climb towards unity; it
+falls instead, from $0.34$ to $0.27$. The core holds its angular velocity to
+$3\%$ over $60$\,s while the outer shell loses $25\%$ of its own --- angular
+momentum is carried outward and out of the star, and it is the outer layers
+that pay. \emph{The star survives because the field never came close to
+removing what supports it, and in the time it existed it steepened the profile
+rather than flattening it.}
 
 \paragraph{``Destroyed'' means disordered, not weakened --- until late.} At
 $t = 5.2$\,s the peak toroidal field is \emph{higher} than initially,
@@ -224,6 +240,20 @@ $4.54\times10^{13}$ against $3.20\times10^{13}$\,G, while the energy has fallen
 by a factor of three: the field is concentrating into filaments, its effective
 volume dropping from $1.49\times10^{24}$ to $2.40\times10^{23}$\,cm$^3$. Only
 afterwards does the peak collapse as well, to $1.23\times10^{12}$\,G.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.60\textwidth]{figures/rotation_192.pdf}
+\caption{$192^3$ over the full $60$\,s. \textbf{(a)} $L_z$ of the star, with
+the two braking rates fitted; the $12\%$ rise in the first second is the
+initial transient settling. \textbf{(b)} $\Omega$ mass-weighted in three
+cylindrical shells, all chosen to stay inside the star at every phase of the
+$1.5$\,s pulsation. \textbf{(c)} the differential rotation itself, with a
+running mean over one pulsation period drawn over the raw curve --- the ripple
+is the pulsation and aliases badly against coarse sampling. Uniform rotation
+would be $1$; the star moves away from it.}
+\label{fig:rot}
+\end{figure}
 
 %======================================================================
 \section{The evolution between them}
