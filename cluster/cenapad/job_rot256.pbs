@@ -85,9 +85,30 @@ else
     echo "starting from the initial model"
 fi
 
+
+# Ask AMReX to checkpoint and stop BEFORE the walltime, instead of being killed
+# in the middle of mpirun.
+#
+# Both 993295 and 993296 ended that way: PBS killed the process at the wall, so
+# everything below -- the step count, the abort check, and the whole chaining
+# block -- never ran, and two runs that were healthy stopped needing a manual
+# resubmission. A chain that only fires when mpirun exits on its own is not a
+# chain.
+#
+# AMReX checks for a file named dump_and_stop once per coarse step
+# (AMReX_Amr.cpp), writes a checkpoint and returns. WALL must match the
+# "#PBS -l walltime" above; GRACE is the room left for the checkpoint to be
+# written and for this script to resubmit.
+WALL=10800
+GRACE=900
+( sleep $((WALL - GRACE)); touch dump_and_stop ) &
+STOPPER=$!
+
 mpirun -np "$NP" ./Castro3d.gnu.MPI.ex inputs.rot256 $RESTART \
     >> run_rot256.log 2>&1
 RC=$?
+kill "$STOPPER" 2>/dev/null
+rm -f dump_and_stop
 echo "log: $PBS_O_WORKDIR/$RUNDIR/run_rot256.log ($(grep -ac '^STEP' run_rot256.log) steps)"
 grep -a "amrex::Abort" run_rot256.log | head -1
 echo "end:   $(date)"
