@@ -47,8 +47,11 @@ B_LINTHRESH = 1.0e11
 BPOL_LO, BPOL_HI = 1.0e9, 7.5e13
 
 RUNS = {
-    "192": ("slices",    ["plt00000", "plt00400", "plt00700",
-                          "plt01150", "plt01550", "plt03436"]),
+    # 192^3 spans the whole run, so it gets the two late instants the 256^3
+    # has not reached: the field is essentially gone by then and the star is
+    # in the steady 1.5 s pulsation.
+    "192": ("slices",    ["plt00000", "plt00400", "plt00700", "plt01150",
+                          "plt01550", "plt03436", "plt05012", "plt05805"]),
     "256": ("slices256", ["plt00000", "plt00550", "plt00950",
                           "plt01700", "plt02150"]),
 }
