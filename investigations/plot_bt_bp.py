@@ -94,7 +94,7 @@ def main():
     # interpolation error, so it is the noise level this measurement sits on.
     floor = d["E_pol"][0]
     ax_e.axhline(floor, color=C_MUTED, linewidth=0.6, linestyle=(0, (3, 2)))
-    ax_e.text(11.8, floor * 1.5, "piso num\u00e9rico (t = 0)", fontsize=5.8,
+    ax_e.text(11.8, floor * 1.5, "numerical floor (t = 0)", fontsize=5.8,
               color=C_MUTED, ha="right", va="bottom")
 
     tf = np.linspace(FIT_LO, FIT_HI + 0.6, 40)
@@ -107,7 +107,7 @@ def main():
 
     ax_e.text(9.2, 8e48, r"$E_{\rm tor}$", color=C_TOR, fontsize=7.5)
     ax_e.text(9.2, 5.5e46, r"$E_{\rm pol}$", color=C_POL, fontsize=7.5)
-    ax_e.set_ylabel("energia magn\u00e9tica (erg)")
+    ax_e.set_ylabel("magnetic energy (erg)")
     ax_e.set_ylim(5e43, 3e50)
     ax_e.text(0.02, 0.93, "(a)", transform=ax_e.transAxes, fontsize=7,
               color=C_INK, va="top")
@@ -117,13 +117,13 @@ def main():
     ax_r.plot(t, d["Et_over_Ep"], color=C_TOR, linewidth=1.1)
     ax_r.plot(t, d["Bt_over_Bp_amp"], color=C_POL, linewidth=1.1)
     ax_r.axhline(1.0, color=C_MUTED, linewidth=0.6, linestyle=(0, (3, 2)))
-    ax_r.text(0.3, 1.15, "equiparti\u00e7\u00e3o", fontsize=5.8, color=C_MUTED,
+    ax_r.text(0.3, 1.15, "equipartition", fontsize=5.8, color=C_MUTED,
               ha="left", va="bottom")
 
     ax_r.text(8.0, 40.0, r"$E_{\rm tor}/E_{\rm pol}$", color=C_TOR, fontsize=7)
     ax_r.text(7.6, 2.9, r"$B_{\rm tor}^{\max}/B_{\rm pol}^{\max}$",
               color=C_POL, fontsize=7)
-    ax_r.set_ylabel("raz\u00e3o toroidal / poloidal")
+    ax_r.set_ylabel("toroidal / poloidal ratio")
     ax_r.set_ylim(0.7, 1e6)
     ax_r.text(0.02, 0.93, "(b)", transform=ax_r.transAxes, fontsize=7,
               color=C_INK, va="top")
@@ -133,7 +133,7 @@ def main():
     ax_b.axhspan(1.0, 1.7, color=C_GRID, alpha=0.7, linewidth=0)
     ax_b.plot(t, bbc, color=C_FIELD, linewidth=1.1)
     ax_b.axhline(1.0, color=C_MUTED, linewidth=0.6, linestyle=(0, (3, 2)))
-    ax_b.text(11.8, 1.44, "EOS n\u00e3o quantizada fora de validade", fontsize=5.8,
+    ax_b.text(11.8, 1.44, "unquantised EOS out of range", fontsize=5.8,
               color=C_MUTED, ha="right", va="center")
     ax_b.text(0.35, 0.62, r"$B_c$", fontsize=7, color=C_INK)
     ax_b.set_ylabel(r"$B^{\max}/B_c$")

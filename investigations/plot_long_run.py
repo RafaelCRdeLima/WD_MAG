@@ -82,7 +82,7 @@ def main():
     ax_r.set_ylabel(r"$\rho_{\rm max}$  ($10^9$ g cm$^{-3}$)")
     ax_r.set_ylim(0.6, 3.2)
     ax_r.text(0.02, 0.93, "(a)", transform=ax_r.transAxes, fontsize=7, va="top")
-    ax_r.text(T_RESTART - 0.3, 3.0, "reinicio", fontsize=5.8, color=C_MUTED,
+    ax_r.text(T_RESTART - 0.3, 3.0, "restart", fontsize=5.8, color=C_MUTED,
               ha="right", va="top")
 
     # The band the oscillation settles into, from the peak/trough analysis.

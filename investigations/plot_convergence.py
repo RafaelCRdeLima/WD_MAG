@@ -124,7 +124,7 @@ def main():
         m = d["t"] <= T_MAX
         ax_b.plot(d["t"][m], d["Bt_over_Bp_amp"][m], color=c, linewidth=1.1)
     ax_b.axhline(1.0, color=C_MUTED, linewidth=0.6, linestyle=(0, (3, 2)))
-    ax_b.text(0.15, 1.12, "equiparti\u00e7\u00e3o", fontsize=5.8, color=C_MUTED,
+    ax_b.text(0.15, 1.12, "equipartition", fontsize=5.8, color=C_MUTED,
               ha="left", va="bottom")
     ax_b.set_ylabel(r"$B_{\rm tor}^{\max}/B_{\rm pol}^{\max}$")
     ax_b.set_xlabel("t (s)")

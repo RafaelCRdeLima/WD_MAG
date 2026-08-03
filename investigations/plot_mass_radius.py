@@ -88,9 +88,9 @@ def main():
     ax_m.axhspan(m0 * 0.99, m0 * 1.01, color=C_GRID, alpha=0.8, linewidth=0)
     ax_m.plot(t, d["M_Msun"], color=C_MASS, linewidth=1.1)
     ax_m.axhline(M_MODEL, color=C_MUTED, linewidth=0.6, linestyle=(0, (3, 2)))
-    ax_m.text(1.15, M_MODEL - 0.0018, "modelo", fontsize=5.8, color=C_MUTED,
+    ax_m.text(1.15, M_MODEL - 0.0018, "model", fontsize=5.8, color=C_MUTED,
               ha="left", va="top")
-    ax_m.text(11.8, m0 * 1.0104, r"$\pm 1\%$ do valor inicial", fontsize=5.8,
+    ax_m.text(11.8, m0 * 1.0104, r"$\pm 1\%$ of the initial value", fontsize=5.8,
               color=C_MUTED, ha="right", va="bottom")
     ax_m.set_ylabel(r"$M_\star$  ($M_\odot$)")
     ax_m.set_ylim(m0 * 0.985, m0 * 1.015)
@@ -106,10 +106,10 @@ def main():
     ax_r.text(9.0, 4.45, r"$R_{\rm eq}$", color=C_INK, fontsize=7)
     ax_r.text(9.0, 3.55, r"$R_{\rm vol}$", color=C_VOL, fontsize=7.5)
     ax_r.text(9.0, 1.62, r"$R_{\rm pol}$", color=C_INK, fontsize=7)
-    ax_r.annotate("uma celula", xy=(6.0, 2.06 + DX_192 / 2), xytext=(6.0, 2.62),
+    ax_r.annotate("one cell", xy=(6.0, 2.06 + DX_192 / 2), xytext=(6.0, 2.62),
                   fontsize=5.6, color=C_MUTED, ha="center",
                   arrowprops=dict(arrowstyle="-", color=C_MUTED, linewidth=0.5))
-    ax_r.set_ylabel(r"raio  ($10^8$ cm)")
+    ax_r.set_ylabel(r"radius  ($10^8$ cm)")
     ax_r.set_ylim(1.2, 5.6)
     ax_r.text(0.02, 0.93, "(b)", transform=ax_r.transAxes, fontsize=7, va="top")
 
@@ -127,7 +127,7 @@ def main():
     # (d) oblateness ------------------------------------------------------
     ax_o.plot(t, d["Rpol_over_Req"], color=C_MASS, linewidth=1.1)
     ax_o.axhline(OBLATE_MODEL, color=C_MUTED, linewidth=0.6, linestyle=(0, (3, 2)))
-    ax_o.text(11.8, OBLATE_MODEL - 0.012, "modelo  0.383", fontsize=5.8,
+    ax_o.text(11.8, OBLATE_MODEL - 0.012, "model  0.383", fontsize=5.8,
               color=C_MUTED, ha="right", va="top")
     ax_o.set_ylabel(r"$R_{\rm pol}/R_{\rm eq}$")
     ax_o.set_xlabel("t (s)")
