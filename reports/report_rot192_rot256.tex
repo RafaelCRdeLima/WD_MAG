@@ -16,6 +16,21 @@
 \captionsetup{font=small,labelfont=bf}
 \setlength{\parskip}{0.35em}
 
+% This report is mostly tables, and with LaTeX's defaults they drifted two
+% pages past the section that discusses them -- the convergence table ended up
+% inside the Caveats. Loosen the float parameters so a page may be mostly
+% float, and allow more than the default two per page.
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\bottomfraction}{0.85}
+\renewcommand{\textfraction}{0.06}
+\renewcommand{\floatpagefraction}{0.72}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
+% ...and stop them crossing a section boundary, or the five figures all queue
+% up behind the tables and come out after the bibliography.
+\usepackage[section]{placeins}
+
 \newcommand{\Msun}{M_\odot}
 \newcommand{\Req}{R_{\mathrm{eq}}}
 \newcommand{\Rpol}{R_{\mathrm{pol}}}
@@ -48,7 +63,12 @@ falling from $0.34$ to $0.27$, because the transport takes angular momentum out
 of the outer layers and out of the star. The instability is $m=1$ and grows in a few
 Alfv\'en times. Its rate is not converged --- it rises $47\%$ from $192^3$ to
 $256^3$ --- and the post-saturation decay is not converged either, in the
-opposite direction. The $256^3$ run reaches $t = 8.5$\,s so far.
+opposite direction. Both grids are now complete to $t = 12$\,s. Averaged over
+the last two pulsation periods they agree on
+$\Omega_{\mathrm{out}}/\Omega_{\mathrm{core}}$ to $1.4\%$ and on the peak field
+to $7\%$: the survival of the differential rotation is a result and not a
+resolution. What does not converge is the magnetic \emph{energy}, twice as
+large on the finer grid at $t=12$\,s.
 \end{abstract}
 
 %======================================================================
@@ -171,6 +191,53 @@ $\Rvol$ ($10^8$ cm) & $3.51$ & $2.97$ & \\
 phase. They agree on the state to within tens of percent, but not on the rate
 that got there --- see Sec.~\ref{sec:conv}.}
 \end{table}
+
+\subsection{The common window, $t = 9$--$12$\,s}
+
+The $256^3$ run has since reached its $12$\,s target, so the two grids can be
+compared over a window rather than at an instant. That matters: the star
+breathes by $\pm14\%$ every $1.498$\,s, and any single snapshot catches an
+arbitrary phase of it. Table~\ref{tab:window} averages over the last two
+periods, which removes the pulsation and leaves the state.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lrrr}
+\toprule
+mean over $9$--$12$\,s & $192^3$ & $256^3$ & $256/192$ \\
+\midrule
+\multicolumn{4}{l}{\emph{The star --- converged}}\\
+$M$ ($\Msun$) & $2.0028$ & $2.0042$ & $1.0007$ \\
+$\Rvol$ ($10^8$ cm) & $3.113$ & $3.049$ & $0.98$ \\
+$V/V_0$ & $1.06$ & $0.99$ & $0.93$ \\
+$\Omega_{\mathrm{core}}$ (rad\,s$^{-1}$) & $6.654$ & $6.733$ & $\mathbf{1.012}$ \\
+$\Omega_{\mathrm{out}}$ (rad\,s$^{-1}$) & $2.294$ & $2.357$ & $\mathbf{1.027}$ \\
+$\Omega_{\mathrm{out}}/\Omega_{\mathrm{core}}$ & $0.345$ & $0.350$ & $\mathbf{1.014}$ \\
+$L_z$ ($10^{50}$ g cm$^2$ s$^{-1}$) & $2.168$ & $2.078$ & $0.96$ \\
+$\max|B|/B_c$ & $0.771$ & $0.826$ & $1.07$ \\
+\midrule
+\multicolumn{4}{l}{\emph{The field --- not converged}}\\
+$\Etor$ (erg) & $4.07\times10^{48}$ & $8.00\times10^{48}$ & $\mathbf{1.96}$ \\
+$\Epol$ (erg) & $3.07\times10^{47}$ & $8.24\times10^{47}$ & $\mathbf{2.69}$ \\
+$\Emag/\Emag(0)$ & $7.3\%$ & $14.6\%$ & $2.01$ \\
+$\Etor/\Epol$ & $13.3$ & $9.7$ & $0.73$ \\
+$L_z^{\mathrm{outer}}/L_z^{\mathrm{inner}}$ & $5.04$ & $5.90$ & $1.17$ \\
+\bottomrule
+\end{tabular}
+\caption{The two grids over the same three seconds, averaged over two
+pulsation periods. The split is sharp and it is the main new result of this
+report: everything about \emph{the star} agrees to a few percent --- mass,
+size, and above all the rotation, where the core, the outer shell and their
+ratio all land within $3\%$ --- while everything about the \emph{energy} in the
+field differs by a factor of two. The finer grid dissipates less, which is
+exactly what an ideal-MHD run with no explicit resistivity should do.}
+\label{tab:window}
+\end{table}
+
+The rotation rows are the ones to take away. The conclusion that the star keeps
+its differential rotation --- the property that lets it hold $2\,\Msun$ ---
+was previously measured at one resolution only. It is now measured at two, and
+they agree to $1.4\%$.
 
 \subsection{The end state, $192^3$}
 
@@ -360,28 +427,42 @@ the two braking rates fitted. The dashed vertical is the restart at $t=12$\,s.}
 \midrule
 Mass range ($\Msun$) & $1.9997$--$2.0082$ & $2.0021$--$2.0073$ & converged \\
 $\Rvol(t=0)$ ($10^8$ cm) & $3.068$ & $3.069$ & converged ($0.03\%$) \\
+$\Omega_{\mathrm{core}}$, $9$--$12$\,s (rad\,s$^{-1}$) & $6.654$ & $6.733$ & converged ($1.2\%$) \\
+$\Omega_{\mathrm{out}}/\Omega_{\mathrm{core}}$, $9$--$12$\,s & $0.345$ & $0.350$ & \textbf{converged ($1.4\%$)} \\
+$\max|B|$, $9$--$12$\,s (G) & $3.40\times10^{13}$ & $3.65\times10^{13}$ & converged ($7\%$) \\
 \midrule
 $\sigma$ from $\Epol$ (s$^{-1}$) & $1.369$ & $2.007$ & \textbf{$+47\%$, not converged} \\
 $\sigma$ from the $m=1$ mode (s$^{-1}$) & $1.968$ & $2.752$ & $+40\%$, same factor \\
 $\Epol(t=0)$, the floor (erg) & $1.94\times10^{44}$ & $1.16\times10^{44}$ & finer seed is smaller \\
 $\min(\max\Btor/\max\Bpol)$ & $1.19$ & $\mathbf{0.805}$ & instability goes further \\
 \midrule
-Decay $e$-fold, $t = 6.5$--$8.5$\,s & $3.8$\,s & $7.3$\,s & \textbf{$\times1.9$, not converged} \\
+Decay rate $\gamma$ of $\Etor$, $6$--$12$\,s & $0.282$\,s$^{-1}$ & $0.141$\,s$^{-1}$ & \textbf{$/\,2.0$, not converged} \\
+\quad as an $e$-folding & $3.5$\,s & $7.1$\,s & \\
+$\Emag$ at $t = 12$\,s (erg) & $4.4\times10^{48}$ & $8.8\times10^{48}$ & $\times2.0$ \\
 First volume peak & $2.51\,V_0$ & $1.79\,V_0$ & early pulsation is numerical \\
 \bottomrule
 \end{tabular}
-\caption{Three verdicts. Mass and volume are converged. The growth rate rises
-with resolution and the decay rate falls, both by about a factor of two per
-refinement, so the measured growth is a lower bound and the measured decay an
-upper bound: the coarse grid exaggerates the violence at both ends. The early
-large-amplitude pulsation is largely the initial condition ringing on the mesh.}
+\caption{Three verdicts. \emph{Converged:} everything about the star --- mass,
+size, peak field, and the whole rotation profile. \emph{Not converged:} the
+growth rate rises with resolution while the decay rate falls, each by about a
+factor of two per refinement, so the measured growth is a lower bound and the
+measured decay an upper bound; the coarse grid exaggerates the violence at both
+ends. The early large-amplitude pulsation is largely the initial condition
+ringing on the mesh.}
 \end{table}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.55\textwidth]{figures/convergence_192_256.pdf}
-\caption{$192^3$ against $256^3$ over the growth phase: poloidal energy with
-the fits, volume, and the amplitude ratio with equipartition marked.}
+\includegraphics[width=0.66\textwidth]{figures/convergence_192_256.pdf}
+\caption{$192^3$ against $256^3$ over the full $12$\,s. \textbf{(a)} Toroidal
+(solid) and poloidal (dashed) energy, with the fitted growth $\sigma$ and decay
+$\gamma$. The two rates move in \emph{opposite} directions with refinement.
+\textbf{(b)} $V/V_0$: the first peak drops from $2.51$ to $1.79$, its excess
+over unity scaling as $\mathrm{d}x^{2.3}$. \textbf{(c)} The differential
+rotation --- neither grid approaches uniform rotation and the two agree to
+$1.4\%$. \textbf{(d)} Peak field against $B_c$; above the Landau field for
+roughly half the run at both resolutions.}
+\label{fig:conv}
 \end{figure}
 
 \begin{figure}[t]
@@ -391,6 +472,16 @@ the fits, volume, and the amplitude ratio with equipartition marked.}
 Fig.~\ref{fig:seq192}.}
 \label{fig:seq256}
 \end{figure}
+
+There is no explicit resistivity in these runs, so the decay of $\Etor$
+\emph{is} the numerical resistivity, and the two grids measure it. Halving
+$\gamma$ while $\mathrm{d}x$ falls by a factor $1.33$ puts it at
+$\mathrm{d}x^{2.4}$, consistent with the second-order scheme and extrapolating
+to zero. Read literally, that says the field decay seen here is a resolution
+artefact and the physical star would keep its field far longer --- but a
+two-point fit cannot distinguish that from a decay that converges to something
+small but finite, and the growth rate moving the other way ($\mathrm{d}x^{-1.3}$)
+warns that both ends of the evolution are still mesh-limited.
 
 Settling the rate would need $384^3$, about five times the cost of $256^3$. The
 alternative, and probably the right one, is explicit resistivity, giving the
@@ -410,16 +501,23 @@ problem a physical dissipation scale instead of letting the mesh set it;
       a stratified star the rate would be lower, making $\sigma$ a
       \emph{physical} upper bound while it is a \emph{numerical} lower bound.
 \item \textbf{Part of the run is outside the EOS validity range.} $\max|B|$
-      reaches $1.41\,B_c$ at $t = 4.0$\,s and exceeds the Landau critical field
-      in $44\%$ of the sampled instants between $t \simeq 2$ and $9$\,s. The
-      late state, at $0.03\,B_c$, is well inside.
+      reaches $1.41\,B_c$ at $t = 4.0$\,s at $192^3$ and $1.88\,B_c$ at
+      $t = 3.6$\,s at $256^3$, exceeding the Landau critical field in $44\%$ and
+      $48\%$ of the sampled instants respectively. This does \emph{not} improve
+      with resolution --- the finer grid goes further above $B_c$, not less far.
+      The late state, at $0.03\,B_c$, is well inside.
 \item \textbf{The poloidal field at $t=0$ is a numerical floor.} Cartesian
       interpolation of an axisymmetric model injects $\Epol$ some $70$ times
       above the model's value even at $256^3$. All poloidal growth is measured
       against that floor, which is why it is quoted alongside.
-\item \textbf{$256^3$ has not reached a final state.} It stands at $t = 8.5$\,s
-      of a $12$\,s target, so every statement about the late evolution rests on
-      one resolution.
+\item \textbf{Only $192^3$ goes past $12$\,s.} The two grids now overlap fully
+      to $t = 12$\,s, but the late evolution --- the settled $1.50$\,s
+      pulsation, the halving of the braking rate once the field is gone, the
+      steepening of the differential rotation to
+      $\Omega_{\mathrm{out}}/\Omega_{\mathrm{core}} = 0.27$, and the
+      $L_z = I\bar\Omega$ spin-up --- is measured at $192^3$ alone. Within the
+      common window the two grids agree on the rotation to $1.4\%$, which is
+      reassuring but is not a check on what happens after it.
 \item \textbf{Native magnetic diagnostics are unusable.} \texttt{emag\_density},
       \texttt{etor\_density} and \texttt{Div\_B} pack face-centred components of
       different index types into one cell-centred FAB and read past the end of
@@ -431,7 +529,7 @@ problem a physical dissipation scale instead of letting the mesh set it;
 \section*{Status}
 
 $192^3$: complete, $t = 60$\,s. \quad
-$256^3$: running, $t = 8.5$\,s of $12$\,s.
+$256^3$: complete, $t = 12$\,s ($7059$ steps).
 
 Inputs, submission scripts, diagnostic tools, data and figure code are under
 version control in the \texttt{WD\_MAG} repository.
