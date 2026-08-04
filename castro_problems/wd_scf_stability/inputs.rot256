@@ -166,7 +166,26 @@ amr.check_file      = chk
 # plotfiles between t = 0 and 5.15 s at the old cadence, which is what the
 # comparison against 192^3 is built on. Nothing is lost by going coarse now.
 amr.plot_per        = 0.5
-amr.check_int       = 2000
+
+# 1000, halved from 2000, after a node failure cost a window AND broke the
+# chain.
+#
+# Job 993632 was killed at step 16833 by
+#     PRTE has lost communication with a remote daemon ... on node adano44
+# with the run in perfect health -- dt 1.33e-3, no abort, the next step already
+# estimating a normal CFL limit. But a window runs about 2400 steps, so at
+# check_int = 2000 it writes roughly ONE checkpoint, and this one died before
+# it: last checkpoint chk16234, 599 steps lost.
+#
+# The chain then stopped, correctly by its own rule -- "this window produced no
+# new checkpoint" is what keeps a genuinely broken run from respawning forever.
+# The rule is right; the checkpoint spacing was wrong. At 1000 a window writes
+# two or three, so a node failure costs minutes instead of a window, and the
+# chain carries on by itself.
+#
+# Cost: about 25 extra checkpoints over the remaining 33 s, some 50 GB against
+# the 205 TB free. Cheap insurance on a machine that drops nodes.
+amr.check_int       = 1000
 
 # Div_B, emag_density and etor_density are dropped, and this fixes a second
 # problem as well as saving space. All three are computed from several
