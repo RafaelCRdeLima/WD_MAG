@@ -85,6 +85,35 @@ else
     echo "starting from the initial model"
 fi
 
+# The target, read from the inputs file so nothing here can drift out of step
+# with it. Used twice: by the guard immediately below, and by the chain at the
+# end. Comment lines in inputs.rot256 also mention stop_time, hence the anchor:
+# assignments are unindented, prose is behind a '#'.
+TARGET="$(awk '/^[ \t]*stop_time[ \t]*=/ {print $3; exit}' inputs.rot256)"
+
+# Refuse to restart a run that is ALREADY at its target.
+#
+# Job 993436 did exactly that: it restarted from chk07059 at t = 12.0 with
+# stop_time still 12.0, and died 21 s later with
+#   amrex::Abort::115::Error: too many subcycles.
+# which reads like the numerical failure that killed this run at t = 5.146 s
+# and is nothing of the kind. The checkpoint stores t as 11.999999999999998,
+# so Castro enters the step loop with dt capped at stop_time - t ~ 1e-15 s,
+# and the retry logic subcycles until it gives up. Nothing was wrong with the
+# state; the run simply had nowhere to go.
+#
+# Raising stop_time is the fix, so say that instead of burning a window to
+# produce a misleading abort.
+if [ -n "$LAST" ] && [ -f run_rot256.log ]; then
+    NOW="$(grep -a '^STEP' run_rot256.log | tail -1 | sed 's/.*TIME = \([0-9.e+-]*\).*/\1/')"
+    if [ "$(awk -v t="${NOW:-0}" -v s="${TARGET:-0}" \
+            'BEGIN{print (s+0 > 0 && t+0 >= s*0.995) ? 1 : 0}')" = "1" ]; then
+        echo "refusing: already at t = ${NOW} s of stop_time = ${TARGET} s."
+        echo "raise stop_time in inputs.rot256 before resubmitting."
+        exit 0
+    fi
+fi
+
 
 # Ask AMReX to checkpoint and stop BEFORE the walltime, instead of being killed
 # in the middle of mpirun.
@@ -145,16 +174,12 @@ STEPS="$(grep -ac '^STEP' run_rot256.log 2>/dev/null || true)"
 STEPS="${STEPS:-0}"
 REACHED="$(grep -a '^STEP' run_rot256.log | tail -1 | sed 's/.*TIME = \([0-9.e+-]*\).*/\1/')"
 
-# The target is READ FROM inputs.rot256, not written here. It used to be a
-# literal 11.9, and that is a trap: raising stop_time to 60 in the inputs file
-# would have left this test at 11.9, so the first continuation window would run
-# its three hours, reach t = 12.01, and the chain would announce
-# "chain: stopping, reached t = 12.01 s" and quit. The extension would have
-# died on its first window and looked like a clean finish.
-#
-# The comment lines in inputs.rot256 mention stop_time too, hence the anchor at
-# the start of the line: assignments are unindented, prose is behind a '#'.
-TARGET="$(awk '/^[ \t]*stop_time[ \t]*=/ {print $3; exit}' inputs.rot256)"
+# TARGET is read from inputs.rot256 near the top of this script, not written
+# here. It used to be a literal 11.9, and that is a trap: raising stop_time to
+# 60 in the inputs file would have left this test at 11.9, so the first
+# continuation window would run its three hours, reach t = 12.01, and the chain
+# would announce "chain: stopping, reached t = 12.01 s" and quit. The extension
+# would have died on its first window and looked like a clean finish.
 echo "target: stop_time = ${TARGET:-unset} s, reached ${REACHED:-0} s"
 DONE="$(awk -v t="${REACHED:-0}" -v s="${TARGET:-0}" \
         'BEGIN{print (s+0 > 0 && t+0 >= s*0.995) ? 1 : 0}')"
