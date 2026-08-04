@@ -133,13 +133,36 @@ GRACE=900
 ( sleep $((WALL - GRACE)); touch dump_and_stop ) &
 STOPPER=$!
 
+# Where this window's output starts. run_rot256.log is APPENDED to across every
+# window of the chain, so "did it abort?" has to be asked of the tail, not of
+# the file.
+LOG_MARK="$(wc -l < run_rot256.log 2>/dev/null || echo 0)"
+LOG_MARK="${LOG_MARK:-0}"
+
 mpirun -np "$NP" ./Castro3d.gnu.MPI.ex inputs.rot256 $RESTART \
     >> run_rot256.log 2>&1
 RC=$?
 kill "$STOPPER" 2>/dev/null
 rm -f dump_and_stop
 echo "log: $PBS_O_WORKDIR/$RUNDIR/run_rot256.log ($(grep -ac '^STEP' run_rot256.log) steps)"
-grep -a "amrex::Abort" run_rot256.log | head -1
+
+# This used to be
+#     grep -a "amrex::Abort" run_rot256.log | head -1
+# on the cumulative log, so it reported the FIRST abort ever recorded -- the
+# t = 5.146 s failure that cfl 0.3 fixed weeks ago -- in every window from then
+# on, healthy or not. It cost one false alarm at t = 26 s while the chain was
+# running perfectly, and it had already caused one wrong conclusion when a
+# similar cumulative count was read as a fresh failure.
+#
+# Now only this window's slice of the log is searched, so an abort printed here
+# is one that just happened.
+if tail -n "+$((LOG_MARK + 1))" run_rot256.log | grep -aq "amrex::Abort"; then
+    echo "ABORT in this window:"
+    tail -n "+$((LOG_MARK + 1))" run_rot256.log | grep -a "amrex::Abort" | head -1
+    tail -n "+$((LOG_MARK + 1))" run_rot256.log | grep -a '^STEP' | tail -1
+else
+    echo "no abort in this window"
+fi
 echo "end:   $(date)"
 
 # Chain the next window automatically. Backfill windows have been short --
