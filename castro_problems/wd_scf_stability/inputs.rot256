@@ -44,8 +44,25 @@
 # past the 2.7 s at which the non-rotating configuration died. The MRI grows
 # on ~1/Omega = 0.12 s, so it has about a hundred e-folding times available:
 # if it is going to appear, it will.
+# Extended from 12 to 60 s once the 12 s target was reached, to put the LATE
+# evolution on two grids as well. Within the first 12 s the two resolutions
+# already agree on the rotation to 1.4%, but everything after it -- the settled
+# 1.50 s pulsation, the braking rate halving once the field is gone, and above
+# all the steepening of the differential rotation from 0.348 to 0.262 -- is
+# measured at 192^3 alone.
+#
+# That steepening is secular and very nearly linear: 12% of the total change by
+# t = 20, 30% by 25, 43% by 30, 65% by 40. There is no early instant at which
+# it saturates and the run can stop cheaply. But CONVERGENCE needs the slope,
+# not the amplitude: the 192^3 loses 11% of the ratio between t = 15 and 30,
+# far above the scatter of the smoothed curve, so a 256^3 reaching t = 30
+# already settles it.
+#
+# 60 rather than 30 because stopping early is free -- the chain restarts from
+# a checkpoint, so the run can be left to accumulate and killed the moment the
+# answer is in. Ambition here costs nothing; only the disk does.
 max_step  = 200000
-stop_time = 12.0
+stop_time = 60.0
 
 # HALF-SHIFT geometry (docs/teoria.md Sec 6.6): prob_lo = -(N+1)/2*dx and
 # prob_hi = (N-1)/2*dx puts a cell CENTRE exactly on r = 0. With N = 256 and
