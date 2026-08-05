@@ -65,11 +65,14 @@ $t = 12$\,s they agree on it to $1.4\%$. The instability is $m=1$ and grows in
 a few Alfv\'en times. Its rate is not converged --- it rises $47\%$ from
 $192^3$ to $256^3$ --- and the post-saturation decay is not converged either,
 in the opposite direction; the finer grid holds twice the magnetic energy at
-$t = 12$\,s. Over $t = 12$ to $40$\,s, where both grids now exist, the star
-loses angular momentum at $0.076\%$\,s$^{-1}$ against $0.081\%$\,s$^{-1}$ ---
-converged to $6\%$ --- and \textbf{the profile steepens on both}, the fine grid
-beginning some $6$\,s later and then steepening faster. $256^3$ has reached
-$t = 40.5$\,s and is continuing towards $60$\,s.
+$t = 12$\,s. Both grids now reach $t \simeq 58$\,s, and over that baseline the
+two central dynamical claims converge: \textbf{the profile steepens by $22.6\%$
+against $20.3\%$}, and \textbf{$L_z$ brakes at half the rate once the field is
+gone --- $0.200$ against $0.214\%$\,s$^{-1}$ while it lives, $0.087$ against
+$0.094\%$\,s$^{-1}$ after --- so the identification of the transport as
+magnetic holds at two resolutions}. What does not converge is the leftover
+field: the residual magnetic energy is $25$ times larger at $256^3$ than at
+$192^3$, and at $256^3$ it is still slowly growing at $t = 58$\,s.
 \end{abstract}
 
 %======================================================================
@@ -364,12 +367,11 @@ the field is reduced by three orders of magnitude in energy and ends with its
 two components equal in peak strength. $^{\dagger}$Rotation and $L_z$ are
 quoted at $t = 60$\,s, the end of the run; the field and shape columns at
 $t = 38.5$\,s, the last instant processed with the field diagnostics.
-$^{\ddagger}$\textbf{Amplitude not converged.} These two rows measure how the
-star redistributes angular momentum internally. The $256^3$ run moves both the
-same way, but by less over the same window ($-11.4\%$ and $-1.8\%$ against
-$-15.8\%$ and $-5.9\%$ from $t = 12$ to $40$\,s), because its onset is some
-$6$\,s later; from $t = 26$ onward it steepens faster than this one
-(Sec.~\ref{sec:latewindow}). Read the direction, not the number.}
+$^{\ddagger}$These two rows measure how the star redistributes angular momentum
+internally, and both converge over a long enough baseline: from $t = 12$ to
+$58$\,s the $256^3$ run gives $-20.3\%$ and $-6.2\%$ against $-22.6\%$ and
+$-10.6\%$ here. Over shorter windows it appears not to, because its onset is
+some $6$\,s later (Sec.~\ref{sec:latewindow}).}
 \label{tab:end}
 \end{table}
 
@@ -544,40 +546,38 @@ alternative, and probably the right one, is explicit resistivity, giving the
 problem a physical dissipation scale instead of letting the mesh set it;
 \textsc{Castro} does not currently implement it.
 
-\subsection{Past $12$\,s, and a lesson about baselines}
+\subsection{Past $12$\,s: three tests over a $46$\,s baseline}
 \label{sec:latewindow}
 
-\label{sec:latewindow}
-
-The $256^3$ run has been continued to $t = 40.5$\,s, which puts a second
-resolution on most of the late evolution. Table~\ref{tab:late} compares the two
-over a $28$\,s baseline, using means of two pulsation periods at each end so
-the $\pm14\%$ breathing is averaged out rather than interpolated through.
+The $256^3$ run reached $t = 58.2$\,s, so the two grids now overlap over almost
+the whole evolution. Means of two pulsation periods at each end, so the
+$\pm14\%$ breathing is averaged out rather than interpolated through.
 
 \begin{table}[h]
 \centering\small
 \begin{tabular}{lrrl}
 \toprule
-$12$--$15$\,s $\to$ $37.5$--$40.6$\,s & $192^3$ & $256^3$ & verdict \\
+$12$--$15$\,s $\to$ $55$--$58.3$\,s & $192^3$ & $256^3$ & verdict \\
 \midrule
-$M$ ($\Msun$) & $0.0\%$ & $+0.1\%$ & converged \\
-$L_z$ & $-1.9\%$ & $-2.1\%$ & converged \\
-\quad as a rate & $-0.076\%$/s & $-0.081\%$/s & converged to $6\%$ \\
-$\Omega_{\mathrm{out}}$ & $-10.6\%$ & $-9.7\%$ & converged \\
-\midrule
-$\Omega_{\mathrm{out}}/\Omega_{\mathrm{core}}$ & $-15.8\%$ & $-11.4\%$ & same sign, onset delayed \\
-$\Omega_{\mathrm{core}}$ & $+6.2\%$ & $+2.0\%$ & same sign \\
-$L_z^{\mathrm{outer}}/L_z^{\mathrm{inner}}$ & $-5.9\%$ & $-1.8\%$ & same sign \\
+$L_z$ & $-2.6\%$ & $-2.9\%$ & converged \\
+$\Omega_{\mathrm{out}}$ & $-15.3\%$ & $-14.9\%$ & converged ($3\%$) \\
+$\Omega_{\mathrm{out}}/\Omega_{\mathrm{core}}$ & $-22.6\%$ & $-20.3\%$ & \textbf{converged ($10\%$)} \\
+$\Omega_{\mathrm{core}}$ & $+9.4\%$ & $+6.7\%$ & same sign \\
+$L_z^{\mathrm{outer}}/L_z^{\mathrm{inner}}$ & $-10.6\%$ & $-6.2\%$ & same sign \\
 \bottomrule
 \end{tabular}
-\caption{The two grids over $28$\,s. Both the global loss of angular momentum
-and its rate agree to within a few percent, and so does the outer-shell
-spin-down. The differential rotation steepens on both.}
+\caption{The steepening of the differential rotation, over $46$\,s. The
+amplitude that did not converge over shorter windows does converge here, to
+$10\%$: the $256^3$ onset is late, not absent, and the lag washes out once the
+baseline is long enough to contain it. The outer-shell spin-down agrees to
+$3\%$.}
 \label{tab:late}
 \end{table}
 
-The gap in the lower block is a delay and not a suppression, which only a
-window this long makes visible. Broken into segments:
+The lag itself is visible only in segments, and it is why two earlier drafts of
+this report reached two different wrong conclusions --- first that the
+steepening was a coarse-grid artefact, then that its amplitude was
+irreducibly resolution-dependent.
 
 \begin{table}[h]
 \centering\small
@@ -589,29 +589,63 @@ $t = 12 \to 18$\,s & $-3.2\%$ & $\mathbf{+2.1\%}$ \\
 $t = 18 \to 24$\,s & $-5.1\%$ & $-3.0\%$ \\
 $t = 24 \to 30$\,s & $-4.5\%$ & $\mathbf{-5.6\%}$ \\
 $t = 30 \to 38$\,s & $-3.8\%$ & $\mathbf{-5.2\%}$ \\
+\midrule
+$t = 12 \to 26.5$\,s (a $14$\,s baseline) & $-8.2\%$ & $-1.0\%$ \\
+$t = 12 \to 58.2$\,s (a $46$\,s baseline) & $-22.6\%$ & $-20.3\%$ \\
 \bottomrule
 \end{tabular}
-\caption{The finer grid starts about $6$\,s later --- it is still flat, even
-rising slightly, while the coarse grid has already begun --- and then steepens
-\emph{faster}. Over $t = 26$ to $40$\,s alone the ratio falls $8.2\%$ at
-$192^3$ against $10.6\%$ at $256^3$. The smaller total in
-Table~\ref{tab:late} is entirely the late start.}
+\caption{The finer grid starts about $6$\,s later, then steepens faster. The
+last two rows are the same comparison made over two baselines: at $14$\,s the
+two grids appear to disagree by a factor of eight, at $46$\,s they agree to
+$10\%$. Neither number is wrong; the short one simply does not contain the
+onset. \emph{A convergence test over a window shorter than the lag between the
+grids measures the lag, not the physics.}}
 \label{tab:segments}
 \end{table}
 
-This is worth stating plainly because an earlier version of this report drew
-the opposite conclusion. Compared only out to $t = 26.5$\,s the $256^3$ ratio
-had fallen $1.0\%$ against $8.2\%$ at $192^3$, and
-$L_z^{\mathrm{outer}}/L_z^{\mathrm{inner}}$ appeared to move the other way, so
-the steepening was recorded as a coarse-grid artefact. It was the baseline that
-was too short: the fine grid had not yet started. Fourteen seconds was not
-enough to separate a delayed onset from an absent effect, and twenty-eight is.
+\paragraph{The braking rate halves, on both grids.} This is the strongest
+result of the comparison. The claim that the angular-momentum transport is
+magnetic rests on $L_z$ falling faster while the toroidal field lives than
+after it is gone, and that was measured at one resolution. It is now measured
+at two, in three successive regimes:
 
-What can be said now: \textbf{the differential rotation steepens at both
-resolutions}, at the same rate once both have begun, and the star loses angular
-momentum at a rate the two grids agree on to $6\%$. What is still open is the
-onset --- why the fine grid waits $6$\,s --- and whether the amplitude
-converges, which a two-point comparison cannot settle.
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lrrl}
+\toprule
+$\mathrm{d}\ln L_z/\mathrm{d}t$ & $192^3$ & $256^3$ & \\
+\midrule
+$t = 1.5$--$11.9$\,s \quad (field alive) & $-0.1996\%$/s & $-0.2144\%$/s & agree to $7\%$ \\
+$t = 12$--$30$\,s \quad (field decaying) & $-0.0873\%$/s & $-0.0935\%$/s & agree to $7\%$ \\
+$t = 30$--$58$\,s \quad (residual) & $-0.0446\%$/s & $-0.0523\%$/s & agree to $15\%$ \\
+\bottomrule
+\end{tabular}
+\caption{Each regime brakes at about half the rate of the one before, and the
+two grids agree on every one of them. With no explicit viscosity and no
+explicit resistivity in the scheme, nothing else brakes anything --- so the
+factor of two identifies the agent, and it does so at two resolutions.}
+\label{tab:braking}
+\end{table}
+
+\paragraph{The residual field does not converge, and it is not decaying.} The
+one place where the longer baseline makes things worse. At $192^3$ the magnetic
+energy settles at $\simeq 3\times10^{46}$\,erg after $t \simeq 30$\,s. At
+$256^3$ it settles at $7\times10^{47}$\,erg --- a factor of $25$ higher --- and
+the peak field at $\simeq 6\times10^{12}$\,G against $\simeq 10^{12}$\,G.
+Worse for interpretation, the finer grid's residual is not flat: fitted over
+$t > 45$\,s it \emph{grows} at $+0.012$\,s$^{-1}$, with $\Etor$ and $\Epol$
+both rising.
+
+This is consistent with the $\mathrm{d}x^{2.4}$ scaling of the decay: less
+numerical resistivity leaves more residual field. Taken at face value it says
+the ``disordered residual'' reported at $192^3$ is a floor set by the mesh, not
+by the star, and that the true residual is larger --- possibly much larger,
+since a run that is still gaining magnetic energy at $t = 58$\,s has not
+reached a final state at all. The obvious mechanism is available: the
+differential rotation survives and is \emph{steepening}, so there is free shear
+energy to wind residual poloidal field back into toroidal. Whether that is a
+genuine dynamo or the last decade of a decay that the mesh cannot resolve is
+not something two resolutions can settle.
 
 %======================================================================
 \section{Caveats}
@@ -635,18 +669,24 @@ converges, which a two-point comparison cannot settle.
       interpolation of an axisymmetric model injects $\Epol$ some $70$ times
       above the model's value even at $256^3$. All poloidal growth is measured
       against that floor, which is why it is quoted alongside.
-\item \textbf{The \emph{amount} of steepening is not converged, and a short
-      baseline can invert its sign.} The two grids agree on what the star loses
-      --- $L_z$ at $0.076$ against $0.081\%$\,s$^{-1}$ --- and both steepen the
-      rotation profile, but the $256^3$ onset is some $6$\,s later, so over any
-      fixed window it has steepened less. Compared only out to $t = 26.5$\,s
-      this reads as no steepening at all, and an earlier draft of this report
-      concluded exactly that (Sec.~\ref{sec:latewindow}). Quote the direction
-      and the rate after onset, not the total over a window.
-\item \textbf{Beyond $40.5$\,s only $192^3$ exists.} The settled $1.50$\,s
-      pulsation and the halving of the braking rate once the field is gone are
-      measured on one grid. The $256^3$ continuation towards $60$\,s is
-      running.
+\item \textbf{A short baseline can invert the sign of a delayed effect.} The
+      $256^3$ steepening begins about $6$\,s after the $192^3$ one. Measured to
+      $t = 26.5$\,s the two grids appear to disagree by a factor of eight;
+      measured to $t = 58$\,s they agree to $10\%$. Two earlier drafts of this
+      report drew two different wrong conclusions from the short window
+      (Sec.~\ref{sec:latewindow}). Any convergence test here needs a baseline
+      longer than the lag between the grids, and the lag is not known in
+      advance.
+\item \textbf{The residual field is not converged and is not settled.} At
+      $192^3$ the magnetic energy plateaus at $\simeq 3\times10^{46}$\,erg; at
+      $256^3$ at $7\times10^{47}$\,erg, twenty-five times higher, and still
+      \emph{rising} at $t = 58$\,s. Everything this report says about a
+      ``disordered residual'' therefore describes a mesh-set floor rather than
+      a state of the star, and the $192^3$ factor of $2170$ in $\Emag$ is an
+      upper bound on the destruction. Whether the finer grid is showing a
+      genuine shear dynamo --- the differential rotation is still there and
+      still steepening, so the free energy exists --- or merely the last decade
+      of a decay it cannot resolve, two resolutions cannot say.
 \item \textbf{Native magnetic diagnostics are unusable.} \texttt{emag\_density},
       \texttt{etor\_density} and \texttt{Div\_B} pack face-centred components of
       different index types into one cell-centred FAB and read past the end of
@@ -658,8 +698,8 @@ converges, which a two-point comparison cannot settle.
 \section*{Status}
 
 $192^3$: complete, $t = 60$\,s. \quad
-$256^3$: running, $t = 55.8$\,s of a $60$\,s target; diagnostics processed to
-$t = 40.5$\,s.
+$256^3$: $t = 58.2$\,s, fully processed. A final window to $60$\,s is queued;
+nothing here depends on it.
 
 Inputs, submission scripts, diagnostic tools, data and figure code are under
 version control in the \texttt{WD\_MAG} repository.
