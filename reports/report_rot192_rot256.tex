@@ -73,7 +73,7 @@ $t = 40.5$\,s and is continuing towards $60$\,s.
 \end{abstract}
 
 %======================================================================
-\section{Initial state}
+\section{What is being simulated}
 
 \subsection{The star}
 
@@ -166,9 +166,224 @@ Diagnostics & rebuilt from $B_x,B_y,B_z$; the native \texttt{emag\_density}, \\
 \end{table}
 
 %======================================================================
-\section{Final states}
+\section{Results: the field is destroyed}
 
-\subsection{Same instant, both grids}
+The ordered field does not survive. It is disrupted by a non-axisymmetric
+instability within a few Alfv\'en times, and what is left after thirty seconds
+is a disordered residual three orders of magnitude weaker in energy. This
+section states what happens; how much of it depends on resolution is deferred
+to Sec.~\ref{sec:conv}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/field_sequence_192.png}
+\caption{$192^3$. \textbf{Top:} equatorial cut $z=0$, where $\Btor$ lies in the
+plane, so the streamlines \emph{are} the toroidal field lines --- circles while
+the star is axisymmetric. \textbf{Bottom:} meridional cut $y=0$, where the
+in-plane field \emph{is} the poloidal one. Colour is $\Btor$ and $|\Bpol|$
+respectively, both starting at $10^{10}$\,G so the two rows are comparable; the
+near-empty poloidal panel at $t=0$ is the statement that the poloidal field is
+three decades below the toroidal one. Same scales as Fig.~\ref{fig:seq256}.}
+\label{fig:seq192}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/field_sequence_256.png}
+\caption{$256^3$, same layout, planes and colour scales as
+Fig.~\ref{fig:seq192}.}
+\label{fig:seq256}
+\end{figure}
+
+The field goes through three phases, all visible in Fig.~\ref{fig:seq192}.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{llll}
+\toprule
+Phase & Window & Rate & Signature \\
+\midrule
+Growth & $t = 1.3$--$4.0$\,s & $\sigma = 1.369$ s$^{-1}$ ($r=0.994$) & $\Epol$ exponential; \\
+& & $e$-fold of amplitude $0.61\,t_A$ & $m=1$ takes over \\
+Saturation & $t \simeq 5.3$\,s & --- & $\Epol$ peaks at $10^4\times$ its floor; \\
+& & & $\max\Btor/\max\Bpol \to 1.19$ \\
+Decay & $t = 5.4$--$30$\,s & $e$-fold $3.6$--$4.0$\,s & $\Etor$ falls $10^3$ \\
+Residual & $t > 30$\,s & $e$-fold $37$\,s & $\Emag \simeq 3\times10^{46}$ erg, flat \\
+\bottomrule
+\end{tabular}
+\caption{Phases of the field evolution at $192^3$. The decay stalls after
+$t \simeq 30$\,s: the field does not go to zero but settles at a disordered
+residual of order $10^{12}$\,G.}
+\end{table}
+
+\paragraph{The mode is $m=1$.} An azimuthal Fourier projection gives
+$|m{=}1|/|m{=}0| = 1.2\times10^{-16}$ at $t=0$ --- the initial condition is
+axisymmetric to machine precision. From $t \simeq 2.5$\,s the poloidal field is
+$m=1$ dominated, with $|B_{z,m=1}|/|B_{z,m=0}|$ reaching $21$ at $t=4$\,s, and
+the toroidal $m=1$ saturates at $\simeq 10\%$ of the axisymmetric component.
+This rules out the axisymmetric MRI, which could not exist here in any case:
+built from the \emph{vertical} field, $\lambda_{\mathrm{MRI}} = 2.9\times10^4$\,cm,
+or $0.003$ of a cell. What remains is the Tayler kink or the non-axisymmetric
+toroidal-field MRI, which the mode number alone cannot separate.
+
+\paragraph{``Destroyed'' means disordered, not weakened --- until late.} At
+$t = 5.2$\,s the peak toroidal field is \emph{higher} than initially,
+$4.54\times10^{13}$ against $3.20\times10^{13}$\,G, while the energy has fallen
+by a factor of three: the field is concentrating into filaments, its effective
+volume dropping from $1.49\times10^{24}$ to $2.40\times10^{23}$\,cm$^3$. Only
+afterwards does the peak collapse as well, to $1.23\times10^{12}$\,G.
+
+%======================================================================
+\section{Results: the star survives}
+
+\paragraph{The mass does not move.} $0.02\%$ from start to end
+(Table~\ref{tab:end}), $0.3\%$ in amplitude along the way, while the magnetic energy of the same star falls by a
+factor of $2170$. Whatever destroys the field does not unbind the star.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.49\textwidth]{figures/mass_radius_192.pdf}
+\hfill
+\includegraphics[width=0.49\textwidth]{figures/long_run_192.pdf}
+\caption{\textbf{Left, $192^3$ to $t=12$\,s:} mass against a $\pm1\%$ band; the
+three radii with one grid cell drawn around $\Rpol$; volume; oblateness.
+\textbf{Right, to $t=22$\,s:} central density, and axial angular momentum with
+the two braking rates fitted. The dashed vertical is the restart at $t=12$\,s.}
+\end{figure}
+
+%======================================================================
+\section{Results: rotation and angular momentum}
+\label{sec:rotation}
+
+This is the property the whole configuration depends on: a $2\,\Msun$ white
+dwarf exists only because the rotation is differential, so what the field does
+to the rotation law decides whether the star has a future. Figures and numbers
+here are $192^3$ over $60$\,s; Sec.~\ref{sec:latewindow} shows the $256^3$ run
+doing the same thing, delayed and then faster, so the direction is a result and
+the magnitude is not yet.
+
+\paragraph{The differential rotation not only survives, it strengthens.}
+Fig.~\ref{fig:rot} is the diagnostic the long run was extended to provide. The
+magnetic transport is real and its signature is unambiguous: $L_z$ falls at
+$0.21\%$\,s$^{-1}$ while the toroidal field lives and $0.10\%$\,s$^{-1}$ after it
+is gone. With no explicit viscosity and no explicit resistivity in these runs,
+nothing else in the scheme brakes anything, so that factor of two identifies
+the agent.
+
+But the transport does not homogenise the star. Had it done so,
+$\Omega_{\mathrm{out}}/\Omega_{\mathrm{core}}$ would climb towards unity; it
+falls instead, from $0.34$ to $0.27$. The core holds its angular velocity to
+$3\%$ over $60$\,s while the outer shell loses $25\%$ of its own --- angular
+momentum is carried outward and out of the star, and it is the outer layers
+that pay. Split by mass rather than by radius the same thing shows:
+$L_z^{\mathrm{outer}}/L_z^{\mathrm{inner}}$ falls from $6.35$ to $4.35$,
+because the outer half of the mass loses $1\%$ of its angular momentum while
+the star as a whole loses $5.5\%$ and the inner half gains.
+
+\emph{The star survives because the field never came close to removing what
+supports it, and in the time it existed it steepened the profile rather than
+flattening it.} Both halves of that sentence hold at $256^3$ as well
+(Sec.~\ref{sec:latewindow}); what the finer grid does not reproduce is the
+size of the steepening over a fixed window, because it starts later.
+
+\paragraph{Losing $L_z$ and spinning up is expected here.} $L_z = I\bar\Omega$
+and $I$ is not constant: between $t = 12$ and $60$\,s the star loses $2.8\%$ of
+its angular momentum, contracts enough to lose $8.8\%$ of its moment of
+inertia, and gains $6.6\%$ in $\bar\Omega$ (Fig.~\ref{fig:rot}b). This is not
+an oddity of the simulation. It is the behaviour known for rotating white
+dwarfs near the maximum mass, where a configuration shedding angular momentum
+contracts and spins up rather than spinning down --- the spin-up branch
+discussed by \citet{boshkayev2013}. Their analysis is uniformly rotating and
+general relativistic while this configuration is differentially rotating,
+Newtonian and magnetised, so the correspondence is in the mechanism and not in
+the numbers.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.60\textwidth]{figures/rotation_192.pdf}
+\caption{$192^3$ over the full $60$\,s. \textbf{(a)} $L_z$ of the star, with
+the two braking rates fitted; the $12\%$ rise in the first second is the
+initial transient settling. \textbf{(b)} the decomposition $L_z = I\bar\Omega$,
+normalised at $t = 12$\,s, which answers the obvious objection to (a): the star
+loses angular momentum and its angular velocity rises anyway, because $I$ is
+not constant. Between $t = 12$ and $60$\,s, $L_z$ falls $2.8\%$, $I$ falls
+$8.8\%$ as the star contracts, and $\bar\Omega = L_z/I$ gains $6.6\%$ --- a
+skater, minus the losses. \textbf{(c)} $\Omega$ mass-weighted in three
+cylindrical shells, all chosen to stay inside the star at every phase of the
+$1.5$\,s pulsation --- note they sit at fixed fractions of the \emph{initial}
+$\Req$, so part of the decline in the outer one is the star having shrunk out
+from under it. \textbf{(d)} the differential rotation; uniform rotation would
+be $1$ and the star moves away from it. \textbf{(e)} $L_z$ of
+the outer half of the \emph{mass} over that of the inner half --- split by
+mass rather than radius, with the dividing radius recomputed at every snapshot,
+because a shell at fixed $\varpi$ would measure the pulsation instead of the
+transport. In (c) and (d) a running mean over one pulsation period is drawn
+over the raw curve; the ripple is the pulsation and aliases badly against
+coarse sampling.}
+\label{fig:rot}
+\end{figure}
+
+%======================================================================
+\section{The end state at $192^3$}
+
+Only the $192^3$ run has reached a steady late state; it was carried to
+$t = 60$\,s and stopped changing well before that. The $256^3$ run stands at
+$t = 40.5$\,s and is continuing.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lrrr}
+\toprule
+$192^3$ & $t = 0$ & $t = 38.5$\,s & change \\
+\midrule
+\multicolumn{4}{l}{\emph{The star}}\\
+$M$ ($\Msun$) & $2.00667$ & $2.00618$ & $\mathbf{-0.02\%}$ \\
+$\Rvol$ ($10^8$ cm) & $3.068$ & $2.716$ & $-11\%$ \\
+$\Req$ ($10^8$ cm) & $3.750$ & $3.204$ & $-15\%$ \\
+$\Rpol/\Req$ & $0.425$ & $0.556$ & rounder \\
+$\Omega_{\mathrm{core}}$ (rad\,s$^{-1}$)$^{\dagger}$ & $7.86$ & $7.59$ & $-3\%$ \\
+$\Omega_{\mathrm{out}}$ (rad\,s$^{-1}$)$^{\dagger}$ & $2.56$ & $1.92$ & $-25\%$ \\
+$\Omega_{\mathrm{out}}/\Omega_{\mathrm{core}}$$^{\dagger\ddagger}$ & $0.341$ & $0.266$ & $-22\%$ \\
+$L_z$ ($10^{50}$ g cm$^2$ s$^{-1}$)$^{\dagger}$ & $1.979$ & $2.101$ & $-5.5\%$ from peak \\
+$L_z^{\mathrm{outer}}/L_z^{\mathrm{inner}}$$^{\dagger\ddagger}$ & $6.35$ & $4.35$ & $-32\%$ \\
+$I$ ($10^{49}$ g cm$^2$)$^{\dagger}$ & $4.16$ & $4.59$ & $-8.8\%$ from $t=12$ \\
+\midrule
+\multicolumn{4}{l}{\emph{The field}}\\
+$\Emag$ (erg) & $6.035\times10^{49}$ & $2.782\times10^{46}$ & $\mathbf{/\,2170}$ \\
+$\Etor$ (erg) & $6.035\times10^{49}$ & $2.658\times10^{46}$ & $/\,2270$ \\
+$\Epol$ (erg) & $1.942\times10^{44}$ & $1.236\times10^{45}$ & $\times 6.4$ \\
+$\Etor/\Epol$ & $3.11\times10^{5}$ & $21.5$ & $/\,1.4\times10^{4}$ \\
+$\max|\Btor|$ (G) & $3.196\times10^{13}$ & $1.227\times10^{12}$ & $/\,26$ \\
+$\max|\Bpol|$ (G) & $9.46\times10^{10}$ & $1.148\times10^{12}$ & $\times 12$ \\
+$\max|\Btor|/\max|\Bpol|$ & $\mathbf{338}$ & $\mathbf{1.07}$ & $/\,316$ \\
+$\max|B|/B_c$ & $0.724$ & $0.031$ & \\
+\bottomrule
+\end{tabular}
+\caption{Initial and end state at $192^3$. The star keeps its mass to $0.02\%$;
+the field is reduced by three orders of magnitude in energy and ends with its
+two components equal in peak strength. $^{\dagger}$Rotation and $L_z$ are
+quoted at $t = 60$\,s, the end of the run; the field and shape columns at
+$t = 38.5$\,s, the last instant processed with the field diagnostics.
+$^{\ddagger}$\textbf{Amplitude not converged.} These two rows measure how the
+star redistributes angular momentum internally. The $256^3$ run moves both the
+same way, but by less over the same window ($-11.4\%$ and $-1.8\%$ against
+$-15.8\%$ and $-5.9\%$ from $t = 12$ to $40$\,s), because its onset is some
+$6$\,s later; from $t = 26$ onward it steepens faster than this one
+(Sec.~\ref{sec:latewindow}). Read the direction, not the number.}
+\label{tab:end}
+\end{table}
+
+%======================================================================
+\section{Resolution: what is measured and what is mesh}
+\label{sec:conv}
+
+Everything above is physics as the two runs report it. This section asks which
+of it would survive a finer grid. The answer splits three ways, and the split is
+sharp enough to be useful: the \emph{star} converges, the \emph{energy} in the
+field does not, and the \emph{rates} do not and move in opposite directions.
+
+\subsection{The same instant, and the same window}
+
 
 \begin{table}[h]
 \centering\small
@@ -190,10 +405,15 @@ $\Rvol$ ($10^8$ cm) & $3.51$ & $2.97$ & \\
 \end{tabular}
 \caption{The two grids at the same physical time, at the end of the growth
 phase. They agree on the state to within tens of percent, but not on the rate
-that got there --- see Sec.~\ref{sec:conv}.}
+that got there.}
+\label{tab:same}
 \end{table}
 
-\subsection{The common window, $t = 9$--$12$\,s}
+
+Table~\ref{tab:same} takes the two grids at one instant, $t \simeq 5.2$\,s, the
+end of the growth phase and the most violent moment of the run. It is the
+comparison that is easiest to make and the least trustworthy, and it is
+included to show why.
 
 The $256^3$ run has since reached its $12$\,s target, so the two grids can be
 compared over a window rather than at an instant. That matters: the star
@@ -251,7 +471,82 @@ its differential rotation --- the property that lets it hold $2\,\Msun$ ---
 was previously measured at one resolution only. It is now measured at two, and
 they agree to $1.4\%$.
 
-\subsection{Past $12$\,s: the steepening, on two grids}
+\subsection{The verdicts}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lccl}
+\toprule
+& $192^3$ & $256^3$ & verdict \\
+\midrule
+Mass range ($\Msun$) & $1.9997$--$2.0082$ & $2.0021$--$2.0073$ & converged \\
+$\Rvol(t=0)$ ($10^8$ cm) & $3.068$ & $3.069$ & converged ($0.03\%$) \\
+$\Omega_{\mathrm{core}}$, $9$--$12$\,s (rad\,s$^{-1}$) & $6.654$ & $6.733$ & converged ($1.2\%$) \\
+$\Omega_{\mathrm{out}}/\Omega_{\mathrm{core}}$, $9$--$12$\,s & $0.345$ & $0.350$ & \textbf{converged ($1.4\%$)} \\
+$\max|B|$, $9$--$12$\,s (G) & $3.40\times10^{13}$ & $3.65\times10^{13}$ & converged ($7\%$) \\
+\midrule
+$\sigma$ from $\Epol$ (s$^{-1}$) & $1.369$ & $2.007$ & \textbf{$+47\%$, not converged} \\
+$\sigma$ from the $m=1$ mode (s$^{-1}$) & $1.968$ & $2.752$ & $+40\%$, same factor \\
+$\Epol(t=0)$, the floor (erg) & $1.94\times10^{44}$ & $1.16\times10^{44}$ & finer seed is smaller \\
+$\min(\max\Btor/\max\Bpol)$ & $1.19$ & $\mathbf{0.805}$ & instability goes further \\
+\quad at $t = 12$\,s & $2.93$ & $\mathbf{1.06}$ & fine grid $\sim3\times$ further along \\
+\midrule
+Decay rate $\gamma$ of $\Etor$, $6$--$12$\,s & $0.282$\,s$^{-1}$ & $0.141$\,s$^{-1}$ & \textbf{$/\,2.0$, not converged} \\
+\quad as an $e$-folding & $3.5$\,s & $7.1$\,s & \\
+$\Emag$ at $t = 12$\,s (erg) & $4.4\times10^{48}$ & $8.8\times10^{48}$ & $\times2.0$ \\
+First volume peak & $2.51\,V_0$ & $1.79\,V_0$ & early pulsation is numerical \\
+\bottomrule
+\end{tabular}
+\caption{Three verdicts. \emph{Converged:} everything about the star --- mass,
+size, peak field, and the whole rotation profile. \emph{Not converged:} the
+growth rate rises with resolution while the decay rate falls, each by about a
+factor of two per refinement, so the measured growth is a lower bound and the
+measured decay an upper bound; the coarse grid exaggerates the violence at both
+ends. The early large-amplitude pulsation is largely the initial condition
+ringing on the mesh.}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.66\textwidth]{figures/convergence_192_256.pdf}
+\caption{$192^3$ against $256^3$ over the full $12$\,s. \textbf{(a)} Toroidal
+(solid) and poloidal (dashed) energy, with the fitted growth $\sigma$ and decay
+$\gamma$. The two rates move in \emph{opposite} directions with refinement.
+\textbf{(b)} $V/V_0$: the first peak drops from $2.51$ to $1.79$, its excess
+over unity scaling as $\mathrm{d}x^{2.3}$. \textbf{(c)} The differential
+rotation --- neither grid approaches uniform rotation and the two agree to
+$1.4\%$. \textbf{(d)} Peak field against $B_c$; above the Landau field for
+roughly half the run at both resolutions.}
+\label{fig:conv}
+\end{figure}
+
+One row deserves reading twice. The amplitude ratio $\max\Btor/\max\Bpol$ dips
+below unity only at $256^3$ --- the poloidal field overtakes the toroidal in
+peak strength there and never does at $192^3$ --- and at $t = 12$\,s it stands
+at $1.06$ on the fine grid against $2.93$ on the coarse. The $192^3$ run does
+not reach $1.07$ until $t = 38.5$\,s (Table~\ref{tab:end}). In terms of field
+topology the fine grid at $12$\,s is where the coarse grid is at nearly
+$40$\,s: refinement does not merely sharpen the picture, it advances the
+evolution. That is one more reason to treat every rate quoted here as a bound.
+
+There is no explicit resistivity in these runs, so the decay of $\Etor$
+\emph{is} the numerical resistivity, and the two grids measure it. Halving
+$\gamma$ while $\mathrm{d}x$ falls by a factor $1.33$ puts it at
+$\mathrm{d}x^{2.4}$, consistent with the second-order scheme and extrapolating
+to zero. Read literally, that says the field decay seen here is a resolution
+artefact and the physical star would keep its field far longer --- but a
+two-point fit cannot distinguish that from a decay that converges to something
+small but finite, and the growth rate moving the other way ($\mathrm{d}x^{-1.3}$)
+warns that both ends of the evolution are still mesh-limited.
+
+Settling the rate would need $384^3$, about five times the cost of $256^3$. The
+alternative, and probably the right one, is explicit resistivity, giving the
+problem a physical dissipation scale instead of letting the mesh set it;
+\textsc{Castro} does not currently implement it.
+
+\subsection{Past $12$\,s, and a lesson about baselines}
+\label{sec:latewindow}
+
 \label{sec:latewindow}
 
 The $256^3$ run has been continued to $t = 40.5$\,s, which puts a second
@@ -317,277 +612,6 @@ resolutions}, at the same rate once both have begun, and the star loses angular
 momentum at a rate the two grids agree on to $6\%$. What is still open is the
 onset --- why the fine grid waits $6$\,s --- and whether the amplitude
 converges, which a two-point comparison cannot settle.
-
-\subsection{The end state, $192^3$}
-
-Only the $192^3$ run has reached a steady late state; it was carried to
-$t = 60$\,s and stopped changing well before that.
-
-\begin{table}[h]
-\centering\small
-\begin{tabular}{lrrr}
-\toprule
-$192^3$ & $t = 0$ & $t = 38.5$\,s & change \\
-\midrule
-\multicolumn{4}{l}{\emph{The star}}\\
-$M$ ($\Msun$) & $2.00667$ & $2.00618$ & $\mathbf{-0.02\%}$ \\
-$\Rvol$ ($10^8$ cm) & $3.068$ & $2.716$ & $-11\%$ \\
-$\Req$ ($10^8$ cm) & $3.750$ & $3.204$ & $-15\%$ \\
-$\Rpol/\Req$ & $0.425$ & $0.556$ & rounder \\
-$\Omega_{\mathrm{core}}$ (rad\,s$^{-1}$)$^{\dagger}$ & $7.86$ & $7.59$ & $-3\%$ \\
-$\Omega_{\mathrm{out}}$ (rad\,s$^{-1}$)$^{\dagger}$ & $2.56$ & $1.92$ & $-25\%$ \\
-$\Omega_{\mathrm{out}}/\Omega_{\mathrm{core}}$$^{\dagger\ddagger}$ & $0.341$ & $0.266$ & $-22\%$ \\
-$L_z$ ($10^{50}$ g cm$^2$ s$^{-1}$)$^{\dagger}$ & $1.979$ & $2.101$ & $-5.5\%$ from peak \\
-$L_z^{\mathrm{outer}}/L_z^{\mathrm{inner}}$$^{\dagger\ddagger}$ & $6.35$ & $4.35$ & $-32\%$ \\
-$I$ ($10^{49}$ g cm$^2$)$^{\dagger}$ & $4.16$ & $4.59$ & $-8.8\%$ from $t=12$ \\
-\midrule
-\multicolumn{4}{l}{\emph{The field}}\\
-$\Emag$ (erg) & $6.035\times10^{49}$ & $2.782\times10^{46}$ & $\mathbf{/\,2170}$ \\
-$\Etor$ (erg) & $6.035\times10^{49}$ & $2.658\times10^{46}$ & $/\,2270$ \\
-$\Epol$ (erg) & $1.942\times10^{44}$ & $1.236\times10^{45}$ & $\times 6.4$ \\
-$\Etor/\Epol$ & $3.11\times10^{5}$ & $21.5$ & $/\,1.4\times10^{4}$ \\
-$\max|\Btor|$ (G) & $3.196\times10^{13}$ & $1.227\times10^{12}$ & $/\,26$ \\
-$\max|\Bpol|$ (G) & $9.46\times10^{10}$ & $1.148\times10^{12}$ & $\times 12$ \\
-$\max|\Btor|/\max|\Bpol|$ & $\mathbf{338}$ & $\mathbf{1.07}$ & $/\,316$ \\
-$\max|B|/B_c$ & $0.724$ & $0.031$ & \\
-\bottomrule
-\end{tabular}
-\caption{Initial and end state at $192^3$. The star keeps its mass to $0.02\%$;
-the field is reduced by three orders of magnitude in energy and ends with its
-two components equal in peak strength. $^{\dagger}$Rotation and $L_z$ are
-quoted at $t = 60$\,s, the end of the run; the field and shape columns at
-$t = 38.5$\,s, the last instant processed with the field diagnostics.
-$^{\ddagger}$\textbf{Amplitude not converged.} These two rows measure how the
-star redistributes angular momentum internally. The $256^3$ run moves both the
-same way, but by less over the same window ($-11.4\%$ and $-1.8\%$ against
-$-15.8\%$ and $-5.9\%$ from $t = 12$ to $40$\,s), because its onset is some
-$6$\,s later; from $t = 26$ onward it steepens faster than this one
-(Sec.~\ref{sec:latewindow}). Read the direction, not the number.}
-\label{tab:end}
-\end{table}
-
-Three points in Table~\ref{tab:end} carry most of the physics.
-
-\paragraph{The mass does not move.} $0.02\%$ from start to end, $0.3\%$ in
-amplitude along the way, while the magnetic energy of the same star falls by a
-factor of $2170$. Whatever destroys the field does not unbind the star.
-
-\paragraph{Losing $L_z$ and spinning up is expected here.} $L_z = I\bar\Omega$
-and $I$ is not constant: between $t = 12$ and $60$\,s the star loses $2.8\%$ of
-its angular momentum, contracts enough to lose $8.8\%$ of its moment of
-inertia, and gains $6.6\%$ in $\bar\Omega$ (Fig.~\ref{fig:rot}b). This is not
-an oddity of the simulation. It is the behaviour known for rotating white
-dwarfs near the maximum mass, where a configuration shedding angular momentum
-contracts and spins up rather than spinning down --- the spin-up branch
-discussed by \citet{boshkayev2013}. Their analysis is uniformly rotating and
-general relativistic while this configuration is differentially rotating,
-Newtonian and magnetised, so the correspondence is in the mechanism and not in
-the numbers.
-
-\paragraph{The differential rotation not only survives, it strengthens.} The
-numbers below are $192^3$; Sec.~\ref{sec:latewindow} shows the $256^3$ run does
-the same thing, delayed and then faster, so the direction is a result and the
-magnitude is not yet.
-Fig.~\ref{fig:rot} is the diagnostic the long run was extended to provide. The
-magnetic transport is real and its signature is unambiguous: $L_z$ falls at
-$0.21\%$\,s$^{-1}$ while the toroidal field lives and $0.10\%$\,s$^{-1}$ after it
-is gone. With no explicit viscosity and no explicit resistivity in these runs,
-nothing else in the scheme brakes anything, so that factor of two identifies
-the agent.
-
-But the transport does not homogenise the star. Had it done so,
-$\Omega_{\mathrm{out}}/\Omega_{\mathrm{core}}$ would climb towards unity; it
-falls instead, from $0.34$ to $0.27$. The core holds its angular velocity to
-$3\%$ over $60$\,s while the outer shell loses $25\%$ of its own --- angular
-momentum is carried outward and out of the star, and it is the outer layers
-that pay. Split by mass rather than by radius the same thing shows:
-$L_z^{\mathrm{outer}}/L_z^{\mathrm{inner}}$ falls from $6.35$ to $4.35$,
-because the outer half of the mass loses $1\%$ of its angular momentum while
-the star as a whole loses $5.5\%$ and the inner half gains.
-
-\emph{The star survives because the field never came close to removing what
-supports it, and in the time it existed it steepened the profile rather than
-flattening it.} Both halves of that sentence hold at $256^3$ as well
-(Sec.~\ref{sec:latewindow}); what the finer grid does not reproduce is the
-size of the steepening over a fixed window, because it starts later.
-
-\paragraph{``Destroyed'' means disordered, not weakened --- until late.} At
-$t = 5.2$\,s the peak toroidal field is \emph{higher} than initially,
-$4.54\times10^{13}$ against $3.20\times10^{13}$\,G, while the energy has fallen
-by a factor of three: the field is concentrating into filaments, its effective
-volume dropping from $1.49\times10^{24}$ to $2.40\times10^{23}$\,cm$^3$. Only
-afterwards does the peak collapse as well, to $1.23\times10^{12}$\,G.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.60\textwidth]{figures/rotation_192.pdf}
-\caption{$192^3$ over the full $60$\,s. \textbf{(a)} $L_z$ of the star, with
-the two braking rates fitted; the $12\%$ rise in the first second is the
-initial transient settling. \textbf{(b)} the decomposition $L_z = I\bar\Omega$,
-normalised at $t = 12$\,s, which answers the obvious objection to (a): the star
-loses angular momentum and its angular velocity rises anyway, because $I$ is
-not constant. Between $t = 12$ and $60$\,s, $L_z$ falls $2.8\%$, $I$ falls
-$8.8\%$ as the star contracts, and $\bar\Omega = L_z/I$ gains $6.6\%$ --- a
-skater, minus the losses. \textbf{(c)} $\Omega$ mass-weighted in three
-cylindrical shells, all chosen to stay inside the star at every phase of the
-$1.5$\,s pulsation --- note they sit at fixed fractions of the \emph{initial}
-$\Req$, so part of the decline in the outer one is the star having shrunk out
-from under it. \textbf{(d)} the differential rotation; uniform rotation would
-be $1$ and the star moves away from it. \textbf{(e)} $L_z$ of
-the outer half of the \emph{mass} over that of the inner half --- split by
-mass rather than radius, with the dividing radius recomputed at every snapshot,
-because a shell at fixed $\varpi$ would measure the pulsation instead of the
-transport. In (c) and (d) a running mean over one pulsation period is drawn
-over the raw curve; the ripple is the pulsation and aliases badly against
-coarse sampling.}
-\label{fig:rot}
-\end{figure}
-
-%======================================================================
-\section{The evolution between them}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\textwidth]{figures/field_sequence_192.png}
-\caption{$192^3$. \textbf{Top:} equatorial cut $z=0$, where $\Btor$ lies in the
-plane, so the streamlines \emph{are} the toroidal field lines --- circles while
-the star is axisymmetric. \textbf{Bottom:} meridional cut $y=0$, where the
-in-plane field \emph{is} the poloidal one. Colour is $\Btor$ and $|\Bpol|$
-respectively, both starting at $10^{10}$\,G so the two rows are comparable; the
-near-empty poloidal panel at $t=0$ is the statement that the poloidal field is
-three decades below the toroidal one. Same scales as Fig.~\ref{fig:seq256}.}
-\label{fig:seq192}
-\end{figure}
-
-The field goes through three phases, all visible in Fig.~\ref{fig:seq192}.
-
-\begin{table}[h]
-\centering\small
-\begin{tabular}{llll}
-\toprule
-Phase & Window & Rate & Signature \\
-\midrule
-Growth & $t = 1.3$--$4.0$\,s & $\sigma = 1.369$ s$^{-1}$ ($r=0.994$) & $\Epol$ exponential; \\
-& & $e$-fold of amplitude $0.61\,t_A$ & $m=1$ takes over \\
-Saturation & $t \simeq 5.3$\,s & --- & $\Epol$ peaks at $10^4\times$ its floor; \\
-& & & $\max\Btor/\max\Bpol \to 1.19$ \\
-Decay & $t = 5.4$--$30$\,s & $e$-fold $3.6$--$4.0$\,s & $\Etor$ falls $10^3$ \\
-Residual & $t > 30$\,s & $e$-fold $37$\,s & $\Emag \simeq 3\times10^{46}$ erg, flat \\
-\bottomrule
-\end{tabular}
-\caption{Phases of the field evolution at $192^3$. The decay stalls after
-$t \simeq 30$\,s: the field does not go to zero but settles at a disordered
-residual of order $10^{12}$\,G.}
-\end{table}
-
-\paragraph{The mode is $m=1$.} An azimuthal Fourier projection gives
-$|m{=}1|/|m{=}0| = 1.2\times10^{-16}$ at $t=0$ --- the initial condition is
-axisymmetric to machine precision. From $t \simeq 2.5$\,s the poloidal field is
-$m=1$ dominated, with $|B_{z,m=1}|/|B_{z,m=0}|$ reaching $21$ at $t=4$\,s, and
-the toroidal $m=1$ saturates at $\simeq 10\%$ of the axisymmetric component.
-This rules out the axisymmetric MRI, which could not exist here in any case:
-built from the \emph{vertical} field, $\lambda_{\mathrm{MRI}} = 2.9\times10^4$\,cm,
-or $0.003$ of a cell. What remains is the Tayler kink or the non-axisymmetric
-toroidal-field MRI, which the mode number alone cannot separate.
-
-\paragraph{The star pulsates and does not stop.} Past the initial transient,
-$\rho_{\max}$ settles into a clean periodic oscillation of period $1.498$\,s
-($3.15\,t_{\mathrm{dyn}}$, $1.95$ rotations) at $\pm14.4\%$, with an envelope
-$e$-folding near $140$\,s. It is still running at $t=60$\,s.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.49\textwidth]{figures/mass_radius_192.pdf}
-\hfill
-\includegraphics[width=0.49\textwidth]{figures/long_run_192.pdf}
-\caption{\textbf{Left, $192^3$ to $t=12$\,s:} mass against a $\pm1\%$ band; the
-three radii with one grid cell drawn around $\Rpol$; volume; oblateness.
-\textbf{Right, to $t=22$\,s:} central density, and axial angular momentum with
-the two braking rates fitted. The dashed vertical is the restart at $t=12$\,s.}
-\end{figure}
-
-%======================================================================
-\section{Numerical convergence}
-\label{sec:conv}
-
-\begin{table}[h]
-\centering\small
-\begin{tabular}{lccl}
-\toprule
-& $192^3$ & $256^3$ & verdict \\
-\midrule
-Mass range ($\Msun$) & $1.9997$--$2.0082$ & $2.0021$--$2.0073$ & converged \\
-$\Rvol(t=0)$ ($10^8$ cm) & $3.068$ & $3.069$ & converged ($0.03\%$) \\
-$\Omega_{\mathrm{core}}$, $9$--$12$\,s (rad\,s$^{-1}$) & $6.654$ & $6.733$ & converged ($1.2\%$) \\
-$\Omega_{\mathrm{out}}/\Omega_{\mathrm{core}}$, $9$--$12$\,s & $0.345$ & $0.350$ & \textbf{converged ($1.4\%$)} \\
-$\max|B|$, $9$--$12$\,s (G) & $3.40\times10^{13}$ & $3.65\times10^{13}$ & converged ($7\%$) \\
-\midrule
-$\sigma$ from $\Epol$ (s$^{-1}$) & $1.369$ & $2.007$ & \textbf{$+47\%$, not converged} \\
-$\sigma$ from the $m=1$ mode (s$^{-1}$) & $1.968$ & $2.752$ & $+40\%$, same factor \\
-$\Epol(t=0)$, the floor (erg) & $1.94\times10^{44}$ & $1.16\times10^{44}$ & finer seed is smaller \\
-$\min(\max\Btor/\max\Bpol)$ & $1.19$ & $\mathbf{0.805}$ & instability goes further \\
-\quad at $t = 12$\,s & $2.93$ & $\mathbf{1.06}$ & fine grid $\sim3\times$ further along \\
-\midrule
-Decay rate $\gamma$ of $\Etor$, $6$--$12$\,s & $0.282$\,s$^{-1}$ & $0.141$\,s$^{-1}$ & \textbf{$/\,2.0$, not converged} \\
-\quad as an $e$-folding & $3.5$\,s & $7.1$\,s & \\
-$\Emag$ at $t = 12$\,s (erg) & $4.4\times10^{48}$ & $8.8\times10^{48}$ & $\times2.0$ \\
-First volume peak & $2.51\,V_0$ & $1.79\,V_0$ & early pulsation is numerical \\
-\bottomrule
-\end{tabular}
-\caption{Three verdicts. \emph{Converged:} everything about the star --- mass,
-size, peak field, and the whole rotation profile. \emph{Not converged:} the
-growth rate rises with resolution while the decay rate falls, each by about a
-factor of two per refinement, so the measured growth is a lower bound and the
-measured decay an upper bound; the coarse grid exaggerates the violence at both
-ends. The early large-amplitude pulsation is largely the initial condition
-ringing on the mesh.}
-\end{table}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.66\textwidth]{figures/convergence_192_256.pdf}
-\caption{$192^3$ against $256^3$ over the full $12$\,s. \textbf{(a)} Toroidal
-(solid) and poloidal (dashed) energy, with the fitted growth $\sigma$ and decay
-$\gamma$. The two rates move in \emph{opposite} directions with refinement.
-\textbf{(b)} $V/V_0$: the first peak drops from $2.51$ to $1.79$, its excess
-over unity scaling as $\mathrm{d}x^{2.3}$. \textbf{(c)} The differential
-rotation --- neither grid approaches uniform rotation and the two agree to
-$1.4\%$. \textbf{(d)} Peak field against $B_c$; above the Landau field for
-roughly half the run at both resolutions.}
-\label{fig:conv}
-\end{figure}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\textwidth]{figures/field_sequence_256.png}
-\caption{$256^3$, same layout, planes and colour scales as
-Fig.~\ref{fig:seq192}.}
-\label{fig:seq256}
-\end{figure}
-
-One row deserves reading twice. The amplitude ratio $\max\Btor/\max\Bpol$ dips
-below unity only at $256^3$ --- the poloidal field overtakes the toroidal in
-peak strength there and never does at $192^3$ --- and at $t = 12$\,s it stands
-at $1.06$ on the fine grid against $2.93$ on the coarse. The $192^3$ run does
-not reach $1.07$ until $t = 38.5$\,s (Table~\ref{tab:end}). In terms of field
-topology the fine grid at $12$\,s is where the coarse grid is at nearly
-$40$\,s: refinement does not merely sharpen the picture, it advances the
-evolution. That is one more reason to treat every rate quoted here as a bound.
-
-There is no explicit resistivity in these runs, so the decay of $\Etor$
-\emph{is} the numerical resistivity, and the two grids measure it. Halving
-$\gamma$ while $\mathrm{d}x$ falls by a factor $1.33$ puts it at
-$\mathrm{d}x^{2.4}$, consistent with the second-order scheme and extrapolating
-to zero. Read literally, that says the field decay seen here is a resolution
-artefact and the physical star would keep its field far longer --- but a
-two-point fit cannot distinguish that from a decay that converges to something
-small but finite, and the growth rate moving the other way ($\mathrm{d}x^{-1.3}$)
-warns that both ends of the evolution are still mesh-limited.
-
-Settling the rate would need $384^3$, about five times the cost of $256^3$. The
-alternative, and probably the right one, is explicit resistivity, giving the
-problem a physical dissipation scale instead of letting the mesh set it;
-\textsc{Castro} does not currently implement it.
 
 %======================================================================
 \section{Caveats}
