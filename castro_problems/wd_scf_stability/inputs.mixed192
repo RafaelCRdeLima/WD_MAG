@@ -1,0 +1,174 @@
+# Campaign TT -- the twisted torus at 192^3.
+#
+# Everything here is inputs.rot192long with ONE physical change: the model
+# file. The star, the grid, the gravity, the floor, the sponge, the damping
+# and the CFL are identical, so any difference in the evolution is the field
+# geometry and nothing else. That is the whole design of the run.
+#
+# ================================================================
+# WHY THIS RUN EXISTS
+# ================================================================
+#
+# The configuration evolved so far (models/rotating_mixed.txt) is toroidal to
+# one part in 2.2e7 by energy. That is the textbook Tayler-unstable case and
+# it behaved like one: an m=1 mode grew in a few Alfven times, the ordered
+# field was destroyed, and the magnetic energy fell by a factor of 2170 at
+# 192^3.
+#
+# Braithwaite-type stable configurations are not toroidal-dominated. They are
+# twisted tori with COMPARABLE poloidal and toroidal energy. That geometry is
+# the one the equilibrium literature on super-Chandrasekhar white dwarfs never
+# constructs -- Subramanian & Mukhopadhyay (2015) compute purely toroidal or
+# purely poloidal sequences, which are the two the stability literature says
+# are unstable.
+#
+# So the question is open, and it is worth asking here rather than anywhere
+# else because it is an IDEAL MHD question. Stability does not depend on the
+# resistivity, which is the one thing this problem cannot get right: the
+# numerical magnetic diffusivity measured from the decay is ~0.6-0.9 c_s dx,
+# giving Rm ~ 3 at 192^3 and ~6 at 256^3, against ~1e18 physically. Explicit
+# resistivity is not usable either -- for it to dominate the numerical one it
+# would have to drop Rm to ~1, and keeping Rm ~ 10 with a controlled eta would
+# need dx < 1e6 cm, or roughly 2000^3.
+#
+# Whatever this run says about survival, it says despite Rm ~ 3.
+#
+# ================================================================
+# THE MODEL, AND WHAT IS WRONG WITH IT
+# ================================================================
+#
+# models/mixed_tt.txt, from investigations/export_tt_model.py --bpole 3.0e12:
+#
+#   E_tor/E_pol            2.42        (2.2e7 in the evolved configuration)
+#   E_pol/E_mag            29%
+#   B_t/B_p amplitude      1.41
+#   max|B_phi|             3.23e13 G
+#   max|B|/B_c             0.812       (0.732 in the evolved configuration)
+#   B_pole                 3.0e12 G
+#   M                      2.0052 Msun
+#   T/|W|                  0.0993, mass shedding 0.469
+#   div B on 64^3          2.2e-16     (gate 1e-12)
+#   curl A vs B            6.0e-16 poloidal, 7.0e-3 toroidal (gate 5e-2)
+#
+# THE MODEL IS NOT AN EQUILIBRIUM. The poloidal field is imposed on a
+# converged toroidal-plus-rotation solution rather than solved alongside it,
+# so the pair leaves virial balance by its own poloidal energy, and here
+# E_pol/|W| = 4.7e-3. papers/wd-toroidal-poloidal measures that trade-off on
+# a non-rotating star and finds the virial error tracking E_pol/|W|; it also
+# states the remedy, which is the one adopted here:
+#
+#   "A configuration in that range would have to be justified dynamically --
+#    loaded into an evolutionary calculation and allowed to relax -- rather
+#    than presented as an equilibrium."
+#
+# So the accommodation phase below IS the relaxation, and the state the star
+# settles into -- not the state in the file -- is what this run is about.
+# Expect a larger initial transient than the toroidal-dominated run, which
+# already breathed by a factor 2.5 in volume before settling.
+#
+# The consequence for reading the output: the first few seconds are the model
+# finding its own balance and are not physics. Everything quoted from this run
+# should be measured after the transient, as it was for the other two.
+#
+# ================================================================
+# WHAT IS DELIBERATELY UNCHANGED
+# ================================================================
+#
+# cfl 0.5, not the 0.3 the 256^3 needed. The 256^3 lowered it after a
+# deterministic "too many subcycles" abort at t = 5.146 s, in the most violent
+# phase of a run whose instability this one may not even have. Starting at 0.5
+# keeps this run directly comparable to inputs.rot192long, which is the
+# comparison the whole design rests on. If it aborts the same way, lower it
+# then, at the restart, and say so.
+#
+# max_grid_size 24, giving 8^3 = 512 boxes at 192^3.
+#
+# plot_per 0.5 rather than plot_int: output cadence by TIME, because dt
+# changes by a factor of two over a run and step-based cadence samples the
+# late evolution far more densely than the early. A 192^3 plotfile is 1.2 GB,
+# so 60 s costs about 120 files and 145 GB.
+#
+# check_int 1000, halved from the 2000 the earlier runs used. A 3 h window
+# runs about 2400 steps, so at 2000 it writes roughly ONE checkpoint, and a
+# node failure before it loses the window AND breaks the chain -- which is
+# exactly what happened to the 256^3 at step 16833. At 1000 a window writes
+# two or three.
+#
+# derive_plot_vars omits Div_B, emag_density and etor_density. All three are
+# corrupt: they pack face-centred components of different index types into one
+# cell-centred FAB and read past the end of the box, Div_B reaching 3e146
+# where it should be ~0. They also wrote inf into the plotfiles, which made 70
+# of them unreadable. Everything is rebuilt from B_x, B_y, B_z by
+# tools/fbtbp.cpp.
+
+max_step  = 200000
+stop_time = 60.0
+
+# HALF-SHIFT geometry: prob_lo = -(N+1)/2*dx and prob_hi = (N-1)/2*dx puts a
+# cell CENTRE exactly on r = 0, which the axisymmetric model interpolation
+# needs.
+geometry.is_periodic =  0    0    0
+geometry.coord_sys   =  0
+geometry.prob_lo     = -9.0468750000e+08 -9.0468750000e+08 -9.0468750000e+08
+geometry.prob_hi     = 8.9531250000e+08 8.9531250000e+08 8.9531250000e+08
+amr.n_cell           =  192  192  192
+
+castro.lo_bc       =  2   2   2
+castro.hi_bc       =  2   2   2
+
+castro.do_hydro = 1
+castro.do_react = 0
+castro.ppm_type = 0
+castro.use_flattening = 0
+
+castro.do_grav = 1
+gravity.gravity_type = PoissonGrav
+gravity.drdxfac = 2
+
+castro.cfl            = 0.5
+castro.init_shrink    = 0.01
+castro.change_max     = 1.1
+castro.sum_interval   = 1
+castro.v              = 1
+amr.v                 = 1
+
+amr.max_level       = 0
+amr.blocking_factor = 8
+amr.max_grid_size   = 24
+
+amr.plot_file       = plt
+amr.check_file      = chk
+amr.plot_per        = 0.5
+amr.check_int       = 1000
+amr.derive_plot_vars = density x_velocity y_velocity z_velocity B_x B_y B_z
+
+# The ambient fills the box rather than ending the star on a cliff: a
+# rarefaction crossing zero is what killed an earlier attempt, not the floor.
+castro.small_dens = 1.0e2
+castro.small_temp = 1.0e3
+
+castro.limit_fluxes_on_small_dens = 1
+castro.max_subcycles = 32
+
+# The sponge damps the envelope as well as the ambient at an upper density of
+# 1e5, and L_z fell 4.2% in 2.6 s in an earlier run because of it. Left
+# unchanged so this run stays comparable to the other two; it is a systematic
+# worth chasing on its own, not here.
+castro.do_sponge = 1
+castro.sponge_upper_density = 1.0e5
+castro.sponge_lower_density = 1.0e4
+castro.sponge_timescale     = 1.0e-4
+
+# The accommodation phase. For the other two runs this absorbed the
+# interpolation error of an equilibrium model; here it is doing real work,
+# because the model is NOT in virial balance and has to find its own. Left at
+# the same values so the two are comparable, but watch it: if the star is
+# still ringing hard when the damping ends at 2 t_dyn, that is the first thing
+# to lengthen.
+castro.add_ext_src = 1
+problem.damping_timescale_in_tdyn = 0.2
+problem.damping_end_time_in_tdyn = 2.0
+problem.damping_ramp_in_tdyn = 0.5
+
+problem.model_name = "mixed_tt.txt"
+problem.surface_density_frac = 1.0e-6

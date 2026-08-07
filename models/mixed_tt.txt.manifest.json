@@ -1,0 +1,46 @@
+{
+  "checks": {
+    "amplitude_retained_64cubed": 0.8233214035115295,
+    "curl_err_poloidal": 5.994846516233189e-16,
+    "curl_err_toroidal": 0.007034658282500627,
+    "relative_divB_64cubed": 2.2027636783855693e-16
+  },
+  "file": "mixed_tt.txt",
+  "format": "axisym-vector-potential-v2",
+  "git_commit": "681778f",
+  "has_velocity": true,
+  "n_varpi": 385,
+  "n_z": 769,
+  "params": {
+    "A_cm": 183417786.20198232,
+    "A_over_Req": 1.0,
+    "B_pole_G": 3000000000000.002,
+    "B_total_max_over_Bc": 0.8123708407562751,
+    "Bphi_max_G": 32308290656634.97,
+    "Bt_over_Bp_amplitude": 1.4114292371038262,
+    "E_pol_over_W": 0.004720885278334698,
+    "E_tor_over_E_pol": 2.4196104998792474,
+    "E_tor_over_Emag": 0.7075690345332277,
+    "K_tor": 0.0005,
+    "M_msun": 2.0051547437895896,
+    "Omega_c": 8.193005584985826,
+    "R_eq_cm": 391725949.21208525,
+    "R_pol_cm": 150109337.83718944,
+    "T_over_W": 0.09929146665157879,
+    "is_equilibrium": 0.0,
+    "k0": 5.139511223615998e-13,
+    "m_tor": 1.0,
+    "mu_e": 2.0,
+    "note": "poloidal field imposed, not solved; relax before use",
+    "omega_frac": 1.5,
+    "rho_c": 3000000000.0,
+    "shedding": 0.46949681022637524,
+    "v_phi_max_cms": 751354528.8974087
+  },
+  "units": "cgs: varpi,z in cm; density in g/cm^3; A_phi,A_z in G*cm",
+  "varpi_max_cm": 1590022634.4,
+  "z_range_cm": [
+    -1590022634.4,
+    1590022634.4
+  ]
+}
