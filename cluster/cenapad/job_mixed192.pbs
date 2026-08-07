@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -N wdttmix
 #PBS -q paralela
-#PBS -l nodes=1:ppn=128
+#PBS -l nodes=2:ppn=128
 #PBS -l walltime=03:00:00
 #PBS -o wdttmix.out
 #PBS -e wdttmix.err
@@ -15,12 +15,19 @@
 # to the current window. Each of those exists because its absence broke
 # something; see cluster/cenapad/ONBOARDING.md.
 #
-# ONE node, not two. 192^3 with max_grid_size 24 is 8^3 = 512 boxes, and 128
-# ranks give 4 boxes each. The 256^3 needed two nodes for 512 larger boxes.
-# A one-node request also backfills sooner, which matters because the chain
-# needs a free submission slot every three hours -- the wdrot256 chain died
-# silently at 21:10 on 6 Aug when its qsub was refused while four jobs from
-# another campaign were queued.
+# TWO nodes, matching job_rot192long.pbs. A one-node request was tried first,
+# on the reasoning that it would backfill sooner, and PBS refused it:
+#
+#   qsub: Job violates queue and/or server resource limits
+#
+# The paralela queue appears to require at least two nodes; single-node work
+# goes to par128. 192^3 with max_grid_size 24 is 8^3 = 512 boxes, so 256 ranks
+# get 2 boxes each -- the same decomposition the other 192^3 runs used.
+#
+# Worth remembering separately: the chain needs a FREE SUBMISSION SLOT every
+# three hours to resubmit itself. The wdrot256 chain died silently at 21:10 on
+# 6 Aug when its internal qsub was refused while four jobs from another
+# campaign sat queued. Keep the queue clear of dead jobs while a chain runs.
 #
 # Submit with the address on the command line -- this repository is public:
 #   qsub -M your@email -m ae cluster/cenapad/job_mixed192.pbs
