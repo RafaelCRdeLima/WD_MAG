@@ -81,8 +81,14 @@ RUNS = {
     # steady 1.5 s pulsation.
     "192": ("slices",    ["plt00000", "plt00400", "plt00700", "plt01150",
                           "plt01550", "plt03436", "plt05012", "plt05805"]),
+    # Extended past the growth phase once the run reached t = 58.2 s. The four
+    # added instants are t = 12.0, 27.0, 41.0 and 58.2 s, and they are the
+    # point of the figure now: Report II finds the residual magnetic energy a
+    # factor 25 higher here than at 192^3 and still rising, and a slice is what
+    # says whether that residual is organised or turbulent.
     "256": ("slices256", ["plt00000", "plt00550", "plt00950",
-                          "plt01700", "plt02150"]),
+                          "plt01700", "plt02150", "plt07059",
+                          "plt17049", "plt25985", "plt38071"]),
 }
 
 plt.rcParams.update({
