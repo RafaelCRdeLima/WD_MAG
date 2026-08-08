@@ -6,6 +6,13 @@ Ordenado por assunto, não por data: a cronologia está nas mensagens de commit.
 Mantido em português por ser documento interno. Os relatórios em `reports/` são
 em inglês.
 
+**Convenção (8 de agosto de 2026):** achados novos, bibliografia e decisões
+entram aqui por padrão, sem precisar ser pedido. O valor deste registro está
+tanto nas reversões quanto nos números finais — o afinamento da rotação
+diferencial foi chamado de artefato e depois confirmado; o toro torcido foi
+dado como construível e depois não. Previsões registradas antes e os erros que
+as derrubaram fazem parte do que se escreve.
+
 ---
 
 ## 1. O que está sendo simulado
