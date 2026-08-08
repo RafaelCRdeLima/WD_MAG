@@ -274,6 +274,17 @@ server resource limits`. Trabalho de nó único vai para `par128`.
 do `wdrot256` morreu em silêncio às 21:10 de 6 de agosto quando seu `qsub`
 interno foi recusado com quatro jobs de outra campanha na fila.
 
+**Alocação do projeto proj503:** 520.134 unidades concedidas, 23.386 usadas até
+8 de agosto — 4.5%. Compute não é a restrição desta campanha; vagas de
+submissão são. Não há motivo para economizar resolução por medo de gastar.
+
+**O recurso escasso é vaga na fila, não núcleo-hora.** Com duas campanhas ativas
+(WD e Brana) chega-se facilmente a seis ou sete jobs entre rodando e
+enfileirados, e a corrente precisa de **uma vaga livre no instante em que cada
+janela fecha**. Ela não avisa quando não consegue — só para. Foi assim que o
+`wdrot256` morreu às 21:10 de 6 de agosto. Antes de submeter uma segunda
+corrente, vale conferir quantos jobs já estão na fila.
+
 **Disco:** 657 GB no `dir_rot256`, dos quais 54 checkpoints. Podados para dois,
 liberando 198 GB.
 
