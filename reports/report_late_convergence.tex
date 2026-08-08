@@ -56,7 +56,13 @@ $25$ higher on the finer grid and is still rising at $t = 58$\,s. A
 methodological result comes with the second: over a $14$\,s window the same two
 runs appear to disagree about the steepening by a factor of eight, because the
 $256^3$ onset is some $6$\,s late. Two earlier drafts drew two different wrong
-conclusions from that window.
+conclusions from that window. \textbf{Both convergent results are bounded by the
+same limitation}, now measured and stated on Report~I's first page: the MRI is
+not resolved, with $Q = \lambda_{\mathrm{MRI}}/\Delta x \simeq 0.4$ over
+precisely the $t = 40$--$78$\,s window in which the steepening is measured. Two
+grids agreeing does not repair that --- both are far below threshold, and
+neither can host the instability that the resolved literature finds flattening
+such a profile.
 \end{abstract}
 
 %======================================================================
@@ -345,34 +351,61 @@ available window, so they are not visibly converging on a common level either.
       rotation rows are measurements, its field rows are bounds.
 \item \textbf{New caveat.} Convergence tests in this problem need baselines
       longer than the inter-grid lag, and the lag is only known afterwards.
+\item \textbf{Bounded.} Both convergent results. The MRI quality factor is now
+      measured from the volume-typical vertical field over the whole run:
+      $Q \simeq 0.4$ across the window used for the steepening, never above
+      $6.5$, never near $15$. \emph{Agreement between two unresolved grids is
+      not evidence that the physics is captured}, and this report should not be
+      read as strengthening the rotation result against the MRI objection ---
+      only against mesh error at fixed physics.
 \end{enumerate}
 
 %======================================================================
 \section*{Status and next steps}
 
-$192^3$: complete, $t = 60$\,s, field diagnostics processed to $t = 12$\,s plus
-the single instant at $38.5$\,s. \quad $256^3$: $t = 58.2$\,s, all $164$
-plotfiles processed. A final window to $60$\,s is queued; nothing here depends
-on it.
+$192^3$: complete, $t = 60$\,s, field diagnostics now processed over the whole
+run. \quad $256^3$: analysed here to $t = 58.2$\,s, all $164$ plotfiles
+processed; the run has since reached $t = 78$\,s and the chain continues
+towards $100$\,s. Nothing in this report has been recomputed over the longer
+baseline.
 
-The cheapest thing that would sharpen this report is not more physical time but
-the missing $192^3$ field data: processing its plotfiles between $t = 12$ and
-$60$\,s would turn the single point in Fig.~\ref{fig:late}c into a curve and
-make the residual comparison a proper one rather than a snapshot against a
-mean. It costs no new simulation.
+The $192^3$ field data between $t = 12$ and $60$\,s has since been processed,
+which is why Fig.~\ref{fig:late}c carries a curve rather than the single point
+of the first draft.
 
-Beyond that, the run that would test the interpretation directly is a
-genuinely mixed field --- comparable poloidal and toroidal energy, rather than
-the $10^{-7}$ ratio used here. A toroidal-dominated field is the textbook
-unstable case and behaved like one; the twisted-torus configuration is the one
-expected to survive, and it is the geometry the equilibrium literature on
-super-Chandrasekhar white dwarfs does not construct.
+What would sharpen the report next is not more physical time but the MRI
+limitation. Three steps, in cost order, none of which needs a longer run:
+
+\begin{enumerate}\itemsep2pt
+\item \textbf{Local shearing boxes at this star's shear and magnetic Prandtl
+      number.} In the incompressible approximation --- valid here to
+      $v/c_s \sim 4\times10^{-4}$ --- the acoustic timestep disappears and a
+      hundred orbits costs hours rather than months. This measures whether the
+      MRI transports angular momentum at all in a white dwarf interior, where
+      $\mathrm{Pm} \sim 0.6$ sits near the threshold below which the disc
+      literature finds the turbulence dying.
+\item \textbf{Closure coefficients} for a mean-field model of the unresolved
+      turbulence, either taken from the published neutron-star calibration or
+      remeasured in step 1 if they do not transfer.
+\item \textbf{The global run with that closure switched on, at both
+      resolutions.} This is the direct test of the central result: the model
+      predicts the inner profile flattening, and both grids here find it
+      steepening.
+\end{enumerate}
+
+A genuinely mixed field --- comparable poloidal and toroidal energy rather than
+the $10^{-7}$ ratio at $t=0$ used here --- remains the configuration the
+equilibrium literature does not construct and the one expected to survive. An
+attempt at it is not reported: the twisted-torus model built for it violated
+$\beta \ge 1$ in the envelope and the run failed at $t = 0.06$\,s.
 
 \vspace{0.6em}
 \noindent
 Inputs, submission scripts, diagnostic tools, data and figure code are under
 version control in the \texttt{WD\_MAG} repository. The data behind every number
-here is \texttt{investigations/bt\_bp\_256\_long.csv} ($164$ rows, $t = 0$ to
-$58.2$\,s) and \texttt{investigations/rotation\_192.csv}.
+here is \texttt{investigations/bt\_bp\_256\_long.csv}, read to $t = 58.2$\,s
+(the file has since grown to $210$ rows and $t = 78$\,s),
+\texttt{investigations/bt\_bp\_192\_late.csv} and
+\texttt{investigations/rotation\_192.csv}.
 
 \end{document}

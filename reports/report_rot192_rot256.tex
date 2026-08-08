@@ -73,7 +73,70 @@ $0.094\%$\,s$^{-1}$ after --- so the identification of the transport as
 magnetic holds at two resolutions}. What does not converge is the leftover
 field: the residual magnetic energy is $25$ times larger at $256^3$ than at
 $192^3$, and at $256^3$ it is still slowly growing at $t = 58$\,s.
+\textbf{One limitation governs how the rotation result must be read: the
+magnetorotational instability is not resolved.} Measured from the
+volume-typical vertical field, the quality factor $Q = \lambda_{\mathrm{MRI}}/
+\Delta x$ peaks at $6.5$ near $t = 4.5$\,s and sits at $0.3$--$0.5$ over
+$t = 40$--$78$\,s --- the window in which the steepening is measured. The
+differential rotation therefore survives in a regime where the instability
+that should erase it cannot exist on the grid (Fig.~\ref{fig:mri}).
 \end{abstract}
+
+%======================================================================
+\section*{The limitation this report must be read against}
+\label{sec:mri}
+
+The central dynamical claim below is that the differential rotation is not
+erased. It should be read knowing that the mechanism most likely to erase it is
+absent from the calculation.
+
+The magnetorotational instability grows on the wavelength
+$\lambda_{\mathrm{MRI}} = 2\pi v_{\mathrm{A}z}/\Omega$, built from the field
+component along the rotation axis. Representing it requires
+$Q \equiv \lambda_{\mathrm{MRI}}/\Delta x \gtrsim 6$ for the linear mode and
+$Q \gtrsim 15$--$20$ for converged turbulence. Figure~\ref{fig:mri} measures
+$Q$ over the whole $256^3$ run from the \emph{volume-typical} vertical field,
+$B_{\mathrm{pol,rms}} = \sqrt{8\pi\Epol/V}$, rather than from its peak; a peak
+is not what sets the wavelength over the bulk of the star.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.74\textwidth]{figures/mri_wavelength.pdf}
+\caption{MRI quality factor at $256^3$. The band spans the three ways of
+splitting the poloidal energy between $B_\varpi$ and $B_z$, from all of it
+vertical to isotropic; the spread is a factor $1.73$, smaller than the effect
+being measured. $Q$ peaks at $6.5$ at $t = 4.5$\,s --- during the $m=1$
+disruption, when $\Epol$ is at its largest --- and decays to $\simeq 0.4$
+thereafter. $Q \ge 6$ holds in $3\%$ of the $210$ samples under the central
+assumption, in none under the isotropic one. $Q \ge 15$ is reached under no
+assumption at any time. \emph{This figure alone uses the run extended to
+$t = 78$\,s}; everything else in the report is measured to $t = 58.2$\,s. Data:
+\texttt{investigations/mri\_wavelength.py}.}
+\label{fig:mri}
+\end{figure}
+
+Three consequences, stated here rather than in the caveats:
+
+\begin{enumerate}\itemsep2pt
+\item \textbf{Over the window in which the steepening is measured,
+      $t = 40$--$78$\,s, $Q$ is $0.3$--$0.5$} --- twelve to twenty times short
+      of the linear bar. ``The differential rotation survives'' and ``we have
+      no way to erase it'' are not distinguished by this calculation.
+\item \textbf{Converged MRI turbulence is out of reach on this mesh by
+      construction}, not by accident of the run length. Reaching $Q = 15$ would
+      need a resolution increase whose cost scales as $N^4$.
+\item \textbf{The direction of the error is known.} Where the literature
+      resolves the MRI in a differentially rotating magnetised remnant, it
+      finds the inner rotation profile \emph{flattening} and angular momentum
+      carried outwards \citep{miravet2025}. This report finds steepening. If
+      the two are reconciled by the missing instability, the steepening is its
+      absence rather than a property of the star.
+\end{enumerate}
+
+What is \emph{not} affected: the mass conservation, the stellar structure, the
+$m=1$ disruption of the field, and the $L_z$ braking rates, none of which
+depend on the MRI being present. Section~\ref{sec:caveats} lists the remaining
+limitations.
 
 %======================================================================
 \section{What is being simulated}
@@ -652,6 +715,10 @@ not something two resolutions can settle.
 \label{sec:caveats}
 
 \begin{enumerate}\itemsep2pt
+\item \textbf{The MRI is not resolved.} Stated at the front of this report
+      rather than here, because it governs how the rotation result must be
+      read: $Q \simeq 0.4$ over the window in which the steepening is measured
+      (Fig.~\ref{fig:mri}).
 \item \textbf{The EOS is barotropic.} \texttt{ztwd} has no thermal reservoir, so
       the $6\times10^{49}$\,erg that leave the field have no physical
       destination and are dissipated at the grid scale. We can say the ordered
@@ -698,13 +765,19 @@ not something two resolutions can settle.
 \section*{Status}
 
 $192^3$: complete, $t = 60$\,s. \quad
-$256^3$: $t = 58.2$\,s, fully processed. A final window to $60$\,s is queued;
-nothing here depends on it.
+$256^3$: analysed here to $t = 58.2$\,s. The run has since been carried to
+$t = 78$\,s and the chain continues towards $100$\,s; only
+Fig.~\ref{fig:mri} uses the longer baseline, and no other number here has been
+recomputed over it.
 
 Inputs, submission scripts, diagnostic tools, data and figure code are under
 version control in the \texttt{WD\_MAG} repository.
 
 \begin{thebibliography}{9}
+\bibitem[Miravet-Ten\'es et al.(2025)]{miravet2025}
+Miravet-Ten\'es, M., Obergaulinger, M., Cerd\'a-Dur\'an, P., Font, J.~A., \&
+Ruiz, M. 2025, \textit{Subgrid modelling of MRI-driven turbulence in
+differentially rotating neutron stars}, MNRAS, 545, 3.
 \bibitem[Boshkayev et al.(2013)]{boshkayev2013}
 Boshkayev, K., Rueda, J.~A., Ruffini, R., \& Siutsou, I. 2013,
 \textit{On General Relativistic Uniformly Rotating White Dwarfs},
