@@ -36,8 +36,9 @@ remanescente de fusão, não modelo de estrela observada.
 
 | run | malha | alcance | estado |
 |---|---|---|---|
-| `dir_rot192` | 192³ | t = 60 s | completo; campo processado só até t = 12 s |
-| `dir_rot256` | 256³ | t = 65.3 s | completo até 64.5 s processado |
+| `dir_rot192` | 192³ | t = 60 s | completo, campo processado até 60 s |
+| `dir_rot256` | 256³ | rumo a 100 s | processado até 64.5 s; corrente ativa |
+| `dir_mixed192` | 192³ | — | campanha TT, morreu em t = 0.06 s, removido |
 
 O 256³ foi encadeado em janelas de 3 h, quatorze submissões, ~35–40 h de CPU em
 256 núcleos e ~460 GB de saída depois da poda de checkpoints.
@@ -85,14 +86,48 @@ decaimento cai pela metade. A medida grossa exagera a violência nas duas pontas
 **O resíduo do campo.** E_mag estaciona em ~3×10⁴⁶ erg no 192³ e 7×10⁴⁷ no
 256³ — fator 25.
 
-**O campo volta a crescer no 256³.** Mínimo em t ≈ 43 s, depois subida
-acelerada: +1.7, +4.1, +5.2, +11.9, +16.4% por janela de 3 s. Total +43% em
-20 s, dos quais a contração explica 3%. O campo de pico dobra, 4.0 para
-8.2×10¹² G.
+**O nível do resíduo.** E_mag no mínimo é 2.5×10⁴⁶ erg no 192³ e 6.3×10⁴⁷ no
+256³ — fator 25.
 
-Se é regeneração ou meia oscilação longa, os dados não dizem. A aceleração
-exige, para uma senoide, período acima de ~88 s — 37 tempos dinâmicos, acima de
-qualquer escala natural do problema, mas não impossível. **Questão em aberto.**
+**A taxa de crescimento depois do mínimo**, +0.0485 /s no 192³ contra
++0.0196 /s no 256³. Cai 2.5× com o refinamento, mesma direção e mesmo fator do
+decaimento antes dela. Taxa que cai pela metade quando a malha refina é
+assinatura de processo dominado pela malha.
+
+### 3.2b O campo para de decair e volta a crescer — nas duas malhas
+
+O primeiro resultado positivo da campanha: algo que a estrela **faz**.
+
+| | 192³ | 256³ |
+|---|---|---|
+| mínimo de E_mag | t = 41.1 s | t = 44.7 s |
+| E_mag ali | 2.54×10⁴⁶ | 6.35×10⁴⁷ |
+| crescimento depois | +0.0485 /s (e-fold 21 s) | +0.0196 /s (e-fold 51 s) |
+| do mínimo ao fim | +114% | +21% |
+
+Mínimos localizados por parábola em ln E_mag sobre t = 25–55 s, para a pulsação
+de 1.5 s não decidir a resposta.
+
+**A existência da virada converge**; nada de quantitativo nela converge. O
+mecanismo está disponível e não é exótico: a rotação diferencial sobrevive e
+continua afinando, então há energia de cisalhamento livre, e enrolar poloidal
+residual em toroidal é o que cisalhamento faz com campo.
+
+**A previsão registrada falhou nas duas direções.** Estava escrito que o 192³
+viraria *mais tarde* e *mais fraco*, porque mais dissipação numérica atrasaria
+o ponto em que a regeneração supera o decaimento. Ele vira 3.6 s **antes** e
+cresce 2.5× **mais rápido**.
+
+O modo do erro é informativo. Se fosse dínamo correndo contra dissipação
+numérica, menos dissipação daria mais cedo e mais forte; observa-se o
+contrário. Uma leitura compatível é que as duas malhas enrolam rumo a uma
+saturação e a que parte 25× mais baixa tem mais caminho — mas a distância só
+encolhe de 25× para 16× na janela disponível, então também não estão
+visivelmente convergindo para um nível comum.
+
+Resta a alternativa da oscilação. Com 20 s de subida acelerada no 256³, uma
+senoide precisaria de período acima de ~88 s, ou 37 tempos dinâmicos. Não
+impossível, e só mais tempo físico decide.
 
 ### 3.3 O diagnóstico que enquadra tudo
 
@@ -150,6 +185,22 @@ direção mas não em amplitude; sobre 46 s converge em 10%. A causa é o atraso
 mede o atraso, não a física.** Um efeito atrasado medido assim parece ausente —
 e, se a curva atrasada deriva para o outro lado antes, parece ter sinal oposto.
 
+**Previsão do 192³ errada nas duas direções.** Registrei que ele viraria mais
+tarde e mais fraco que o 256³; virou antes e mais forte. A previsão ter sido
+escrita antes é o que fez o fracasso significar algo — sem ela seria fácil
+racionalizar qualquer um dos dois desfechos.
+
+**B_c verificado, β esquecido.** Ao escolher a amplitude poloidal da campanha
+TT conferi `max|B|/B_c` e ignorei a razão entre pressão magnética e do gás. Em
+B_pole = 3×10¹² o β vale 0.088 no envelope e 1.3×10⁻⁴ no ambiente: o campo
+domina, empurra o fluido, a densidade cruza zero em t = 0.06 s. O limite certo
+não era o de Landau.
+
+**Calibração de B_pole pelo máximo de |B_r| em vez de `surface_dipolarity`.**
+Errou a varredura inteira por fator 7.6 e me levou a recomendar um ponto que
+está a 1.90 B_c. A versão corrigida valida a si mesma: em B_pole = 10⁹
+reproduz E_tor/E_pol = 2.18×10⁷, o valor documentado do modelo analítico.
+
 **Abort antigo lido como novo.** O log é cumulativo entre janelas e o script
 usava `head -1`, então reportava a falha de t = 5.146 s em toda janela desde
 então. Custou um ciclo de diagnóstico e quase uma redução de CFL desnecessária.
@@ -186,6 +237,19 @@ limite de submissões por usuário, com as duas campanhas competindo por vagas.
 **Ferramentas de análise falhando com `GLIBCXX`** — módulo não carregado na
 sessão nova. E varreduras longas morrendo com o terminal por falta de `nohup`.
 
+**Guard de corrente com furo, sete janelas queimadas.** A detecção de reinício
+exclui `chk00000`, escrito na inicialização, e o guard de "nenhum checkpoint
+novo" não excluía. Na primeira janela ele comparava `""` com `"chk00000"`,
+concluía que houve progresso e ressubmetia — indefinidamente, num run que
+morria em t = 0.06 s. Corrigido nos dois scripts.
+
+**Fila `paralela` exige dois nós.** Pedir um dá `Job violates queue and/or
+server resource limits`. Trabalho de nó único vai para `par128`.
+
+**A corrente precisa de vaga livre a cada três horas** para se ressubmeter. A
+do `wdrot256` morreu em silêncio às 21:10 de 6 de agosto quando seu `qsub`
+interno foi recusado com quatro jobs de outra campanha na fila.
+
 **Disco:** 657 GB no `dir_rot256`, dos quais 54 checkpoints. Podados para dois,
 liberando 198 GB.
 
@@ -217,6 +281,8 @@ se deixa evoluir.
 - `reports/report_late_convergence.pdf` — relatório II, 6 páginas, os três
   testes sobre 46 s de base.
 - `investigations/bt_bp_256_long.csv` — 178 linhas, t = 0 a 64.5 s, 18 colunas.
+- `investigations/bt_bp_192_late.csv` — campo do 192³ de t = 12 a 60 s.
+- `investigations/plot_late_convergence.py` — a figura dos três testes.
 - `tools/fbtbp.cpp`, `fslice.cpp`, `fmodes.cpp` — diagnósticos reconstruídos.
 - `cluster/cenapad/ONBOARDING.md` — o que a infraestrutura custou aprender.
 
@@ -226,13 +292,12 @@ se deixa evoluir.
 
 **Crescimento ou oscilação?** Precisa de tempo físico, não de resolução nem de
 análise adicional. Se E_mag virar para baixo até t ≈ 90 s é oscilação; se seguir
-acelerando, é regeneração.
+acelerando, é regeneração. O 256³ está rodando rumo a 100 s.
 
-**O crescimento aparece no 192³?** Teste gratuito e não feito: os plotfiles
-estão no disco desde sempre, o campo nunca foi processado além de t = 12 s.
-Previsão registrada: espero que vire também, mais tarde e mais fraco, pela mesma
-razão que seu resíduo é menor. Se virar antes ou mais forte, a leitura está
-errada.
+**A taxa de crescimento é física?** Ela cai 2.5× de 192³ para 256³, igual ao
+decaimento antes dela. Ou é dominada pela malha, ou depende do nível de
+partida, que difere por 25×. Duas malhas não separam as duas leituras; uma
+terceira seria necessária, e 384³ custa ~5× o 256³.
 
 ### A campanha TT falhou na primeira tentativa, e por quê
 
