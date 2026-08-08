@@ -125,9 +125,26 @@ saturação e a que parte 25× mais baixa tem mais caminho — mas a distância 
 encolhe de 25× para 16× na janela disponível, então também não estão
 visivelmente convergindo para um nível comum.
 
-Resta a alternativa da oscilação. Com 20 s de subida acelerada no 256³, uma
-senoide precisaria de período acima de ~88 s, ou 37 tempos dinâmicos. Não
-impossível, e só mais tempo físico decide.
+**Com o 256³ levado a t = 78 s, a subida virou exponencial estável.** Ajustes
+de ln E_mag em janelas independentes de 10 s: +0.0354 /s em t = 55–65 e
++0.0349 /s em t = 65–78 — concordância de 1.5%, e-folding de 29 s. Do mínimo
+ao fim, E_mag mais que dobra (+124%, contração explica 3.5%) e o campo de pico
+vai de 4.05 para 8.37×10¹² G.
+
+**A oscilação ficou implausível.** Trinta e três segundos de subida monótona
+exigiriam de uma senoide período acima de 133 s: 280 tempos dinâmicos, 89
+pulsações da própria estrela. Sem apontar um modo com esse período, não se
+sustenta.
+
+**E as duas malhas estão convergindo.** A distância em E_mag encolhe de forma
+monótona — 24.5× no mínimo, 16.1× em t = 51, 14.1× em t = 58, que é onde o
+192³ acaba. Nível fixado pela malha manteria a razão; nível para o qual as
+duas sobem fecha a razão, e é isso que se observa. Extrapolando as duas taxas,
+elas se encontrariam perto de t ≈ 190 s, muito além dos dois runs.
+
+**O que segue não convergido é a taxa.** Na janela que as duas cobrem, a
+grossa cresce ~2.4× mais rápido — mesma direção e fator parecido com o
+decaimento antes dela. O fenômeno é robusto; a escala de tempo dele não é.
 
 ### 3.3 O diagnóstico que enquadra tudo
 

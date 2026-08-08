@@ -68,7 +68,7 @@ C_INK = "#0b0b0b"
 C_SHADE = "#f0efec"
 
 P_PULSE = 1.498
-T_MAX = 65.0
+T_MAX = 79.0
 REGIMES = [(1.5, 11.9), (12.1, 30.0), (30.0, 58.2)]
 
 T_MIN_192, T_MIN_256 = 41.1, 44.7      # minima of ln E_mag, parabola fit

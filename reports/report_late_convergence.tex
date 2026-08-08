@@ -268,10 +268,11 @@ something the star \emph{does}, rather than something it loses.
 & $192^3$ & $256^3$ & \\
 \midrule
 minimum of $\Emag$ & $t = 41.1$\,s & $t = 44.7$\,s & \textbf{both turn} \\
-$\Emag$ at the minimum (erg) & $2.54\times10^{46}$ & $6.35\times10^{47}$ & $\times 25$ apart \\
-growth after it & $+0.0485$/s & $+0.0196$/s & \emph{coarse grid faster} \\
-\quad as an $e$-folding & $21$\,s & $51$\,s & \\
-minimum to end of run & $+114\%$ & $+21\%$ & \\
+$\Emag$ at the minimum (erg) & $2.54\times10^{46}$ & $6.35\times10^{47}$ & $\times 24.5$ apart \\
+growth, whole rise & $+0.0485$/s & $+0.0282$/s & \emph{coarse grid faster} \\
+\quad settled rate, $t>55$\,s & --- & $+0.035$/s & $e$-fold $29$\,s \\
+minimum to end of run & $+114\%$ & $+124\%$ & \\
+$\max|B|$ over the rise & $+45\%$ & $+107\%$ & \\
 \bottomrule
 \end{tabular}
 \caption{The minima are located by fitting a parabola to $\ln\Emag$ over
@@ -287,14 +288,31 @@ survives and is still \emph{steepening} (Sec.~\ref{sec:steep}), so there
 is free shear energy, and winding residual poloidal field into toroidal is the
 most ordinary thing a shear flow can do to a magnetic field.
 
-\paragraph{What is not.} The levels differ by a factor of $25$ at the minimum,
-and the growth rate by a factor of $2.5$ --- with the \emph{coarse} grid
-growing faster. That is the same direction and roughly the same factor as the
-decay rate before it, which fell from $0.282$ to $0.141$\,s$^{-1}$ under the
-same refinement. A rate that halves when the mesh is refined is what a
-mesh-set process looks like, so the regrowth may be as numerical as the decay
-was. Two resolutions cannot separate a shear dynamo whose rate happens to
-scale that way from a numerical effect that does.
+\paragraph{The rise is exponential and steady.} Carried to $t = 78$\,s, the
+$256^3$ growth settles: fitting $\ln\Emag$ over $t = 55$--$65$ gives
+$+0.0354$\,s$^{-1}$ and over $t = 65$--$78$ gives $+0.0349$\,s$^{-1}$. Two
+independent ten-second windows agreeing to $1.5\%$ is an exponential, not a
+transient, with an $e$-folding of $29$\,s. Over the whole rise $\Emag$ more
+than doubles and the peak field goes from $4.05$ to $8.37\times10^{12}$\,G.
+
+\paragraph{An oscillation would now have to be implausibly slow.} The rise has
+been monotone for $33$\,s. A sinusoid accelerating away from its minimum
+inflects at a quarter period, so explaining this needs $P > 133$\,s --- $280$
+dynamical times, or $89$ of the star's own pulsation periods. Without a named
+mode at that period the reading is hard to sustain.
+
+\paragraph{The two grids are converging.} The gap in $\Emag$ narrows
+monotonically: $24.5$ at the minimum, $16.1$ at $t = 51$\,s, $14.1$ at
+$t = 58$\,s, which is as far as the $192^3$ run goes. A level set by the mesh
+would hold its ratio; a level the two runs are both climbing towards would
+close, and closing is what is observed. Extrapolating the two rates naively has
+them meeting near $t \simeq 190$\,s, far beyond either run.
+
+\paragraph{What is still not converged.} The rate itself. Over the window both
+grids cover, the coarse one grows about $2.4$ times faster --- the same
+direction, and a similar factor, as the decay rate before it, which fell from
+$0.282$ to $0.141$\,s$^{-1}$ under the same refinement. So the phenomenon is
+robust and its timescale is not.
 
 \paragraph{A prediction that failed, recorded because it was registered.}
 Before this data existed it was written down that the $192^3$ would turn
