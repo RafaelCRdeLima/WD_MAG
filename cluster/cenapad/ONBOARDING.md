@@ -97,6 +97,13 @@ jobs on different nodes will both pass the check. Do not submit by hand while a
 chain is live -- the chain resubmits itself, and a manual `qsub` is exactly how
 you get two.
 
+**Retry the resubmission, do not accept the first refusal.** Three chains died
+here silently because `qsub` was called once, the queue was full of another
+campaign's jobs at that second, and the submission was refused -- with the
+"chain: submission N of M" line already printed, so the log reads like a
+healthy handover with the job id missing. Loop the `qsub` six times ten
+minutes apart and log every attempt.
+
 **Guards before resubmitting.** The script must stop if any of these hold:
   - it has already submitted CHAIN_MAX times (a runaway backstop);
   - the target time is reached;
@@ -140,6 +147,13 @@ earlier. Always bound the search to the current window:
 **Analysis tools failing with `GLIBCXX_3.4.xx not found`.** The module is not
 loaded in that shell. Every new SSH session needs the `module load` again, and
 `nohup sh -c '...'` inherits the parent's environment, so load it first.
+
+**A run dying while its retry rate looks healthy.** If the code retries failed
+timesteps, the retry COUNT can hold steady while the run dies, because the
+retries are succeeding at an ever smaller timestep. We watched retries-per-step
+sit at 1.39 for four hundred steps and called the run stable; what was actually
+happening was `dt` collapsing by a factor of seven, until the subcycle limit
+broke and it aborted. **Watch `dt`, not the retry count.**
 
 **A tool that "hangs" for a day.** Check whether it was launched under `nohup`.
 If not, it died with the session. Also check whether it simply finished and the

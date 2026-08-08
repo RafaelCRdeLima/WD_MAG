@@ -241,7 +241,26 @@ else
         set --
         echo "chain: no $PBS_O_WORKDIR/mailto, continuing without notifications"
     fi
-    cd "$PBS_O_WORKDIR" && qsub "$@" "$PBS_O_WORKDIR/job_ml256.pbs"
+    # Retry the submission instead of accepting the first refusal.
+    #
+    # THREE chains have died here, silently. The script called qsub once, the
+    # queue happened to be full of another campaign's jobs at that second, the
+    # submission was refused, and the run stopped -- with the "chain:
+    # submission N of M" line already printed, so the .out file looks like a
+    # healthy handover with the job id missing. That is a bad failure: it costs
+    # a run and it reads as success.
+    #
+    # Six tries ten minutes apart cover an hour, which is one full window of
+    # the competing campaign, so a chain now survives the contention that
+    # killed it on 6 and 8 August. Every attempt is logged, which turns a
+    # silent death into a diagnosable one.
+    for try_n in 1 2 3 4 5 6; do
+        cd "$PBS_O_WORKDIR" || break
+        OUT="$(qsub "$@" "$PBS_O_WORKDIR/job_ml256.pbs" 2>&1)"; QRC=$?
+        echo "chain: qsub attempt $try_n -> rc=$QRC $OUT"
+        [ "$QRC" -eq 0 ] && break
+        [ "$try_n" -lt 6 ] && sleep 600
+    done
 fi
 # Propagate mpirun's status: without this a trailing echo becomes the script's
 # exit code and PBS reports Exit_status=0 for a run that aborted.
