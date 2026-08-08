@@ -360,6 +360,81 @@ e a mesma correção resolve os dois: uma fonte de Grad–Shafranov concentrada
 num toro em vez de ∝ ρϖ², recalibrada pelo pico interior em vez do dipolo de
 superfície.
 
+## 6.5 Campanha CT — corrente confinada em toro
+
+Nome escolhido para distinguir da TT: lá o poloidal era **imposto** sobre um
+equilíbrio pronto; aqui a corrente entra na fonte de Grad–Shafranov e o campo
+nasce confinado.
+
+### O que a busca encontrou sobre o esquema
+
+**A técnica não é nova, e é padrão em estrelas de nêutrons.**
+
+**Ciolfi & Rezzolla 2013** (arXiv:1306.2803) — a referência central. Na equação
+de Grad–Shafranov há duas funções arbitrárias do fluxo ψ: β(ψ), que fixa o
+campo toroidal e a corrente azimutal, e F(ψ), que fixa a fonte de corrente
+poloidal. A escolha comum é F constante, e é ela que produz dipolo de vácuo.
+
+O primeiro elemento da prescrição deles é justamente o que a CT precisa:
+tornar F(ψ) **não constante**, concentrando as correntes perto do eixo de
+simetria. Isso **amplia a região de linhas fechadas**, e eles observam que no
+limite dessa ideia o campo poloidal fica **inteiramente confinado à estrela**,
+citando Fujisawa et al. 2012.
+
+O segundo elemento é um termo adicional que cancela a reação do toroidal sobre
+as linhas poloidais. Para β(ψ) eles usam uma forma com função degrau em ψ̄, o
+fluxo na última linha fechada, que confina o toroidal à região fechada.
+
+Note que o problema deles é o **espelho** do nosso: queriam mais toroidal
+(construções anteriores travavam abaixo de 10% e eles chegaram a 90%), nós
+queremos mais poloidal. A alavanca é a mesma.
+
+**Pili & Bucciantini 2014** (arXiv:1401.4308) resolvem configurações mistas de
+toro torcido em regime não perturbativo, **no código XNS** — o mesmo que
+Subramanian & Mukhopadhyay usaram para gerar a família de onde nossa
+configuração vem. Vale ler o corpo do artigo antes de fixar a forma funcional.
+
+**O que não foi encontrado:** aplicação disso a anãs brancas. A literatura de
+equilíbrio de WD super-Chandrasekhar usa sequências ou puramente toroidais ou
+puramente poloidais; o toro torcido de Braithwaite não aparece ali.
+
+### O que a busca custou à proposta
+
+Os requisitos de resolução da MRI são mais duros do que eu supus. A prática
+estabelecida quer **Q ≳ 15 vertical e ~20 azimutal** para turbulência MRI
+convergida; seis células por comprimento de onda é o mínimo apenas para a
+**fase linear**.
+
+Nosso Q ≈ 11 em B_z = 10¹³ G resolve a fase linear com folga e fica abaixo do
+padrão para a saturada. E λ/R = 0.27 dá só ~4 comprimentos de onda na estrela.
+
+**Portanto a CT não promete "incluir a MRI".** Ela promete *ver a MRI crescer*
+— medir a taxa linear contra a predição analítica, que é resultado legítimo e
+verificável. Afirmar coisa alguma sobre saturação, transporte ou dínamo MRI
+exigiria Q ≳ 20, isto é B_z ≈ 1.8×10¹³ G, e aí λ/R = 0.48: duas ondas na
+estrela. **A janela útil é mais estreita que o fator 27 sugeria**, porque
+subir B_z melhora Q e piora o número de ondas ao mesmo tempo.
+
+### A mudança técnica
+
+Nosso solver resolve Δ* u = −4πϖ²ρ f(u) − ββ'(u), e hoje é chamado com
+f(u) = k₀ constante e sem termo β (o toroidal vem à parte, de `ToroidalSC`).
+F constante é exatamente o que gera o dipolo de vácuo.
+
+A CT troca f por uma função de u que concentra a corrente para dentro, por
+exemplo anulando-a abaixo de um fluxo limiar. **Isso torna a equação não
+linear** — u aparece dos dois lados — e exige iteração: resolver, avaliar
+f(u), resolver de novo. A forma da equação no módulo já antecipa isso; o uso
+atual é que não exercita.
+
+### Previsão registrada antes de implementar
+
+Espero E_tor/E_pol entre 1 e 10, pico total abaixo de B_c, β > 1 em todo o
+interior, e Q entre 8 e 15. Se Q sair abaixo de 6 a MRI nem linear aparece, e
+a CT vira só a campanha do toro torcido — que ainda vale, por outro motivo.
+
+---
+
 ## 7. Produtos
 
 - `reports/report_rot192_rot256.pdf` — relatório I, 13 páginas, física primeiro,
