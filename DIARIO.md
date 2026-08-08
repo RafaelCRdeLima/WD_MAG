@@ -826,6 +826,82 @@ regime.
 
 ---
 
+## 6.11 Caixas de cisalhamento — a rota mais barata, e a que resolve a objeção
+
+Estudo de 8 de agosto, sem implementar nada. Das três saídas da comunidade,
+esta é a mais promissora por margem larga.
+
+### Os números são favoráveis
+
+**A aproximação local é satisfeita com folga de quatro ordens de grandeza.**
+λ_MRI = 2.5×10⁴ cm contra R_eq = 3.9×10⁸ cm, razão 6×10⁻⁵. Caixa local exige
+λ ≪ R; nosso caso é muito mais confortável que num disco fino, onde λ pode ser
+fração apreciável da altura de escala.
+
+**O cisalhamento está na faixa padrão.** A lei j-constante dá
+q = −dlnΩ/dlnϖ = 2ϖ²/(A²+ϖ²):
+
+| ϖ/R_eq | q |
+|---|---|
+| 0.25 | 0.44 |
+| 0.468 (= A) | 1.00 |
+| 0.80 | 1.49 |
+| 1.00 | 1.64 |
+
+A MRI opera em 0 < q < 2, kepleriano é 1.5. **A metade externa da estrela está
+no regime padrão da literatura de discos**, com q ≈ 1.5 perto de 0.8 R_eq.
+
+**O custo é trivial.** Caixa de 4λ de lado:
+
+| malha | lado | dx | Q |
+|---|---|---|---|
+| 64³ | 9.9×10⁴ cm | 1539 cm | 16 |
+| **128³** | 9.9×10⁴ cm | **770 cm** | **32** |
+| 256³ | 9.9×10⁴ cm | 385 cm | 64 |
+
+Q = 32 no 128³ é o padrão para turbulência MRI convergida. Uma malha de 128³
+sobre um domínio de **1 km**, sem autogravidade, sem Poisson, sem gradientes
+globais. A coisa mais barata que se discutiu nesta campanha.
+
+### O que resolve
+
+Exatamente a objeção que sobrou do MInIT (seção 6.10): em vez de importar
+α = −1.4 e β = −0.8 de estrela de nêutrons a densidade nuclear sob politrópica
+γ = 2, mede-se nas nossas condições.
+
+E um refinamento que reduz o trabalho pela metade: **os coeficientes da MRI,
+α = 1 − 4/q, dependem só do cisalhamento** — são função de q e transferem
+trivialmente. Os parasíticos vêm da saturação não linear, que depende da
+microfísica. Só essa metade precisa de calibração, e é a que a caixa mede bem.
+
+### O que não resolve, e o obstáculo
+
+A caixa é um pedaço: dá coeficientes, não resultados sobre a estrela. O caminho
+completo continua sendo **caixa → coeficientes → MInIT no run global**.
+
+**O Castro não faz caixa de cisalhamento** — exige contorno periódico com
+deslizamento, que não existe lá. Seria outro código; Athena++, PLUTO, Snoopy e
+similares trazem o problema como exemplo, por ser um dos testes mais
+padronizados da área. Custo de aprendizado, não de máquina.
+
+Aproximação a declarar: caixas padrão usam EOS isotérmica ou gamma-law, não
+`ztwd`. Num domínio de 1 km a densidade é praticamente constante, então uma
+caixa isotérmica com c_s casado ao valor degenerado provavelmente basta —
+**hipótese a verificar, não fato**.
+
+### Ordenação das três saídas, depois de estudadas
+
+1. **Caixa de cisalhamento** — barata, regime ideal, resolve a objeção dos
+   coeficientes emprestados. Exige outro código. Não dá resultado global
+   sozinha.
+2. **MInIT** — a classe certa de modelo para a nossa física ausente, gancho já
+   existe no `problem_source.H`, mas depende de coeficientes de outro regime
+   enquanto não houver caixa.
+3. **LES** — descartado. Modela cascata, e a Rm ≈ 5 não há cascata abaixo da
+   célula.
+
+---
+
 ## 7. Produtos
 
 - `reports/report_rot192_rot256.pdf` — relatório I, 13 páginas, física primeiro,
