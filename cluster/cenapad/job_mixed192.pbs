@@ -186,7 +186,15 @@ CHAIN_MAX=40
 N="$(cat chain_count 2>/dev/null || true)"
 N="${N:-0}"
 STEPS="${STEPS:-0}"
-LAST_NOW="$(ls -d chk????? 2>/dev/null | sort | tail -1)"
+# chk00000 excluded here for the SAME reason it is excluded from LAST
+# above, and leaving it out cost seven wasted submissions on the first
+# TT window. Castro writes chk00000 during initialisation. On a first
+# window LAST is empty and LAST_NOW was "chk00000", so the two differed,
+# the "no new checkpoint" guard concluded there had been progress, and
+# the chain resubmitted -- forever, for a run that dies just after
+# initialisation. The star was going negative in density at t = 0.06 s
+# and the chain cheerfully relaunched it seven times.
+LAST_NOW="$(ls -d chk????? 2>/dev/null | grep -v 'chk00000$' | sort | tail -1)"
 STEPS="$(grep -ac '^STEP' run_mixed192.log 2>/dev/null || true)"
 STEPS="${STEPS:-0}"
 REACHED="$(grep -a '^STEP' run_mixed192.log | tail -1 | sed 's/.*TIME = \([0-9.e+-]*\).*/\1/')"

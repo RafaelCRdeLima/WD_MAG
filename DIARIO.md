@@ -234,7 +234,50 @@ Previsão registrada: espero que vire também, mais tarde e mais fraco, pela mes
 razão que seu resíduo é menor. Se virar antes ou mais forte, a leitura está
 errada.
 
-**Campanha TT — o toro torcido.** O próximo run. Configuração mista com energias
+### A campanha TT falhou na primeira tentativa, e por quê
+
+Primeira submissão em 7 de agosto: a estrela explode em **t = 0.06 s**, com
+densidade negativa (−5.3×10⁵ g/cm³) em células a ϖ ≈ z ≈ 1.6×10⁸ cm — o raio
+polar, onde a densidade despenca e o dipolo imposto é mais forte.
+
+A causa não é numérica. Verifiquei `max|B|/B_c` ao escolher B_pole = 3×10¹² e
+ignorei a razão β entre pressão magnética e do gás:
+
+| B (G) | β no envelope (ρ=10⁶) | β no ambiente (ρ=2×10⁴) |
+|---|---|---|
+| 10⁹ (config. atual) | 7.9×10⁵ | 1.2×10³ |
+| 10¹² | 0.79 | 1.2×10⁻³ |
+| 3×10¹² | **0.088** | **1.3×10⁻⁴** |
+
+O campo domina a pressão do gás por uma ordem de grandeza dentro da estrela e
+por quatro fora. Ele empurra o fluido, a densidade cruza zero, o Castro aborta.
+
+**A raiz é geométrica.** O campo toroidal é confinado por construção
+(`B_φ ∝ ρ`, some onde a estrela acaba). O poloidal imposto é um dipolo de
+vácuo que se estende para fora indefinidamente — multiplicar sua amplitude por
+3000 põe 10¹² G num ambiente de 2×10⁴ g/cm³. Os toros torcidos de Braithwaite
+não são assim: neles o poloidal fecha *dentro* da estrela e só a parcela que
+atravessa a superfície vira dipolo exterior, fraco.
+
+O limite é severo: β = 1 no ambiente exige B ≲ 3.4×10¹⁰ G, o que deixa
+E_tor/E_pol na casa de 10⁴. **Por este caminho o toro torcido é inalcançável**
+— não por B_c, não pelo virial, mas porque um dipolo exterior não tem o que o
+segure.
+
+Custo do erro: sete janelas desperdiçadas, porque o guard de "nenhum checkpoint
+novo" tinha um furo. A detecção de reinício exclui `chk00000` (escrito na
+inicialização) mas o guard não excluía, então na primeira janela ele comparava
+`""` com `"chk00000"`, concluía que houve progresso e ressubmetia — para
+sempre, num run que morre logo após inicializar. Corrigido nos dois scripts.
+
+**O caminho que resta é o de Braithwaite:** não construir o toro torcido
+analiticamente, e sim partir de um campo qualquer e deixar a estrela relaxar
+para o dele. `castro_problems/wd_braithwaite` já existe com essa
+infraestrutura, e o rascunho `papers/wd-braithwaite-relaxation` é sobre isso.
+Tem a vantagem de não exigir equilíbrio inicial nenhum — a relaxação é o
+método, não uma concessão.
+
+**Campanha TT — o toro torcido.** O run que falhou. Configuração mista com energias
 poloidal e toroidal comparáveis, com rotação, a 192³. É pergunta de estabilidade,
 portanto ideal, portanto robusta ao Rm ~ 6 que não temos como consertar — a única
 coisa que não dá para consertar. Gerador em
