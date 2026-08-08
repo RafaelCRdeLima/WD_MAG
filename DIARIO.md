@@ -1005,6 +1005,112 @@ As duas primeiras compõem: a caixa calibra, o MInIT aplica no run global. Isso
 **Enquanto não houver, a limitação da MRI permanece e deve ser declarada como
 tal nos relatórios** — na primeira página, não nas ressalvas.
 
+## 6.12 A saída: o problema era o conjunto de equações, não o código
+
+> 8 de agosto. Rafael: "estude uma solução viável, mesmo que migremos para o
+> PLUTO". A busca desmontou tanto a premissa da pergunta quanto o custo de
+> 6.11c.
+
+### PLUTO não resolveria
+
+Volume finito compressível, como o Castro: mesmo `dt = cfl·dx/c_s`. O que ele
+traz pronto é caixa de cisalhamento com FARGO
+([Mignone+2012](https://www.aanda.org/articles/aa/full_html/2012/09/aa19557-12/aa19557-12.html)),
+poupando as semanas do contorno deslizante. Mas FARGO acelera quando a
+velocidade orbital domina, e aqui Δv_orb/c_s = 4×10⁻⁴; o ganho deles é 3.75× e
+precisamos de 10⁴. **Trocar de código dentro da mesma classe não muda nada.**
+
+### O que resolve: incompressível
+
+Os três cálculos de custo em 6.11/b/c pressupunham compressibilidade sem que eu
+percebesse que era pressuposto. O passo é limitado por c_s, que aqui não carrega
+física: Mach = 4×10⁻⁴, v_A/c_s = 10⁻⁵. A aproximação incompressível vale quando
+fluxo E Alfvén são << c_s — no nosso caso não é marginal, é ideal.
+
+| | compressível (Q=16, 64³) | incompressível espectral |
+|---|---|---|
+| limite do passo | dx/c_s = 1.4×10⁻⁷ s | dx/v_turb = 8×10⁻³ s |
+| passos por órbita | 5.3×10⁶ | ~100 |
+| 100 órbitas | 677 dias | ~10⁴ passos, **horas** |
+
+O fator 5×10⁴ é simplesmente c_s/v_turb.
+
+**Código: [SNOOPY](http://ipag-old.osug.fr/~lesurg/snoopy.html)** (Lesur),
+pseudo-espectral, MHD Boussinesq/incompressível em caixa de cisalhamento, GPL.
+Decomposição em ondas de cisalhamento com remap periódico: contorno deslizante
+resolvido, e sem o problema de EMF do CT porque é espectral.
+
+**Precedente na nossa classe de objeto:**
+[Guilet & Müller 2015](https://arxiv.org/pdf/1501.07636) — MRI em protoestrelas
+de nêutrons, Boussinesq escolhido justamente por dar contorno limpo mantendo
+flutuabilidade; [Rembiasz+2016](https://arxiv.org/pdf/1603.00466);
+Reboul-Salze+2021/2022 (dínamo αΩ em PNS). Objeto compacto, alto β, rotação
+diferencial.
+
+### E os coeficientes já podem existir
+
+[Miravet-Tenés+2025](https://arxiv.org/abs/2509.07081) (MNRAS 545, aceito
+set/2025) implementou **MInIT em simulações globais newtonianas de estrelas de
+nêutrons magnetizadas e diferencialmente rotativas** — nosso problema, um objeto
+ao lado. Código Aenus, HLL + PPM + RK3, esférico axissimétrico.
+
+Coeficientes publicados:
+- MRI, de teoria (Pessah & Chan 2008): α^MRI_ϖφ = 1 − 4/q, β^MRI_ϖφ = 1
+- Parasíticos, calibrados em caixa
+  ([Miravet-Tenés+2022](https://arxiv.org/abs/2210.02173)): α^PI = −1.4,
+  β^PI = −0.8
+
+Tratam explicitamente o nosso caso: **quando λ_MRI < Δ, substituem k por 2π/Δ**,
+e zeram γ_MRI onde q ≤ 0 ou q ≥ 4. A célula deles é ~10× λ_MRI — deliberadamente
+não resolvida, como a nossa.
+
+Resultado deles: achatamento do perfil nas regiões internas, transporte de
+momento angular para fora, Ω_max decaindo mais rápido com campo mais forte
+(10¹⁴ G contra 3.5×10¹³ G). **Isto é exatamente a previsão contra a qual o nosso
+"a rotação diferencial sobrevive" precisa ser testado.**
+
+Nosso q pela lei de Komatsu: q = 2ϖ²/(A²+ϖ²), de 0 a 2 — dentro da faixa
+0 < q < 4 em que o MInIT liga a MRI. A física está no domínio de validade.
+
+### Ressalvas que eles próprios registram
+
+- Subgrade **só no momento, não na indução**: transporta momento angular, não
+  gera campo. Sem dínamo MRI de grande escala.
+- Run deles axissimétrico; o nosso é 3D, o que joga a favor.
+- Estimativa deles para 3D plenamente resolvido: ~10⁶ CPU-anos. Ninguém faz.
+
+### Programa
+
+1. **MInIT no Castro** — semanas, sem cluster novo. Tensores no
+   `problem_source.H`. Validar reproduzindo os resultados publicados antes de
+   aplicar à anã branca.
+2. **Caixas SNOOPY no nosso β e q** — dias, estação de trabalho. Verificar se os
+   coeficientes parasíticos transferem de PNS para anã branca. Era o item de 2–3
+   meses de 6.11c; deixou de ser bloqueio e virou controle.
+3. **256³ global com MInIT ligado** — mesmo custo dos runs atuais.
+
+### Boris não serve, e a razão importa
+
+[Matsumoto+2019](https://arxiv.org/abs/1902.02810), Boris-HLLD, aparece em toda
+busca por "reduzir passo em MHD". Ele limita a velocidade de **Alfvén** e serve
+a **baixo β**, onde v_A domina. O nosso é o oposto: alto β, c_s domina, v_A é
+10⁻⁵ dela. Não ganha nada. Registro porque é a armadilha óbvia da busca.
+
+A alternativa compressível seria RSST — reduzir c_s artificialmente
+([Hotta+2014](https://iopscience.iop.org/article/10.1088/0004-637X/786/1/24),
+[Iijima+2019](https://arxiv.org/abs/1812.04135)), padrão em convecção solar pelo
+mesmo motivo. Daria ~10² em vez de 10⁴, e exigiria implementação. Incompressível
+é estritamente melhor aqui, e já está escrito.
+
+### A lição das quatro versões
+
+6.11 a 6.12, mesmo dia. Erro em 6.11: custo por células só. Em 6.11b: custo por
+passos só, com Q fixo sem perceber que era escolha. Em 6.11c: Q variado, mas
+compressibilidade fixa, também sem perceber que era escolha. **Três vezes o
+mesmo padrão — um parâmetro tratado como dado do problema quando era premissa
+minha.** A correção veio de fora nas três, por Rafael perguntar "quanto tempo?"
+e "e se migrarmos?".
+
 ---
 
 ## 7. Produtos
