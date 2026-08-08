@@ -1263,6 +1263,86 @@ nossos, medidos no nosso regime — que é um resultado publicável por si.
 - Recalcular ν e η para 2 M⊙ quente e degenerado, não para anã branca fria.
 - Procedimento de extração dos coeficientes está no 2022; ler antes de rodar.
 
+## 6.15 Duas ressalvas do MInIT, e a caixa volta para primeiro
+
+> Rafael: "o MInIT no Castro pode resolver esse problema da MRI? E por que não
+> usamos antes?" Depois: "mas é possível que o SNOOPY seja muito melhor pra nós?"
+
+### Por que não usamos antes: eu o coloquei em segundo
+
+§6.10 é **de hoje de manhã**. Já cita o artigo de 2025, já conclui "viável", já
+registra o gancho, os escalares nativos e o tratamento de malha grossa. Registra
+inclusive algo mais forte do que eu afirmei à tarde: **a lei de rotação do artigo
+deles é a nossa Komatsu j-constante, e os coeficientes foram derivados para esse
+perfil** — a confirmar em `references/minit_2025_ns.pdf`, e isso decide se os
+parasitas transferem.
+
+Não foi descuido de meses; foram horas. Pus o MInIT em segundo pela objeção dos
+coeficientes emprestados, disse que a caixa resolveria, e gastei o dia errando o
+custo da caixa três vezes. **A caixa nunca foi pré-requisito; eu a transformei em
+um.**
+
+### Ressalva 1: o MInIT modela a MRI errada para o nosso campo
+
+    k_MRI = √(1 − (2−q)²/4) · Ω / v̄_Az        v̄_Az = b̄_z/√ρ̄
+
+Só a componente **vertical**. Nosso campo é toroidal-dominado por 10⁷ em energia,
+e o que destrói o campo nos nossos runs é o kink de Tayler m=1 — instabilidade
+diferente da que o modelo carrega. A literatura diz que em configuração
+toroidal-dominada a relevante é a MRI não-axissimétrica de campo toroidal.
+
+Ligar o MInIT continua legítimo, mas a resposta significa "quanto a MRI
+axissimétrica acrescentaria", não "o que a física ausente faz".
+
+### Ressalva 2: com B_z fraco a saturação vira dependente de malha
+
+λ_MRI cai muito abaixo da célula, o modelo entra permanentemente no ramo
+k → 2π/Δ, e então γ_PI = σ(2π/Δ)√(2e/ρ). **A amplitude saturada passa a ser
+fixada pela resolução.**
+
+Isto nos favorece: temos 192³ e 256³ com diagnóstico idêntico. Ligar o MInIT nos
+dois e testar convergência do transporte é teste que o artigo deles
+(axissimétrico, resolução única) não faz.
+
+### O que o MInIT não cobre de jeito nenhum
+
+Os termos de subgrade entram **só no momento, não na indução**. Nosso outro
+resultado principal — campo ordenado destruído em poucos tempos de Alfvén, três
+ordens de energia magnética — fica intocado. O modelo não diz se um dínamo MRI
+teria regenerado o campo. Metade da história segue sem cobertura.
+
+### Reordenação: SNOOPY primeiro
+
+Quatro razões, e nenhuma é preferência:
+
+1. **Custo** — dias rodando código publicado, contra semanas escrevendo o nosso.
+2. **Erro silencioso** — MInIT malimplementado não quebra o run; produz
+   transporte plausível. Um bug de subgrade é indistinguível de física.
+3. **Ordem lógica** — o MInIT pressupõe que a MRI axissimétrica opera. Se ela não
+   sustenta turbulência no nosso Pm, ele dá resposta confiante e errada, e é a
+   que iria para o artigo.
+4. **Testa a ressalva 1** — uma caixa pode ter fluxo toroidal líquido mais
+   vertical fraco na nossa proporção, e medir qual instabilidade domina. O MInIT
+   não pode fazer esse teste sobre si mesmo.
+
+**Mas SNOOPY é local e não substitui nada.** Não diz se a rotação diferencial da
+nossa estrela sobrevive; isso exige o run global. O programa segue
+caixa → coeficientes → run global. Muda só que a caixa é o primeiro passo.
+
+### O preço honesto do SNOOPY: a extrapolação vai de β para Rm
+
+DNS em caixa alcança Rm ~ 10³–10⁴; o nosso físico é ~10¹⁴. Fixa-se Pm = 0.6
+exatamente, mas com Re e Rm muito abaixo dos reais — e se a dependência em Pm
+medida a Rm = 10⁴ vale a Rm = 10¹⁴ é problema em aberto desde Fromang+2007.
+
+Atenuante: com fluxo vertical líquido a MRI é instabilidade linear, bem menos
+sensível a Rm que o dínamo sem fluxo.
+
+Ainda assim é ganho: sai de "coeficientes emprestados de outro objeto em regime
+desconhecido" para "coeficientes medidos no nosso q e no nosso Pm, extrapolados
+em Rm" — **uma extrapolação em vez de três, e num parâmetro que sabemos
+nomear.** Precisa constar do artigo.
+
 
 ---
 
