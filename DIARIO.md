@@ -435,6 +435,86 @@ a CT vira só a campanha do toro torcido — que ainda vale, por outro motivo.
 
 ---
 
+## 6.6 O que a CT entregou, e o que ela matou
+
+### A prescrição certa, e a errada que tentei primeiro
+
+**Fujisawa, Yoshida & Eriguchi 2012** (arXiv:1204.5830) é a referência que
+Ciolfi cita para o limite confinado, e é a que resolve o problema. Eles obtêm
+campo central **duas ordens de grandeza** acima do de superfície.
+
+Na formulação deles a densidade de corrente tem duas funções arbitrárias do
+fluxo Ψ. A primeira, κ(Ψ), é a parte força-livre e dá diretamente o campo
+toroidal; *essa* leva corte em Ψ_max, senão o toroidal vazaria para o vácuo. A
+segunda, µ(Ψ), é a corrente toroidal não-força-livre e é ela que controla a
+localização. Todos os trabalhos anteriores usavam **µ constante** — que é
+exatamente o nosso `f = k₀` e é a razão de o nosso campo ser dipolo de vácuo.
+Fujisawa usa **lei de potência com expoente negativo**, µ ∝ (Ψ + ε)^m: com
+m < −1 o potencial magnético cresce sem limite conforme Ψ cai rumo ao eixo e as
+linhas se concentram; m = 0 recupera o caso constante.
+
+**Minha primeira tentativa fez o oposto da ideia:** um limiar que *desligava* a
+corrente onde o fluxo era baixo. Deu B_int/B_ext ≈ 3, contra os ~100
+necessários, porque corrente localizada de um sinal só ainda carrega momento de
+dipolo e ainda produz dipolo exterior. **Concentrar corrente não é o mesmo que
+cortá-la**, e a literatura concentra. Trocada a prescrição, B_int/B_ext vai a
+973 e β_min de 0.34 a 11.7 — o confinamento funciona.
+
+### A fronteira, e por que ela mata o toro torcido
+
+Fixando para cada forma o maior campo que a estrela **aguenta** (β_min = 1):
+
+| m | B_pol pico | E_tor/E_pol | \|B\|/B_c | λ/dx₂₅₆ |
+|---|---|---|---|---|
+| 0.00 | 5.8×10¹² | 37.5 | 0.74 | 4.9 |
+| −0.50 | 9.2×10¹² | 43 | 0.74 | 6.4 |
+| **−1.00** | **2.8×10¹³** | **52.9** | **0.74** | **8.9** |
+| −1.30 | 7.1×10¹³ | 63 | 1.60 | 11.8 |
+| −1.80 | 2.3×10¹⁴ | 96 | 5.20 | 20.8 |
+
+De m = −1.3 em diante o campo total cruza B_c, então só as três primeiras
+linhas são admissíveis — e nelas **E_tor/E_pol nunca desce de 37**.
+
+**A tensão é estrutural.** O confinamento confina *estreitando*: reduz o dipolo
+exterior, que salva β na superfície, ao custo do **volume** que o poloidal
+ocupa — e energia poloidal é campo ao quadrado vezes volume. As três exigências
+puxam em direções incompatíveis:
+
+- toro torcido quer poloidal com energia comparável, logo espalhado;
+- β > 1 na superfície quer poloidal confinado, logo estreito;
+- MRI resolvível quer B_z alto, o que empurra o total contra B_c.
+
+Com o toroidal de 3.2×10¹³ G fixo, **β ≥ 1 força domínio toroidal de pelo menos
+38:1. O toro torcido de Braithwaite não é construível nesta estrela.**
+
+### O que sobra é outra pergunta, e talvez melhor
+
+A linha m = −1 é admissível e entrega o que nenhuma configuração anterior
+entregava: **λ/dx = 8.9 com β = 1 e B = 0.74 B_c**. MRI na fase linear
+resolvida, num campo que a estrela suporta.
+
+Mas isso não é "toro torcido estável". É a mesma configuração
+toroidal-dominada de sempre, agora com poloidal forte o bastante para a MRI
+existir na malha. A pergunta muda de *"uma geometria estável sobrevive?"* para
+*"quando a MRI pode crescer, ela apaga a rotação diferencial como a literatura
+de fusão diz?"*.
+
+É a objeção que a busca bibliográfica levantou contra o nosso resultado
+principal, e agora é decidível: se com λ_MRI resolvido a rotação diferencial
+for apagada, a sobrevivência que medimos era artefato de resolução; se não for,
+o resultado se fortalece muito.
+
+**Campanha ML — a MRI na fase linear.** O nome diz o que ela pode e o que não
+pode afirmar: Q ≈ 9 resolve o crescimento linear e fica abaixo do Q ≳ 15–20 que
+a turbulência MRI convergida exige. Nada sobre saturação ou transporte
+dirigido por MRI sai deste run.
+
+**Previsão registrada antes de implementar:** a MRI cresce em ~1/Ω ≈ 0.12 s, e a
+rotação diferencial é apagada em algumas dezenas de segundos. Se nada crescer,
+Q = 8.9 não bastou e a conclusão é sobre a malha, não sobre a estrela.
+
+---
+
 ## 7. Produtos
 
 - `reports/report_rot192_rot256.pdf` — relatório I, 13 páginas, física primeiro,
