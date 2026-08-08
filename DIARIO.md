@@ -533,6 +533,42 @@ Q = 8.9 não bastou e a conclusão é sobre a malha, não sobre a estrela.
 
 ---
 
+## 6.7 Campanha ML no ar — primeiras 700 iterações
+
+Submetida em 8 de agosto (job 994485, 256³). O run **sobreviveu ao arranque**,
+que era a falha esperada, mas roda apertado.
+
+**O confinamento melhorou o problema por um fator 21, não o eliminou.** Campo
+exterior de 6.6×10¹¹ G contra os 3.0×10¹² da TT, dando β no ambiente de
+2.7×10⁻³ contra 1.3×10⁻⁴. Continua abaixo de 1, e é isso que gera os
+`Invalid density`. A diferença é que agora o mecanismo de retry do Castro dá
+conta, em vez de o run abortar em t = 0.06 s.
+
+| ρ | β com o campo exterior da ML |
+|---|---|
+| 10⁹ (núcleo) | 1.8×10⁵ |
+| 10⁷ | 84 |
+| 10⁶ | 1.8 |
+| 10⁵ | 0.039 |
+| 2×10⁴ (ambiente) | 0.0027 |
+
+**A taxa de retries é estável**, que é o critério que separa "apertado" de
+"deteriorando": 1.40 por passo nos primeiros 293 passos, 1.39 nos 419
+seguintes. E ρ_max caiu só 1.3% em t = 0.22 s — a estrela assenta devagar, não
+toca.
+
+**Errei a estimativa de custo no `inputs`.** Escrevi "uma ou duas janelas" sem
+prever os retries, que derrubam o ritmo para ~60%. A t = 3 s exigiria ~7
+janelas. Mas o alvo de 3 s é margem, não requisito: a MRI tem e-folding de
+0.16 s, então quatro e-foldings — suficiente para um ajuste exponencial
+defensável — chegam em **t ≈ 0.64 s**, duas janelas a partir daqui.
+
+**Critério de deterioração, declarado antes:** se os retries por passo passarem
+de 5, o run vai abortar e o próximo modelo sai a 80% da fronteira β = 1,
+aceitando Q = 6.4 em vez de 8.0.
+
+---
+
 ## 7. Produtos
 
 - `reports/report_rot192_rot256.pdf` — relatório I, 13 páginas, física primeiro,
