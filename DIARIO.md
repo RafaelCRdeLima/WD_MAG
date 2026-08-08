@@ -1111,6 +1111,159 @@ mesmo padrão — um parâmetro tratado como dado do problema quando era premiss
 minha.** A correção veio de fora nas três, por Rafael perguntar "quanto tempo?"
 e "e se migrarmos?".
 
+### O teste científico que isto destrava
+
+Nossos dois grids concordam que a rotação diferencial **acentua**: −22.6% (256³)
+e −20.3% (192³). Miravet-Tenés+2025, com MInIT ligado, encontram **achatamento**
+do perfil interno, transporte de momento angular para fora, e Ω_max decaindo
+mais rápido quanto mais forte o campo (10¹⁴ G contra 3.5×10¹³ G).
+
+**São previsões de sinal oposto.** Se ligarmos o MInIT e o perfil achatar, o
+nosso acentuamento era a assinatura da MRI ausente. A Fase 1 deixa de ser
+refinamento e vira o teste decisivo do resultado central dos dois relatórios.
+
+## 6.13 MInIT: a formulação, e por que casa com o Castro
+
+Equações extraídas de [Miravet-Tenés+2025](https://arxiv.org/html/2509.07081v1),
+com o modelo original em [Miravet-Tenés+2022](https://arxiv.org/abs/2210.02173).
+PDFs em `references/minit_2022_mri.pdf` e `references/minit_2025_ns.pdf`.
+
+### As duas equações de evolução
+
+    ∂_t e_MRI + ∇_j(v̄_j e_MRI) = 2 γ_MRI e_MRI − 2 γ_PI e_PI
+    ∂_t e_PI  + ∇_j(v̄_j e_PI)  = 2 γ_PI  e_PI  − C e_PI^{3/2} / (√ρ̄ λ)
+
+com C = 8.6 e λ = min[Δ, λ_MRI].
+
+Taxas, calculadas do campo **resolvido** em cada célula:
+
+    γ_MRI = (q/2) Ω                     q ≡ −d ln Ω / d ln ϖ
+    γ_PI  = σ k_MRI √(2 e_MRI/ρ̄)        σ = 0.27
+    k_MRI = √(1 − (2−q)²/4) · Ω / v̄_Az   v̄_Az = b̄_z/√ρ̄
+
+### Os tensores, algébricos nas energias
+
+    M̄_ij = α^MRI_ij e_MRI + α^PI_ij e_PI          (Maxwell)
+    R̄_ij = (β^MRI_ij e_MRI + β^PI_ij e_PI)/ρ̄      (Reynolds)
+    F̄_ij = γ^PI_ij e_PI / √ρ̄                      (Faraday)
+
+Coeficientes: α^MRI_ϖφ = 1 − 4/q e β^MRI_ϖφ = 1 vêm de **teoria** (Pessah & Chan
+2008); α^PI_ϖφ = −1.4 e β^PI_ϖφ = −0.8 vêm de **caixa** (Miravet-Tenés+2022).
+
+Entram no momento:
+
+    ∂_t p̄_i + ∇_j[ρ̄ v̄_i v̄_j + (P̄* + Tr M̄)δ_ij − b̄_i b̄_j + ρ̄ R̄_ij − M̄_ij] = f̄_i
+
+### Por que não é LES, e por que a objeção da Rm não se aplica
+
+Descartei LES em 6.10 porque a Rm ≈ 5 não há cascata inercial para modelar. O
+MInIT **não modela cascata**. É um balanço de energia de instabilidade:
+
+1. a MRI cresce a γ_MRI = qΩ/2, taxa **linear e analítica**, tirada do
+   cisalhamento resolvido — não precisa de turbulência nenhuma;
+2. as instabilidades parasitas (Kelvin–Helmholtz e tearing sobre os modos-canal)
+   comem essa energia e saturam o crescimento — é o mecanismo de saturação de
+   Goodman & Xu 1994 e Pessah 2010;
+3. os tensores são função algébrica das duas energias.
+
+Nunca é preciso resolver λ_MRI. Precisa-se de Ω(ϖ), q, ρ e B_z resolvidos — que
+temos. **A objeção da cascata era contra o LES e continua válida; não alcança o
+MInIT.**
+
+### Encaixe no Castro
+
+| Peça | Situação |
+|---|---|
+| e_MRI, e_PI como escalares advectados | nativo — `NumAdv` / estado auxiliar |
+| divergência dos tensores no momento | `problem_source.H`, gancho que já usamos no damping |
+| fontes rígidas (stiff) | padrão das reações; `do_react=0` hoje, mas a infra existe |
+| B_z, ρ, v | direto do estado |
+| EOS barotrópica | **simplifica** — sem equação de energia para acertar |
+
+**O único trabalho real: q = −d ln Ω/d ln ϖ em coordenadas cartesianas.** O run
+deles é esférico axissimétrico, onde ϖ é coordenada. Aqui Ω = (x v_y − y v_x)/ϖ²
+e a derivada é direcional ao longo de ϖ̂ = (x,y,0)/ϖ, por diferenças finitas no
+grid resolvido. Cuidado no eixo (ϖ→0) e no envelope de baixa densidade, onde Ω é
+ruidoso.
+
+Eles zeram γ_MRI onde q ≤ 0 ou q ≥ 4. Nossa lei de Komatsu dá
+q = 2ϖ²/(A²+ϖ²), variando de 0 a 2 — **dentro da faixa em que o MInIT liga a
+MRI.** E quando λ_MRI < Δ, trocam k por 2π/Δ; a célula deles é ~10× λ_MRI,
+deliberadamente não resolvida, como a nossa.
+
+## 6.14 SNOOPY: em incompressível, β desaparece — e sobra o Pm
+
+### O que a caixa incompressível conhece
+
+A pressão térmica é multiplicador de Lagrange impondo ∇·v = 0; c_s é infinita e
+some. **β não é parâmetro da caixa incompressível.** Os grupos adimensionais que
+restam:
+
+    q          parâmetro de cisalhamento
+    L/λ_MRI    quantos comprimentos de onda cabem
+    Re = ΩL²/ν,  Rm = ΩL²/η,  Pm = ν/η
+
+O β = 10⁹ que tornava a caixa compressível cara **não aparece na física**, só na
+numérica que escolhemos. Isso responde à ressalva que eu tinha deixado aberta:
+não é β que precisa casar entre PNS e anã branca.
+
+Bônus de consistência: nossa EOS `ztwd` é barotrópica, logo N² = 0, logo sem
+flutuabilidade. Guilet & Müller precisaram do modo Boussinesq para gradiente de
+entropia; **para nós o modo incompressível puro é exatamente certo.**
+
+### Mas o Pm é um problema, e talvez um resultado
+
+Anã branca: ν ~ 3×10⁻² cm²/s, η ~ 6×10⁻² cm²/s, **Pm ~ 0.5–0.6**, Rm ~ 10¹⁴–10¹⁵
+(zona convectiva de anã branca CO em cristalização —
+[Fuentes+2024](https://iopscience.iop.org/article/10.3847/2041-8213/ad3100)).
+Protoestrela de nêutrons: Pm enorme. **Os coeficientes parasitas foram
+calibrados no regime errado para nós.**
+
+E a literatura diz que isso importa muito. Fromang+2007 e Lesur & Longaretti 2007
+acham lei de potência íngreme do transporte com Pm, e **Pm crítico ~ 2–4 abaixo
+do qual a turbulência MRI morre**. Pm ~ 0.58 está abaixo disso.
+
+Ressalva que impede conclusão apressada, em duas frentes:
+
+- O Pm_crit ~ 2–4 é de caixa **sem fluxo líquido**, onde a MRI depende de dínamo.
+  Temos **fluxo vertical líquido**: a MRI é instabilidade linear e cresce de
+  qualquer jeito. [Simon & Hawley
+  2011](https://iopscience.iop.org/article/10.1088/0004-637X/740/1/18) acham que
+  o transporte sobrevive a Pm baixo desde que Rm supere um crítico — e o nosso
+  Rm físico é 10¹⁴.
+- O valor Pm ~ 0.58 é de anã branca CO fria em cristalização, não de remanescente
+  de fusão a 2 M⊙ e quente. **Precisa ser recalculado para as nossas condições.**
+
+De qualquer modo isto promove a caixa: deixa de ser tarefa de calibração e vira
+**pergunta física própria** — a MRI transporta momento angular no interior de
+uma anã branca a Pm de ordem unidade?
+
+### Como usar o SNOOPY
+
+[Página do Lesur](http://ipag-old.osug.fr/~lesurg/snoopy.html), GPL, C com FFTW3
+e MPI/OpenMP. Adimensional: fixa-se Ω = 1 e o tamanho da caixa, e o que se
+escolhe é q, L/λ_MRI, Re, Rm.
+
+Plano mínimo, dias e não meses:
+
+1. compilar e reproduzir um caso MRI padrão de disco (q = 1.5) contra a
+   literatura — validação do nosso uso, não do código;
+2. varrer q em 0.5, 1.0, 1.5, 2.0 cobrindo a faixa de Komatsu;
+3. varrer Pm em torno de 1 (0.25 a 4) com Rm alto, medindo se o transporte
+   sobrevive e como escala;
+4. extrair α^PI e β^PI pelo procedimento de Miravet-Tenés+2022 e comparar com
+   −1.4 e −0.8.
+
+Se baterem, o MInIT roda com os coeficientes publicados. Se não, temos os
+nossos, medidos no nosso regime — que é um resultado publicável por si.
+
+### Riscos abertos
+
+- SNOOPY V6.0 é de 2011; verificar se compila com FFTW3 e MPI atuais.
+- Recalcular ν e η para 2 M⊙ quente e degenerado, não para anã branca fria.
+- Procedimento de extração dos coeficientes está no 2022; ler antes de rodar.
+
+
 ---
 
 ## 7. Produtos

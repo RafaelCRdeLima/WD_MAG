@@ -1,11 +1,16 @@
 # References
 
-Downloaded literature on super-Chandrasekhar magnetized white dwarfs. All four
-PDFs are the arXiv preprints; the two MNRAS and one ApJ links are behind
-publisher bot protection, so the accepted versions were fetched from arXiv
-instead. Journal references are given below and should be the ones cited.
+Two groups. **Papers 1–4** are the super-Chandrasekhar magnetized white dwarf
+literature — the structure programme our configuration comes out of. **Papers
+5–6** are the MInIT subgrid model, which is how we intend to put the MRI into a
+grid that cannot resolve it; they are the operative references for the work
+planned in `DIARIO.md` §6.13.
 
-**Banibrata Mukhopadhyay is an author on all four.** They are one research
+All PDFs are the arXiv preprints; the MNRAS and ApJ links are behind publisher
+bot protection, so the accepted versions were fetched from arXiv instead.
+Journal references are given below and should be the ones cited.
+
+**Banibrata Mukhopadhyay is an author on all four of 1–4.** They are one research
 programme seen at four stages, and reading them together is more informative
 than reading any one: the group's case for super-Chandrasekhar white dwarfs
 rests on magnetic support, and each paper adds a piece — rotation and GR,
@@ -191,3 +196,80 @@ $10^{14}$ G ordered interior field that does the supporting in the models is
 not something a 3D star will hold onto. What our runs cannot yet say is how
 much of the decay is physical rather than numerical resistivity — see the
 convergence section of `reports/report_rot192_rot256.pdf`.
+
+---
+
+# The MInIT subgrid model
+
+The problem these two solve is ours exactly. $\lambda_{\rm MRI}$ in our evolved
+configuration is a small fraction of a cell, so "the differential rotation
+survives" has been indistinguishable from "we have no way to erase it". Refining
+does not fix it: cost scales as $N^4$ and we would need a factor $\sim1700$ in
+resolution. MInIT sidesteps resolution entirely by carrying the unresolved
+turbulent energy as two extra advected fields.
+
+## 5. Miravet-Tenés, Viganò, Cerdá-Durán, Font (2022)
+
+**Assessment of a new sub-grid model for magneto-hydrodynamical turbulence. I.
+Magnetorotational instability**
+MNRAS 517, 3505 · [arXiv:2210.02173](https://arxiv.org/abs/2210.02173) ·
+`minit_2022_mri.pdf`
+
+The model paper. Introduces **MInIT** (MHD-Instability-Induced Turbulence), a
+mean-field closure built not on a turbulent cascade but on the energy budget of
+two instabilities: the MRI, which grows at the analytic linear rate
+$\gamma_{\rm MRI} = (q/2)\Omega$ off the *resolved* shear, and the parasitic
+instabilities (Kelvin–Helmholtz and tearing on the MRI channel modes) that feed
+on it and terminate its growth. Two evolution equations with stiff source terms;
+the Maxwell, Reynolds and Faraday stresses are then algebraic in the two
+energies.
+
+Calibrated and validated against filtered data from fully resolved in-box DNS of
+the MRI.
+
+**Why this matters for us.** We discarded LES in `DIARIO.md` §6.10 because at
+$\mathrm{Rm}\approx5$ there is no inertial cascade below the cell to model.
+**That objection does not reach MInIT**, which never assumes a cascade — it
+tracks instability energy, and the MRI growth rate it needs is analytic. This is
+the paper that establishes the distinction.
+
+The paper is also where the parasitic coefficients
+$\alpha^{\rm PI}_{\varpi\phi} = -1.4$ and $\beta^{\rm PI}_{\varpi\phi} = -0.8$
+come from, so it is the reference to read before asking whether they transfer to
+a white dwarf — see the $\mathrm{Pm}$ problem in `DIARIO.md` §6.14.
+
+---
+
+## 6. Miravet-Tenés, Obergaulinger, Cerdá-Durán, Font, Ruiz (2025)
+
+**Subgrid modelling of MRI-driven turbulence in differentially rotating neutron
+stars**
+MNRAS 545, 3 · [arXiv:2509.07081](https://arxiv.org/abs/2509.07081) ·
+`minit_2025_ns.pdf`
+
+MInIT applied for the first time in **global Newtonian simulations of
+magnetized, differentially rotating neutron stars** — our problem, one object
+class over. Code **Aenus**: finite volume, HLL, PPM, RK3, spherical polar,
+axisymmetric.
+
+They handle the unresolved case head-on: where $\lambda_{\rm MRI} < \Delta$ they
+replace $k$ by $2\pi/\Delta$, and they zero $\gamma_{\rm MRI}$ where $q\le0$ or
+$q\ge4$. Their cells run about ten times the fastest-growing wavelength —
+deliberately unresolved, like ours.
+
+Results: flattening of the inner rotation profile, angular momentum transported
+outwards, and $\Omega_{\max}$ decaying faster at stronger field
+($10^{14}$ G vs $3.5\times10^{13}$ G). Saturation amplitude of the turbulent
+energies is roughly independent of rotation frequency.
+
+**This is the paper our central result has to be tested against, and the
+prediction runs the other way.** Both our grids find the differential rotation
+*steepening* — $-22.6\%$ at $256^3$, $-20.3\%$ at $192^3$. They find flattening.
+If MInIT is switched on in our runs and the profile flattens, our steepening was
+the signature of the missing MRI.
+
+Their own caveats worth carrying: the subgrid terms enter the **momentum
+equation only, not the induction equation**, so the model transports angular
+momentum but generates no large-scale field — there is no MRI dynamo in it.
+Their run is axisymmetric, where ours is 3D. And they put a fully resolved 3D
+calculation at $\sim10^6$ CPU-years, which is why nobody does one.
