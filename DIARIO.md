@@ -753,6 +753,79 @@ ordem de dificuldade que 372.000³.
 
 ---
 
+## 6.10 Sub-grade e LES: qual das duas famílias serve, e por quê
+
+Estudo de 8 de agosto, sem implementar nada.
+
+### MInIT — viável, com coeficientes emprestados
+
+[Miravet-Tenés et al. 2025](https://arxiv.org/abs/2509.07081). Três peças: duas
+densidades de energia turbulenta evoluídas (MRI e instabilidades parasíticas),
+cada uma com `∂_t e + ∇·(v e) = S`; tensores de Maxwell e Reynolds ligados a
+elas por coeficientes constantes; e o transporte vindo essencialmente da
+componente ϖφ, ou seja **um torque**, não um tensor viscoso completo.
+
+A favor:
+
+- **O gancho existe e já usamos.** `problem_source.H` tem 79 linhas e implementa
+  o amortecimento da acomodação. Um torque entra na mesma estrutura.
+- **A lei de rotação do artigo é a nossa** — Ω_c/(1 + ϖ²/A²), Komatsu, a
+  j-constante. Os coeficientes foram derivados para esse perfil.
+- **O modelo já contempla malha grossa:** o comprimento de decaimento é
+  λ = min(Δ, λ_MRI), com Δ o tamanho de célula. Foi construído para o caso mal
+  resolvido.
+- Escalares advectados são nativos no AMReX.
+
+Contra:
+
+- **O Castro removeu difusão de velocidade** (só sobrou térmica), então não há
+  infraestrutura de divergente de tensor. Contornável porque precisamos de uma
+  componente só, escrita como fonte.
+- **Os coeficientes parasíticos (−1.4, −0.8) são calibrados para estrela de
+  nêutrons**, politrópica γ = 2 em densidade nuclear. Os da MRI são teóricos e
+  transferem; os parasíticos, transferir para `ztwd` é **suposição**. O
+  resultado dependeria de coeficientes de outro regime — defensável se
+  declarado, mas transforma "medimos transporte por MRI" em "aplicamos modelo
+  calibrado alhures".
+
+Custo: semanas. Duas variáveis de estado, fontes locais, um torque, e um teste
+de verificação reproduzindo a evolução das energias turbulentas deles.
+
+### LES — não serve, e o motivo é instrutivo
+
+[Viganò, Aguilera-Miret et al. 2020](https://arxiv.org/abs/2004.00870) estendem
+para GRMHD o modelo **gradiente**: expansão de Taylor dos termos não lineares
+nos fluxos, "fisicamente agnóstico". Vantagem real sobre o MInIT — **sem
+coeficientes calibrados noutro regime**.
+
+Mas a revisão de [Schmidt-Brückner 2025](https://arxiv.org/abs/2509.06801) diz
+que modelos de sub-grade têm impacto prático limitado na maioria dos códigos
+astrofísicos **porque os solvers já têm difusão numérica significativa**. É a
+nossa situação em grau extremo: η_num ≈ 0.6–0.9 c_s·dx, Rm ≈ 5.
+
+**LES estima o que ocorre abaixo da escala de filtro, pressupondo cascata
+turbulenta continuando abaixo da célula. A Rm ≈ 5 não há cascata** — a
+dissipação acontece *na* célula. Não há nada abaixo para modelar, e o termo de
+sub-grade somaria a uma dissipação já excessiva.
+
+### A distinção que eu não tinha feito
+
+- **LES modela uma cascata**: energia que as escalas resolvidas já têm,
+  transferida para baixo. Pressupõe faixa inercial.
+- **MInIT modela uma instabilidade**: energia que a malha não consegue criar,
+  porque o modo não cabe. Não pressupõe cascata; injeta o que falta.
+
+Nossa física ausente é a segunda. A MRI é um modo que não cabe na malha, não uma
+cascata mal amostrada. **O MInIT é a classe certa; o LES não é.**
+
+Confirma isso onde o LES funciona: [Aguilera-Miret et al.
+2020](https://arxiv.org/abs/2009.06669) capturam amplificação nos primeiros
+10 ms após fusão, onde há turbulência violenta de Kelvin–Helmholtz nas escalas
+resolvidas. Nossa estrela, assentada e pulsando suavemente, não está nesse
+regime.
+
+---
+
 ## 7. Produtos
 
 - `reports/report_rot192_rot256.pdf` — relatório I, 13 páginas, física primeiro,
