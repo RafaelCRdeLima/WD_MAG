@@ -70,6 +70,9 @@ import diagnostics as diag                            # noqa: E402
 import eos                                            # noqa: E402
 import scf as scf_mod                                 # noqa: E402
 import units                                          # noqa: E402
+from axisym_model_writer import (to_meridional, vector_potential,  # noqa: E402
+                                 verify_curl_on_cartesian,
+                                 verify_meridional_curl, write_model)
 from gradshafranov import solve_gradshafranov         # noqa: E402
 from seed import r_guess                              # noqa: E402
 from sweep_worker import _solve_toroidal_certified    # noqa: E402
@@ -84,6 +87,9 @@ OMEGA_FRAC, A_FRAC = 1.5, 1.0
 K_TOR, M_TOR = 5.0e-4, 1.0
 B_C = 4.414e13
 DX192, DX256 = 9.375e6, 7.031e6
+N_MER, HALF_CM, CORNER = 385, 9.0e8, 1.7320508
+DIV_GATE, CURL_GATE = 1.0e-12, 5.0e-2
+OUTDIR = REPO / "models"
 
 
 def confined_flux(rho, r, th, varpi, m, eps=1.0e-6, lmax=LMAX,
@@ -184,8 +190,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--scan", action="store_true",
                     help="sweep the localisation exponent m")
-    ap.add_argument("-m", type=float, default=-1.5,
+    ap.add_argument("-m", type=float, default=-1.0,
                     help="localisation exponent; m < -1 concentrates inwards")
+    ap.add_argument("--write", action="store_true",
+                    help="write models/ml_field.txt at the beta = 1 amplitude")
     ap.add_argument("--bpol", type=float, default=1.0e13,
                     help="target interior peak |B_pol| in G")
     a = ap.parse_args()
@@ -250,11 +258,91 @@ def main():
               f"{d['btot_over_Bc']:7.3f} {d['ratio_int_ext']:10.1f} "
               f"{d['beta_min']:9.3f} {L / DX256:9.2f} {L / R_eq:6.3f}")
 
-    print("\nB_int/B_ext is the point of CT: the interior peak over the exterior")
-    print("dipole. The vacuum-dipole construction gives ~1; large values mean")
-    print("the field is confined and the ambient never sees it.")
-    print("beta_min is over cells with rho > 1e6. Below 1 the field wins and")
-    print("the star is pushed apart -- that is what killed TT at t = 0.06 s.")
+    if not a.write:
+        print("\nB_int/B_ext is the interior peak over the exterior dipole.")
+        print("The vacuum-dipole construction gives ~1; large values mean the")
+        print("field is confined and the ambient never sees it. Amplitudes are")
+        print("bisected to beta_min = 1 -- the most field the star can hold.")
+        print("Rows with |B|/B_c > 1 are outside the EOS validity range.")
+        return
+
+    # ---- write the model at the chosen shape and the beta = 1 amplitude ----
+    m = shapes[0]
+    u_shape, _ = confined_flux(rho, r, th, varpi, m)
+    Br1, Bth1 = diag.poloidal_field(u_shape, r, th)
+    unit = float(np.hypot(Br1, Bth1).max())
+    lo, hi = 1e8, 1e15
+    for _ in range(60):
+        mid = np.sqrt(lo * hi)
+        if report(rho, r, th, varpi, H, W, u_shape, mid / unit,
+                  Bphi)["beta_min"] >= 1.0:
+            lo = mid
+        else:
+            hi = mid
+    # back off 10% from the frontier: beta = 1 exactly is the point where the
+    # field first wins somewhere, and the initial transient will push on it
+    amp = 0.9 * lo / unit
+    u = u_shape * amp
+    d = report(rho, r, th, varpi, H, W, u_shape, amp, Bphi)
+    L = mri(d["Bz_typ"], rho_typ, Om_c)
+    print(f"\nescolhido m = {m}, pico |B_pol| = {0.9 * lo:.3e} G "
+          f"(90% da fronteira beta = 1)")
+    print(f"  E_tor/E_pol {d['E_tor_over_E_pol']:.4g}   |B|/B_c "
+          f"{d['btot_over_Bc']:.3f}   beta_min {d['beta_min']:.3f}")
+    print(f"  B_int/B_ext {d['ratio_int_ext']:.1f}   lambda_MRI/dx256 "
+          f"{L / DX256:.2f}   /dx192 {L / DX192:.2f}   lambda/R {L / R_eq:.3f}")
+
+    rmax = 1.02 * CORNER * HALF_CM
+    vp = np.linspace(0.0, rmax, N_MER)
+    zz = np.linspace(-rmax, rmax, 2 * N_MER - 1)
+    rho_m, u_m, bphi_m = to_meridional(r, th, (rho, u, Bphi), vp, zz)
+    A_phi, A_z = vector_potential(vp, u_m, bphi_m)
+
+    # the same taper the evolved model uses: a hard velocity cut at the surface
+    # put 7.5e8 cm/s beside a static ambient and killed a run at t = 2.59 s
+    RHO_SPIN_LO, RHO_SPIN_HI = 1.0e4, 1.0e6
+    tt = np.clip((np.log10(np.maximum(rho_m, RHO_SPIN_LO))
+                  - np.log10(RHO_SPIN_LO))
+                 / (np.log10(RHO_SPIN_HI) - np.log10(RHO_SPIN_LO)), 0.0, 1.0)
+    v_phi = (np.atleast_1d(rot.Omega(vp))[:, None] * vp[:, None]
+             * np.ones((1, len(zz)))) * (tt * tt * (3.0 - 2.0 * tt))
+
+    err_pol, err_tor = verify_meridional_curl(vp, zz, A_phi, A_z, u_m, bphi_m)
+    rel_div, b_max, _ = verify_curl_on_cartesian(vp, zz, A_phi, A_z,
+                                                 half=HALF_CM, n_cart=64)
+    retained = b_max / np.abs(Bphi).max()
+    print(f"  curl A vs B: poloidal {err_pol:.2e}, toroidal {err_tor:.2e} "
+          f"(gate {CURL_GATE:.0e})")
+    print(f"  div B em 64^3: {rel_div:.2e} (gate {DIV_GATE:.0e}), "
+          f"amplitude retida {100 * retained:.1f}%")
+    if retained > 1.02:
+        raise SystemExit("reconstruction gained amplitude -- model grid too small")
+    if not (rel_div < DIV_GATE):
+        raise SystemExit("divergence gate failed")
+    if not (err_pol < CURL_GATE and err_tor < CURL_GATE):
+        raise SystemExit("curl gate failed")
+
+    OUTDIR.mkdir(exist_ok=True)
+    params = dict(rho_c=RHO_C, mu_e=MU_E, K_tor=K_TOR, m_tor=M_TOR,
+                  localisation_m=m, Bpol_peak_G=0.9 * lo,
+                  E_tor_over_E_pol=d["E_tor_over_E_pol"],
+                  B_total_max_over_Bc=d["btot_over_Bc"],
+                  beta_min=d["beta_min"], B_int_over_B_ext=d["ratio_int_ext"],
+                  lambda_MRI_cm=L, lambda_over_dx256=L / DX256,
+                  lambda_over_R=L / R_eq, Bz_typical_G=d["Bz_typ"],
+                  omega_frac=OMEGA_FRAC, A_over_Req=A_FRAC,
+                  Omega_c=rot.Omega_c, A_cm=rot.A,
+                  v_phi_max_cms=float(v_phi.max()),
+                  prescription="Fujisawa+2012 mu ~ (Psi+eps)^m, non-force-free",
+                  is_equilibrium=False,
+                  note="poloidal imposed on a converged toroidal+rotation "
+                       "solve; relax before drawing conclusions")
+    checks = dict(curl_err_poloidal=err_pol, curl_err_toroidal=err_tor,
+                  relative_divB_64cubed=rel_div,
+                  amplitude_retained_64cubed=retained)
+    man = write_model(vp, zz, rho_m, A_phi, A_z,
+                      OUTDIR / "ml_field.txt", params, checks, v_phi=v_phi)
+    print(f"\nwrote models/{man['file']} ({man['n_varpi']}x{man['n_z']})")
 
 
 if __name__ == "__main__":

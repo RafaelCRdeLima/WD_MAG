@@ -1,0 +1,248 @@
+#!/bin/bash
+#PBS -N wdml256
+#PBS -q paralela
+#PBS -l nodes=2:ppn=128
+#PBS -l walltime=03:00:00
+#PBS -o wdml256.out
+#PBS -e wdml256.err
+#
+# Campaign ML -- the MRI in its linear phase, 256^3, stage 1 (t = 3 s).
+#
+# Derived from job_rot256.pbs rather than written fresh, so every fix that
+# campaign paid for survives: the graceful stop before the walltime, the
+# per-run lock, the target read from the inputs file, the refusal to restart a
+# run already at target, abort detection bounded to the current window, and the
+# chk00000 exclusion in the no-new-checkpoint guard -- whose absence spun the
+# TT chain through seven wasted submissions relaunching a run that died at
+# t = 0.06 s each time.
+#
+# Two nodes: paralela refuses single-node jobs with "Job violates queue and/or
+# server resource limits", and 256^3 at max_grid_size 32 is 8^3 = 512 boxes,
+# two per rank on 256 ranks.
+#
+# Stage 1 is short -- 3 s of stellar time at plot_per = 0.05 -- so this should
+# need one or two windows. CHAIN_MAX is left high anyway; a chain that stops
+# early is cheap to restart and one that runs away is not.
+#
+# Submit with the address on the command line -- this repository is public:
+#   qsub -M your@email -m ae cluster/cenapad/job_ml256.pbs
+
+cd "$PBS_O_WORKDIR"
+
+module purge
+module load openmpi/5.0.8-gcc-15.2.0
+
+echo "host:  $(hostname)"
+echo "start: $(date)"
+
+NP="$(wc -l < "${PBS_NODEFILE:-/dev/null}" 2>/dev/null || true)"
+[ -n "$NP" ] && [ "$NP" -gt 0 ] 2>/dev/null || NP="${PBS_NP:-256}"
+echo "ranks: $NP  (PBS_NP='$PBS_NP', nodefile='${PBS_NODEFILE:-unset}')"
+
+# Per-run directory: three concurrent jobs once wrote chk00000 and plt00000
+# into the same place and overwrote each other.
+RUNDIR="dir_ml256"
+mkdir -p "$RUNDIR"
+cd "$RUNDIR"
+
+# Refuse to start beside another instance. Two jobs did land in this
+# directory at once and the second restarted from the first's half-written
+# checkpoint.
+if [ -f RUNNING ] && kill -0 "$(cat RUNNING 2>/dev/null)" 2>/dev/null; then
+    echo "another instance is live in $RUNDIR (pid $(cat RUNNING)); refusing"
+    exit 1
+fi
+echo "$$" > RUNNING
+trap 'rm -f "$PBS_O_WORKDIR/$RUNDIR/RUNNING"' EXIT
+ln -sf ../Castro3d.gnu.MPI.ex .
+ln -sf ../ml_field.txt .
+ln -sf ../inputs.ml256 .
+
+# Restart from the newest checkpoint if one is there, so a run truncated by
+# the walltime is continued by resubmitting rather than repeated from zero.
+RESTART=""
+# chk00000 is excluded on purpose. It is the dump Castro writes during
+# initialisation, so restarting from it gains nothing over starting fresh --
+# and it is exactly the file that twice carried a half-written state from an
+# aborted run into the next one, producing "State has NaNs in the density
+# component" and costing two tests of an unrelated change.
+LAST="$(ls -d chk????? 2>/dev/null | grep -v 'chk00000$' | sort | tail -1)"
+if [ -n "$LAST" ] && [ -f "$LAST/Header" ]; then
+    RESTART="amr.restart=$LAST"
+    echo "restarting from $LAST"
+else
+    echo "starting from the initial model"
+fi
+
+# The target, read from the inputs file so nothing here can drift out of step
+# with it. Used twice: by the guard immediately below, and by the chain at the
+# end. Comment lines in inputs.ml256 also mention stop_time, hence the anchor:
+# assignments are unindented, prose is behind a '#'.
+TARGET="$(awk '/^[ \t]*stop_time[ \t]*=/ {print $3; exit}' inputs.ml256)"
+
+# Refuse to restart a run that is ALREADY at its target.
+#
+# Job 993436 did exactly that: it restarted from chk07059 at t = 12.0 with
+# stop_time still 12.0, and died 21 s later with
+#   amrex::Abort::115::Error: too many subcycles.
+# which reads like the numerical failure that killed this run at t = 5.146 s
+# and is nothing of the kind. The checkpoint stores t as 11.999999999999998,
+# so Castro enters the step loop with dt capped at stop_time - t ~ 1e-15 s,
+# and the retry logic subcycles until it gives up. Nothing was wrong with the
+# state; the run simply had nowhere to go.
+#
+# Raising stop_time is the fix, so say that instead of burning a window to
+# produce a misleading abort.
+if [ -n "$LAST" ] && [ -f run_ml256.log ]; then
+    NOW="$(grep -a '^STEP' run_ml256.log | tail -1 | sed 's/.*TIME = \([0-9.e+-]*\).*/\1/')"
+    if [ "$(awk -v t="${NOW:-0}" -v s="${TARGET:-0}" \
+            'BEGIN{print (s+0 > 0 && t+0 >= s*0.995) ? 1 : 0}')" = "1" ]; then
+        echo "refusing: already at t = ${NOW} s of stop_time = ${TARGET} s."
+        echo "raise stop_time in inputs.ml256 before resubmitting."
+        exit 0
+    fi
+fi
+
+
+# Ask AMReX to checkpoint and stop BEFORE the walltime, instead of being killed
+# in the middle of mpirun.
+#
+# Both 993295 and 993296 ended that way: PBS killed the process at the wall, so
+# everything below -- the step count, the abort check, and the whole chaining
+# block -- never ran, and two runs that were healthy stopped needing a manual
+# resubmission. A chain that only fires when mpirun exits on its own is not a
+# chain.
+#
+# AMReX checks for a file named dump_and_stop once per coarse step
+# (AMReX_Amr.cpp), writes a checkpoint and returns. WALL must match the
+# "#PBS -l walltime" above; GRACE is the room left for the checkpoint to be
+# written and for this script to resubmit.
+WALL=10800
+GRACE=900
+( sleep $((WALL - GRACE)); touch dump_and_stop ) &
+STOPPER=$!
+
+# Where this window's output starts. run_ml256.log is APPENDED to across every
+# window of the chain, so "did it abort?" has to be asked of the tail, not of
+# the file.
+LOG_MARK="$(wc -l < run_ml256.log 2>/dev/null || echo 0)"
+LOG_MARK="${LOG_MARK:-0}"
+
+mpirun -np "$NP" ./Castro3d.gnu.MPI.ex inputs.ml256 $RESTART \
+    >> run_ml256.log 2>&1
+RC=$?
+kill "$STOPPER" 2>/dev/null
+rm -f dump_and_stop
+echo "log: $PBS_O_WORKDIR/$RUNDIR/run_ml256.log ($(grep -ac '^STEP' run_ml256.log) steps)"
+
+# This used to be
+#     grep -a "amrex::Abort" run_ml256.log | head -1
+# on the cumulative log, so it reported the FIRST abort ever recorded -- the
+# t = 5.146 s failure that cfl 0.3 fixed weeks ago -- in every window from then
+# on, healthy or not. It cost one false alarm at t = 26 s while the chain was
+# running perfectly, and it had already caused one wrong conclusion when a
+# similar cumulative count was read as a fresh failure.
+#
+# Now only this window's slice of the log is searched, so an abort printed here
+# is one that just happened.
+if tail -n "+$((LOG_MARK + 1))" run_ml256.log | grep -aq "amrex::Abort"; then
+    echo "ABORT in this window:"
+    tail -n "+$((LOG_MARK + 1))" run_ml256.log | grep -a "amrex::Abort" | head -1
+    tail -n "+$((LOG_MARK + 1))" run_ml256.log | grep -a '^STEP' | tail -1
+else
+    echo "no abort in this window"
+fi
+echo "end:   $(date)"
+
+# Chain the next window automatically. Backfill windows have been short --
+# 4 h was refused with 17 nodes free -- so the run has to cross several of
+# them, and babysitting that by hand costs more than the run.
+#
+# Three guards, because a job that resubmits itself is a job that can run
+# away. It stops after CHAIN_MAX submissions; it stops unless this window
+# actually produced a NEW checkpoint, so a run that aborts immediately does
+# not respawn; and it stops once the log shows the target time reached.
+# Raised from 8 when stop_time went from 12 to 60 s. The first 12 s took a
+# handful of windows; the remaining 48 need roughly eight times as many steps,
+# because dt has halved as the star settled (8.4e-4 s at t = 12 against a 1.7e-3
+# average over the first 12 s). Raise it again rather than let the chain die
+# silently -- "chain: stopping, N submissions already" in wdml256.out is the
+# only sign it has hit the ceiling.
+# Stage 1 needs one or two windows, so 40 is far more than necessary. Left
+# high on purpose: "chain: stopping, N submissions already" in wdml256.out is
+# the only sign of hitting the ceiling, and it looks like a clean finish.
+CHAIN_MAX=40
+# Defaulted to 0: on the first window chain_count does not exist, N was empty,
+# and the CHAIN_MAX test below printed
+#   "[: : integer expression expected"
+# into wdrot192.err. It was harmless there only because the run finished in
+# one window and stopped for a different reason.
+# Inside RUNDIR, not beside it. Two chained jobs -- the 192^3 continuation and
+# the 256^3 convergence point -- run at the same time out of the same Exec
+# directory, and with ../chain_count they shared one counter: each window would
+# read the other's count and overwrite it. Per-run it cannot happen.
+N="$(cat chain_count 2>/dev/null || true)"
+N="${N:-0}"
+STEPS="${STEPS:-0}"
+# chk00000 excluded here for the SAME reason it is excluded from LAST
+# above, and leaving it out cost seven wasted submissions on the first
+# TT window. Castro writes chk00000 during initialisation. On a first
+# window LAST is empty and LAST_NOW was "chk00000", so the two differed,
+# the "no new checkpoint" guard concluded there had been progress, and
+# the chain resubmitted -- forever, for a run that dies just after
+# initialisation. The star was going negative in density at t = 0.06 s
+# and the chain cheerfully relaunched it seven times.
+LAST_NOW="$(ls -d chk????? 2>/dev/null | grep -v 'chk00000$' | sort | tail -1)"
+STEPS="$(grep -ac '^STEP' run_ml256.log 2>/dev/null || true)"
+STEPS="${STEPS:-0}"
+REACHED="$(grep -a '^STEP' run_ml256.log | tail -1 | sed 's/.*TIME = \([0-9.e+-]*\).*/\1/')"
+
+# TARGET is read from inputs.ml256 near the top of this script, not written
+# here. It used to be a literal 11.9, and that is a trap: raising stop_time to
+# 60 in the inputs file would have left this test at 11.9, so the first
+# continuation window would run its three hours, reach t = 12.01, and the chain
+# would announce "chain: stopping, reached t = 12.01 s" and quit. The extension
+# would have died on its first window and looked like a clean finish.
+echo "target: stop_time = ${TARGET:-unset} s, reached ${REACHED:-0} s"
+DONE="$(awk -v t="${REACHED:-0}" -v s="${TARGET:-0}" \
+        'BEGIN{print (s+0 > 0 && t+0 >= s*0.995) ? 1 : 0}')"
+
+if [ "$N" -ge "$CHAIN_MAX" ]; then
+    echo "chain: stopping, $N submissions already"
+elif [ "$DONE" = "1" ]; then
+    echo "chain: stopping, reached t = $REACHED s"
+elif [ "$STEPS" -lt 1 ]; then
+    # An abort during initialisation still leaves chk00000 behind, and the
+    # first version of this guard counted that as progress: the window took
+    # zero steps, resubmitted anyway, and the next job restarted from a
+    # checkpoint the first was still writing. That produced
+    # "State has NaNs in the density component" and wasted a test.
+    echo "chain: stopping, the window took no steps at all"
+elif [ -z "$LAST_NOW" ] || [ "$LAST_NOW" = "$LAST" ]; then
+    echo "chain: stopping, this window produced no new checkpoint (was '$LAST', now '$LAST_NOW')"
+else
+    echo "$((N+1))" > chain_count
+    echo "chain: submission $((N+1)) of $CHAIN_MAX, continuing from $LAST_NOW (t = $REACHED s)"
+    # By absolute path, not "$0": inside a running job $0 is the mom's spool
+    # copy of the script, which is not guaranteed to be readable at the moment
+    # qsub is called.
+    #
+    # The mail flags have to be repeated as well -- they were given on the
+    # command line of the FIRST submission only, so every chained window after
+    # it would otherwise run silently. The address is read from a file next to
+    # the run directory rather than written here, because this repository is
+    # public. Create it once, and it is not tracked:
+    #     echo you@example.com > $PBS_O_WORKDIR/mailto
+    # Without it the chain still runs, just without notifications.
+    MAILTO="$(cat "$PBS_O_WORKDIR/mailto" 2>/dev/null || true)"
+    if [ -n "$MAILTO" ]; then
+        set -- -M "$MAILTO" -m ae
+    else
+        set --
+        echo "chain: no $PBS_O_WORKDIR/mailto, continuing without notifications"
+    fi
+    cd "$PBS_O_WORKDIR" && qsub "$@" "$PBS_O_WORKDIR/job_ml256.pbs"
+fi
+# Propagate mpirun's status: without this a trailing echo becomes the script's
+# exit code and PBS reports Exit_status=0 for a run that aborted.
+exit "$RC"

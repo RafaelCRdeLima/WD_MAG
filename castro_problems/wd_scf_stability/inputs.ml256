@@ -1,0 +1,143 @@
+# Campaign ML -- the MRI in its linear phase, 256^3, stage 1.
+#
+# ================================================================
+# WHAT THIS RUN IS FOR
+# ================================================================
+#
+# Every result this campaign has produced about the ROTATION rests on a
+# simulation that cannot host the mechanism the literature says should destroy
+# it. lambda_MRI in the evolved configuration is 0.004 of a cell, so "the
+# differential rotation survives" has been indistinguishable from "we have no
+# way to erase it". Ji & Fisher (2013) and Pakmor & Pelisoli (2024) both find
+# the MRI braking a merger remnant once it is resolved.
+#
+# This run resolves it, by construction rather than by refinement.
+# lambda_MRI = 2 pi v_Az / Omega scales with the VERTICAL field, so raising the
+# interior poloidal field raises the wavelength. models/ml_field.txt puts it at
+# 8.0 cells at this resolution, against 0.004 before.
+#
+# The question is therefore no longer "does a stable geometry survive" but
+# "when the MRI CAN grow, does it erase the differential rotation". If it does,
+# the survival we measured was a resolution artefact and the reports have to
+# say so. If it does not, that result gets much stronger.
+#
+# ================================================================
+# WHAT THIS RUN CANNOT SAY
+# ================================================================
+#
+# Q = 8.0 clears the six-cells-per-wavelength bar for the LINEAR phase and
+# falls short of the Q ~ 15-20 that converged MRI turbulence is normally held
+# to. And lambda/R = 0.144 means only about seven wavelengths fit across the
+# star. So: measure the linear growth rate, compare it with the analytic
+# prediction, and watch what it does to the rotation profile. Do not claim
+# anything about saturation amplitude, MRI turbulence, or the transport
+# coefficient. Those need a grid we cannot afford.
+#
+# ================================================================
+# THE MODEL
+# ================================================================
+#
+# models/ml_field.txt, from investigations/export_ct_model.py -m -1.0 --write.
+# Same star, same rotation law, same toroidal field as every other run here;
+# only the poloidal current prescription changes.
+#
+#   localisation exponent m   -1.0     (Fujisawa+2012, mu ~ (Psi+eps)^m)
+#   peak |B_pol|              2.56e13 G
+#   E_tor/E_pol               65
+#   max|B|/B_c                0.734
+#   beta_min (rho > 1e6)      1.235
+#   B_interior/B_exterior     38.7
+#   lambda_MRI                5.65e7 cm = 8.0 dx = 0.144 R_eq
+#   div B on 64^3             2.6e-16   (gate 1e-12)
+#   curl A vs B               3.1e-16 poloidal, 7.0e-3 toroidal (gate 5e-2)
+#
+# The amplitude is 90% of the largest the star can hold: bisecting for
+# beta_min = 1 gives 2.84e13 G, and sitting exactly on that frontier means the
+# field wins somewhere the moment the initial transient pushes on it. Campaign
+# TT died at t = 0.06 s from precisely that, with beta = 0.088.
+#
+# THIS IS NOT AN EQUILIBRIUM. The poloidal field is imposed on a converged
+# toroidal-plus-rotation solve rather than solved alongside it. The
+# accommodation phase below is the relaxation, and the state the star settles
+# into is the initial condition that matters.
+#
+# ================================================================
+# STAGE 1: plot_per 0.05 AND stop_time 3
+# ================================================================
+#
+# The MRI grows as exp(0.75 Omega t) with Omega = 8.19 rad/s, an e-folding of
+# 0.16 s. At the plot_per = 0.5 used by every other run here, the entire linear
+# phase would fall between two output files and could not be fitted. So stage 1
+# samples ten times faster and stops at t = 3 s, which is about 18 e-foldings
+# -- long past saturation of the linear mode and long enough to see whether the
+# rotation profile has begun to move.
+#
+# Cost: 60 plotfiles at 3 GB, about 180 GB, and one or two chained windows.
+#
+# Stage 2, if stage 1 shows growth, raises stop_time and relaxes plot_per back
+# to 0.5 for the long evolution. Do that at a restart, and record it.
+
+max_step  = 200000
+stop_time = 3.0
+
+geometry.is_periodic =  0    0    0
+geometry.coord_sys   =  0
+geometry.prob_lo     = -9.0468750000e+08 -9.0468750000e+08 -9.0468750000e+08
+geometry.prob_hi     = 8.9531250000e+08 8.9531250000e+08 8.9531250000e+08
+amr.n_cell           =  256  256  256
+
+castro.lo_bc       =  2   2   2
+castro.hi_bc       =  2   2   2
+
+castro.do_hydro = 1
+castro.do_react = 0
+castro.ppm_type = 0
+castro.use_flattening = 0
+
+castro.do_grav = 1
+gravity.gravity_type = PoissonGrav
+gravity.drdxfac = 2
+
+# 0.3 from the start, not the 0.5 the 192^3 runs used. The 256^3 needed 0.3
+# after a deterministic "too many subcycles" abort, and this configuration
+# carries a poloidal field five thousand times stronger than that one did. A
+# failed window costs more than the 40% extra steps.
+castro.cfl            = 0.3
+castro.init_shrink    = 0.01
+castro.change_max     = 1.1
+castro.sum_interval   = 1
+castro.v              = 1
+amr.v                 = 1
+
+amr.max_level       = 0
+amr.blocking_factor = 8
+amr.max_grid_size   = 32
+
+amr.plot_file       = plt
+amr.check_file      = chk
+amr.plot_per        = 0.05
+amr.check_int       = 1000
+amr.derive_plot_vars = density x_velocity y_velocity z_velocity B_x B_y B_z
+
+castro.small_dens = 1.0e2
+castro.small_temp = 1.0e3
+
+castro.limit_fluxes_on_small_dens = 1
+castro.max_subcycles = 32
+
+castro.do_sponge = 1
+castro.sponge_upper_density = 1.0e5
+castro.sponge_lower_density = 1.0e4
+castro.sponge_timescale     = 1.0e-4
+
+# The accommodation phase. Here it has more to absorb than usual: the model is
+# not in virial balance, and the poloidal field is at 90% of what the star can
+# hold. Watch rho_max through the first two dynamical times; if it is still
+# ringing hard when the damping ends, lengthen this before anything else.
+castro.add_ext_src = 1
+problem.damping_timescale_in_tdyn = 0.2
+problem.damping_end_time_in_tdyn = 2.0
+problem.damping_ramp_in_tdyn = 0.5
+
+problem.model_name = "ml_field.txt"
+problem.surface_density_frac = 1.0e-6
