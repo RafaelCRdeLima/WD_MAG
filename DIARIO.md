@@ -567,6 +567,51 @@ defensável — chegam em **t ≈ 0.64 s**, duas janelas a partir daqui.
 de 5, o run vai abortar e o próximo modelo sai a 80% da fronteira β = 1,
 aceitando Q = 6.4 em vez de 8.0.
 
+### A ML morreu em t = 0.221 s, e o critério que declarei era o errado
+
+`ABORT in this window: too many subcycles`, passo 712, com `DT = 5.18e-05`.
+
+Os retries por passo ficaram em **1.39 do começo ao fim** — o critério que eu
+mandei vigiar nunca disparou. O sinal real era o **dt colapsando**: 3.6×10⁻⁴ no
+passo 293, 5.2×10⁻⁵ no 712, fator 7 em 400 passos. Os retries estavam
+funcionando, só que a um passo cada vez menor, até o subciclo estourar.
+
+**Lição transferível: num run com retry ativo, a taxa de retry pode ser
+constante enquanto o run morre. Vigiar `dt`.**
+
+Registro também o que funcionou: o detector de abort por janela, escrito depois
+do falso alarme do log cumulativo, imprimiu `ABORT in this window` com o STEP
+correto. Sem ele eu teria lido de novo o abort histórico de t = 5.146 s.
+
+### E a ML não é consertável nesta família — a conta
+
+O ambiente de 2×10⁴ g/cm³ aguenta no máximo **3.4×10¹⁰ G** (β = 1). A MRI na
+fase linear exige λ/dx > 6. Escalando a amplitude por α a partir do pico de
+10¹³ G, as duas exigências viram:
+
+α < 3.4×10⁻³ · (B_int/B_ext)   e   α > 6 / (λ/dx)
+
+o que só é satisfeito se **B_int/B_ext × λ/dx > 1757**.
+
+| m | B_int/B_ext | λ/dx | produto |
+|---|---|---|---|
+| 0.0 | 7.6 | 8.46 | 64 |
+| −1.0 | 38.7 | 3.14 | 122 |
+| −1.8 | 336 | 0.90 | 303 |
+| −2.5 | 973 | 0.68 | **661** |
+
+O melhor da família é 661. **Falta um fator 2.7, e nenhuma amplitude resolve** —
+as duas condições se fecham em direções opostas sobre α. Confinar mais sobe a
+razão mas transforma o campo numa agulha, derrubando o λ que vem do B_z médio.
+
+**Conclusão: não existe configuração nesta família em que a MRI seja resolvível
+e o ambiente aguente o campo.** A ML morre pela mesma razão estrutural que a
+TT, agora medida em vez de suposta.
+
+O que restaria: eliminar o ambiente como limitante — fronteira de vácuo em vez
+de atmosfera preenchendo a caixa, ou densidade ambiente muito maior numa caixa
+menor. Ambos são mudanças de setup, não de modelo, e nenhum é barato.
+
 ---
 
 ## 7. Produtos
