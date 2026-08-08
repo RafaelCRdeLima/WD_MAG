@@ -1,0 +1,148 @@
+# Shearing box — measuring what the global runs cannot resolve
+
+## Why this exists
+
+The global runs do not resolve the MRI. Measured from the volume-typical
+vertical field, the quality factor $Q = \lambda_{\rm MRI}/\Delta x$ peaks at
+$6.5$ around $t = 4.5$ s and sits at $0.3$–$0.5$ over $t = 40$–$78$ s — the
+window in which the differential-rotation steepening is measured
+(`investigations/mri_wavelength.py`, DIARIO §6.18). So "the differential
+rotation survives" and "we have no way to erase it" are not distinguished by
+those runs.
+
+Refining does not fix it: cost scales as $N^4$. A local box does, because in
+the incompressible approximation the acoustic timestep disappears — and that
+approximation is not marginal here but ideal, with $v/c_s \sim 4\times10^{-4}$
+and $v_A/c_s \sim 10^{-5}$. Measured below: **80 s per orbit at $64^3$ on 8
+threads, so 100 orbits is about 2.2 hours.** The compressible equivalent was
+months (DIARIO §6.11c, §6.12).
+
+What the box **cannot** do: the Tayler instability. That is driven by the
+curvature of toroidal field lines about the rotation axis, and a local
+Cartesian box has no curvature, so the $m=1$ kink cannot grow here by
+construction. Since the kink is what destroys the field in the global runs,
+nothing in this directory speaks to that result.
+
+## Provenance — read this before trusting a number
+
+**This is not the official SNOOPY.** The author's page,
+`https://ipag.osug.fr/~lesurg/snoopy.html`, sits behind Anubis proof-of-work
+anti-bot protection, which is deliberately there to stop automated fetching and
+was not circumvented. Every path on that host returns the challenge page,
+Software Heritage has no copy, and the Grenoble GitLab was unreachable.
+
+What is in `src/snoopy-rmoleary-mirror/` is
+[github.com/rmoleary/snoopy](https://github.com/rmoleary/snoopy), GPL-3.0,
+last pushed 2014-11-20, described by its author as *"Snoopy … originally
+written by Geoffroy Lesur. This version corrects a few bugs so that it works
+with particles."* The VTK writer identifies it as **v5.0**, not the v6.0 the
+literature cites.
+
+So: a third-party fork, one version behind, carrying unaudited modifications.
+
+**It is fit for preparing the ground and unfit as the reference.** Before any
+result is quoted, the official tarball must be downloaded by hand through a
+browser and diffed against this tree. The parts that matter for us are
+`src/timestep.c`, `src/shear.c`, `src/gfft.c` and `src/problem/mri/`.
+
+## Build
+
+    ./build.sh            # FFTW3 + SNOOPY, problem 'mri'
+    ./build.sh shear_dynamo
+
+Nothing leaves this directory and nothing needs root. Two non-obvious points,
+both encoded in the script:
+
+- **The include path must go in `CFLAGS`, not `CPPFLAGS`.** `configure` probes
+  for `fftw3.h` using `CPPFLAGS` and reports success, but `Makefile.in` never
+  substitutes `CPPFLAGS`, so a `CPPFLAGS`-only invocation configures cleanly
+  and then fails every single compile.
+- **`-malign-double` is dropped** from the stock flags. It is an i386 option
+  that on x86-64 changes struct layout against the SysV ABI, and the FFTW built
+  here does not use it.
+
+FFTW is built from source because Ubuntu 24.04 ships `libfftw3-double3` but not
+`libfftw3-dev` — runtime libraries with no header and no `.so` symlink.
+
+## Running
+
+**Create `data/` first or the run segfaults.** `output_vtk()` does
+`fopen("data/vNNNN.vtk", "w")` and never checks the result, so a missing
+directory becomes a null `FILE*` and a crash inside `fwrite` at the first
+snapshot — after `t = 0` has already been written to `timevar`, which makes it
+look like a physics failure rather than a missing directory.
+
+    mkdir -p runs/<name>/data
+    cd runs/<name>
+    cp ../../src/snoopy-rmoleary-mirror/src/problem/mri/snoopy.cfg .
+    OMP_NUM_THREADS=8 ../../src/snoopy-rmoleary-mirror/snoopy
+
+## Parameters, and how they map to our star
+
+SNOOPY is non-dimensional: $\Omega = 1$, box measured in code units. **In
+incompressible MHD there is no $\beta$** — the thermal pressure is a Lagrange
+multiplier enforcing $\nabla\cdot v = 0$ and the sound speed is infinite. The
+$\beta \sim 10^9$ that made a compressible box unaffordable is not a parameter
+of the physics at all. What is left:
+
+| SNOOPY key | meaning | our value |
+|---|---|---|
+| `shear` | $q = -d\ln\Omega/d\ln\varpi$ | **0 to 2** (Komatsu $j$-constant), stock cfg has 1.5 = Keplerian |
+| `omega` | $\Omega$, sets the time unit | 1 by convention; one orbit is $2\pi$ |
+| `boxsize` | in units where $\lambda_{\rm MRI}$ follows from $B$ | to set from $\lambda_{\rm MRI} = 2.6\times10^6$ cm |
+| `reynolds` | $1/\nu$ | — |
+| `reynolds_magnetic` | $1/\eta$ | — |
+
+Note the inversion: $\mathrm{Pm} = \nu/\eta =$ `reynolds_magnetic`/`reynolds`.
+The stock MRI config has both at 1000, i.e. $\mathrm{Pm} = 1$. For
+$\mathrm{Pm} = 0.6$ at $\mathrm{Re} = 1000$, set `reynolds_magnetic = 600`.
+
+**$\mathrm{Pm}$ is the open parameter and the reason this matters.** A white
+dwarf sits near $\mathrm{Pm} \sim 0.6$ against very large $\mathrm{Pm}$ in a
+protoneutron star, which is where the published closure coefficients were
+calibrated — and the disc literature finds transport dying below
+$\mathrm{Pm}_{\rm crit} \sim 2$–$4$. Two things stop that from being a
+conclusion: that threshold comes from zero-net-flux boxes that rely on a
+dynamo, while we have net vertical flux and a linear instability; and the
+$0.6$ is quoted for a cool crystallising CO white dwarf, not a hot $2\,M_\odot$
+merger remnant, so it has to be recomputed for our conditions. **That
+calculation should come before the parameter scans.**
+
+The box does not remove extrapolation, it moves it from $\beta$ to
+$\mathrm{Rm}$: a DNS reaches $\mathrm{Rm} \sim 10^3$–$10^4$ against our
+physical $10^{14}$.
+
+## What comes out
+
+`timevar` carries `vxvy` and `bxby` — the Reynolds and Maxwell stresses, which
+are what the closure needs. `em` and `ev` are the magnetic and kinetic
+energies.
+
+## Smoke test, 2026-08-08
+
+Stock MRI problem, $64^3$, box $(4,4,1)$, $q = 1.5$,
+$\mathrm{Re} = \mathrm{Rm} = 1000$, run to $t = 12.6$ (two orbits), 8 threads:
+
+| | |
+|---|---|
+| wall time | 161 s → **80 s/orbit**, ~2.2 h for 100 orbits |
+| $E_{\rm mag}$ | $1.04\times10^{-2} \to 0.60$, a factor of 58 |
+| Maxwell stress `bxby` | $-0.309$ |
+| Reynolds stress `vxvy` | $2.46\times10^{-3}$ |
+
+The MRI grows, the stresses are produced, and the throughput matches the
+estimate that made this route viable. This is a smoke test and nothing more:
+it is the stock Keplerian disc configuration, not our star, and it has not been
+validated against a published run.
+
+## Next
+
+1. Recompute $\nu$, $\eta$ and $\mathrm{Pm}$ for a hot $2\,M_\odot$ degenerate
+   remnant. Our EOS is barotropic and carries no temperature, so this needs an
+   assumed $T \sim 10^8$–$10^9$ K, stated as the modelling choice it is.
+2. Download the official v6.0 by hand and diff.
+3. Reproduce a published $q = 1.5$ MRI run — validating our use, not the code.
+4. Scan $q$, $\mathrm{Pm}$, and the net-toroidal-to-vertical flux ratio, which
+   for us runs 2 to 9.5 in amplitude.
+5. Extract $\alpha^{\rm PI}$, $\beta^{\rm PI}$ and compare with the published
+   $-1.4$ and $-0.8$.

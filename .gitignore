@@ -67,3 +67,9 @@ investigations/convergence_192_256.png
 investigations/field_sequence_*.png
 investigations/slices256/
 investigations/rotation_192.png
+
+# Shearing box: third-party source (SNOOPY mirror) and locally built FFTW are
+# not ours to version; runs/ is output. build.sh reproduces both from scratch.
+shearing_box/src/
+shearing_box/deps/
+shearing_box/runs/
