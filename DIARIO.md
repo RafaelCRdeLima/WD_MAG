@@ -826,12 +826,21 @@ regime.
 
 ---
 
-## 6.11 Caixas de cisalhamento — a rota mais barata, e a que resolve a objeção
+## 6.11 Caixas de cisalhamento — RETRATADO: não é barata, e a conta que faltava
 
-Estudo de 8 de agosto, sem implementar nada. Das três saídas da comunidade,
-esta é a mais promissora por margem larga.
+> **AVISO, escrito no mesmo dia.** A conclusão original desta seção — que a
+> caixa era "a rota mais barata" — **está errada**. Calculei o requisito
+> ESPACIAL (tamanho da caixa, células, fator de qualidade), vi 128³ sem
+> autogravidade e concluí "barato" sem calcular o número de PASSOS DE TEMPO.
+> Custo é células × passos, fórmula que eu havia usado duas seções antes para
+> mostrar que refinar escala como N⁴, e esqueci aqui. A correção está em 6.11b.
+>
+> Segundo erro do mesmo tipo em dois dias: também escrevi "uma ou duas janelas"
+> para a ML sem contar os retries. **Estimar custo por uma dimensão só.**
 
-### Os números são favoráveis
+Estudo de 8 de agosto, sem implementar nada.
+
+### Os números espaciais são favoráveis — e só eles
 
 **A aproximação local é satisfeita com folga de quatro ordens de grandeza.**
 λ_MRI = 2.5×10⁴ cm contra R_eq = 3.9×10⁸ cm, razão 6×10⁻⁵. Caixa local exige
@@ -889,16 +898,64 @@ Aproximação a declarar: caixas padrão usam EOS isotérmica ou gamma-law, não
 caixa isotérmica com c_s casado ao valor degenerado provavelmente basta —
 **hipótese a verificar, não fato**.
 
-### Ordenação das três saídas, depois de estudadas
+## 6.11b A conta que faltava: o custo é temporal
 
-1. **Caixa de cisalhamento** — barata, regime ideal, resolve a objeção dos
-   coeficientes emprestados. Exige outro código. Não dá resultado global
-   sozinha.
-2. **MInIT** — a classe certa de modelo para a nossa física ausente, gancho já
-   existe no `problem_source.H`, mas depende de coeficientes de outro regime
-   enquanto não houver caixa.
-3. **LES** — descartado. Modela cascata, e a Rm ≈ 5 não há cascata abaixo da
-   célula.
+### No Castro, o inventário de implementação
+
+**Já existe:** referencial rotativo com Coriolis e centrífuga, inclusive
+atualização implícita do Coriolis, que é o termo chato.
+
+**Trivial:** o termo de maré 2qΩ²x é fonte algébrica local, entra no
+`problem_source.H`.
+
+**Desnecessário:** advecção orbital tipo FARGO. A variação de velocidade
+orbital na caixa é 1.2×10⁶ cm/s contra c_s = 3×10⁹ — o passo já é limitado
+pelo som.
+
+**O trabalho real:** contorno periódico com deslizamento, exigindo *remap*
+conservativo das células fantasma, e o tratamento das EMF na fronteira para
+preservar div B = 0 sob transporte restrito. [Stone & Gardiner
+2010](https://arxiv.org/abs/1006.0139): se as EMF nas duas faces radiais não
+coincidem, o fluxo vertical líquido não se conserva, e a MRI é sensível a isso.
+
+### Mas o custo mata antes
+
+| | |
+|---|---|
+| altura de escala efetiva H = c_s/Ω | 3.7×10⁸ cm ≈ R_eq |
+| λ_MRI/H | 6.7×10⁻⁵ |
+| dx/H na caixa | 2.1×10⁻⁶ |
+| **passos por órbita** | **1.0×10⁷** |
+| numa caixa de disco típica | 1.3×10³ |
+
+**7400 vezes piores por órbita.** Cem órbitas dão 10⁹ passos numa malha 128³:
+**2100 vezes o trabalho do run global 256³**, ou ~2×10⁷ core-hours contra 520
+mil unidades de alocação total.
+
+**Causa raiz: v_A/c_s ≈ 10⁻⁵**, β ~ 10⁹ no interior. Caixas de disco rodam
+β = 100 a 1000. A MRI evolui numa escala absurdamente longa comparada ao tempo
+de travessia sonoro que fixa o passo.
+
+A caixa escapa da resolução **espacial** e não da **temporal**. E isso independe
+de código: Athena++ teria o mesmo problema.
+
+### O que restaria
+
+Rodar caixas em β acessível (10³–10⁴) e extrapolar α_SS(β) até 10⁹. Prática
+padrão, mas reintroduz o que a caixa deveria eliminar — extrapolação para fora
+do regime medido, agora de cinco ordens de grandeza em β.
+
+### Ordenação final das três saídas
+
+1. **MInIT** — a classe certa de modelo para a nossa física ausente, gancho já
+   existe no `problem_source.H`. Depende de coeficientes de outro regime, e os
+   parasíticos só se calibram com caixa. Os da MRI, α = 1 − 4/q, transferem.
+2. **Caixa de cisalhamento** — regime espacial ideal, custo temporal proibitivo
+   por β ~ 10⁹. Viável só em β reduzido, com extrapolação de cinco décadas.
+3. **LES** — descartado. Modela cascata, e a Rm ≈ 5 não há cascata.
+
+**Nenhuma das três fecha o problema.** A limitação da MRI permanece, e o mais
+honesto é declará-la como tal nos relatórios em vez de prometer rota.
 
 ---
 
