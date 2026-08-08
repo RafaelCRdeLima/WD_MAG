@@ -1498,6 +1498,86 @@ três programas é sequer necessário.** Vai na frente de tudo.
 
 E segue sem plano para o campo, em qualquer ramo.
 
+## 6.18 MEDIDO: não resolvemos a MRI. Q ≈ 0.4 onde o resultado é medido
+
+`investigations/mri_wavelength.py`, figura em `mri_wavelength.pdf`.
+
+### Não precisou de fatia nenhuma
+
+Eu havia dito que a medida exigia plotfiles, que estão no lovelace — errado.
+E_pol **é** a integral de volume de B_pol²/8π sobre a estrela e já está no
+`bt_bp_256_long.csv` nos 210 instantes. Então
+
+    B_pol,rms = √(8π E_pol / V)
+
+é exatamente o campo típico em volume, sem tocar em fatia. V vem do R_vol da
+mesma linha, logo os dois são consistentes por construção.
+
+### O resultado
+
+| t (s) | B_pol,rms (G) | λ_MRI (cm) | Q = λ/dx |
+|---|---|---|---|
+| 1.0 | 6.2×10¹⁰ | 3.1×10⁶ | 0.43 |
+| 3.0 | 2.6×10¹¹ | 2.0×10⁷ | 2.80 |
+| **4.5** | ~9×10¹¹ | ~4.6×10⁷ | **6.5 ← máximo** |
+| 13.5 | 5.2×10¹¹ | 2.3×10⁷ | 3.30 |
+| 32.5 | 1.1×10¹¹ | 3.8×10⁶ | 0.55 |
+| 45.0 | 4.7×10¹⁰ | 1.9×10⁶ | 0.27 |
+| 78.0 | 7.0×10¹⁰ | 2.6×10⁶ | 0.37 |
+
+Três hipóteses para B_z a partir de B_pol, porque o CSV só traz a energia
+poloidal:
+
+| B_z | Q máximo | Q ≥ 6 | Q ≥ 15 |
+|---|---|---|---|
+| B_pol (tudo vertical) | 9.2 em t=4.5 | 10% das amostras, 1ª em t=3.50 | **nunca** |
+| B_pol/√2 (central) | 6.5 em t=4.5 | 3%, 1ª em t=4.04 | **nunca** |
+| B_pol/√3 (isotrópico) | 5.3 em t=4.5 | **nunca** | **nunca** |
+
+Sensibilidade a qual Ω se usa: Q máximo vai de 3.8 (Om_core) a 10.7 (Om_out).
+
+### O que isto decide
+
+**O "36" estava errado por fator 5–7.** Vinha do pico de B_z; o típico em volume
+é muito menor. A afirmação registrada de que λ/dx cruza 6 em t ≈ 2–3 s e chega a
+36 não sobrevive.
+
+**Não resolvemos a MRI**, exceto marginalmente numa janela estreita em
+t ≈ 3.5–5 s, e mesmo aí só sob a hipótese mais favorável de B_z. É o momento em
+que E_pol picou, durante a ruptura m=1. Três por cento do run.
+
+**Q = 15 nunca é alcançado em hipótese nenhuma.** Turbulência MRI convergida
+está fora de alcance por construção nesta malha.
+
+**E o mais importante: onde o resultado principal é medido, Q ≈ 0.3–0.5.** O
+acentuamento de −22.6% da rotação diferencial é medido em t = 40–78 s, faixa em
+que estamos 12 a 20 vezes abaixo da barra linear. **A rotação diferencial
+sobrevive num regime onde a MRI não tem como existir na malha.**
+
+### Consequências
+
+1. O programa dos três passos **está de pé**. SNOOPY e MInIT são necessários, e
+   a medida não os dispensou como eu havia especulado.
+2. Isto é exatamente o número quantitativo que a primeira página dos dois
+   relatórios precisa: não "não resolvemos a MRI", mas **"Q ≈ 0.4 na janela em
+   que a medida é feita, contra Q ≥ 6 para o modo linear e Q ≥ 15 para
+   turbulência convergida"**.
+3. A ressalva 1 da §6.15 volta a ter força, por caminho diferente do original.
+   Não é que o campo seja toroidal por 10⁷ — é que o poloidal, embora
+   comparável, é **fraco em termos absolutos**: B_pol,rms ~ 7×10¹⁰ G dá
+   λ_MRI = 2.6×10⁶ cm contra dx = 7.0×10⁶ cm.
+
+### Limitações da própria medida, declaradas no cabeçalho do script
+
+- B_z inferido de B_pol; três casos reportados, espalhamento de 1.73 — menor que
+  o efeito pico-vs-típico que a medida existe para capturar.
+- ρ_mean, não ρ local. No núcleo ρ é maior e v_A menor.
+- ⟨B²⟩^½/√⟨ρ⟩ não é ⟨B/√ρ⟩. Estimativa de valor típico, não média da velocidade
+  de Alfvén local.
+
+Nenhuma merece mais precisão: a resposta é fator 15 abaixo do limiar, e as três
+juntas não movem isso.
+
 
 ---
 
