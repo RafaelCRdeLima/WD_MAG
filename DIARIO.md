@@ -1343,6 +1343,63 @@ desconhecido" para "coeficientes medidos no nosso q e no nosso Pm, extrapolados
 em Rm" — **uma extrapolação em vez de três, e num parâmetro que sabemos
 nomear.** Precisa constar do artigo.
 
+## 6.16 Outros códigos: FLASH, Einstein Toolkit, e o princípio geral
+
+> Rafael: "e outros programas, como Flash, Einstein Toolkit...".
+
+### O princípio, antes da lista
+
+**Nenhum código da classe volume-finito-compressível resolve a MRI.** FLASH,
+PLUTO, Athena++, Einstein Toolkit, AREPO — mesma parede, porque o obstáculo é o
+conjunto de equações mais o regime físico, não a implementação. Duas alavancas
+só: mudar as equações (incompressível, §6.12) ou modelar o que falta (§6.13).
+Trocar de código dentro da classe é movimento lateral.
+
+### FLASH — já respondido, e negativamente
+
+Investigação completa em `flash_crosscheck/README.md`: FLASH 4.8 com Helmholtz,
+unidade `WDHydrostatic`, modelo ztwd validado a 0.026% em massa, damping e
+sponge portados, correção de meia-célula da §6.6 reproduzida em dois códigos
+independentes (−1.23% contra −1.16%).
+
+**FLASH segura a estrela ~10× pior** — −9.03% contra −0.91% no limite da janela,
+e com forma qualitativamente distinta: Castro sobe, vira e assenta; FLASH cai
+monotonicamente e ainda caía ao morrer. Nenhuma configuração do FLASH produz
+janela de medida válida; o bloqueio é o binning de zona interna do
+`Multipole_new`, que não tolera célula de raio zero.
+
+Resultado negativo caracterizado, não pergunta aberta. E não teria tocado a MRI.
+
+### Einstein Toolkit — a compacidade decide
+
+    GM/Rc² = 9.3×10⁻⁴        estrela de nêutrons ≈ 0.2, fator 215
+    v_rot/c = 7.4×10⁻²
+
+Correções de RG na casa de 0.1%, contra incerteza dominante de resistividade
+numérica a Rm ≈ 5. Pagaríamos evolução da métrica (~25 variáveis extras por
+célula) e MHD tipicamente com limpeza de divergência em vez de CT. Não.
+
+### Onde trocar de ferramenta ajudaria
+
+| Problema nosso | É de código? |
+|---|---|
+| EOS barotrópica, 6×10⁴⁹ erg sem destino | **Sim — e já temos.** `microphysics/EOS/helmholtz` está no repositório. Sem migração. |
+| MHD do Castro é nível único, sem AMR | **Sim, limitação real.** FLASH tem AMR-MHD, mas segura a estrela 10× pior. |
+| Resistividade numérica Rm ≈ 5 | Não. Só resolução. |
+| MRI não resolvida | Não. Equações ou subgrade. |
+
+O primeiro é o mais aproveitável: a ressalva do EOS barotrópico está nos dois
+relatórios e a solução está instalada.
+
+### Dois não considerados antes
+
+- **Idefix** — GPU, do mesmo Lesur do SNOOPY, caixa de cisalhamento nativa. Se o
+  CENAPAD tiver nós com GPU, é eixo de ganho que não avaliamos. **A perguntar.**
+- **AREPO** — malha móvel, ferramenta da comunidade de fusão de anãs brancas;
+  Pakmor & Pelisoli 2024 está citado no nosso `inputs.ml256`. MHD lá é
+  Powell/oito ondas, não CT — recuo. Relevante para conectar com a literatura de
+  remanescentes, não para a MRI.
+
 
 ---
 
