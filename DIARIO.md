@@ -666,6 +666,93 @@ vigiar `dt`.
 
 ---
 
+## 6.9 Refinar não resolve, mas a limitação é menor e mais comum do que eu disse
+
+Duas correções à seção 6.8, ambas para melhor.
+
+### Refinar é impossível, não caro
+
+λ_MRI construído com o campo **inicial** contra o tamanho de célula:
+
+| malha | λ/dx | custo relativo |
+|---|---|---|
+| 256³ (atual) | 0.004 | 1× |
+| 1024³ | 0.017 | 256× |
+| 4096³ | 0.066 | 65.536× |
+
+Para λ/dx = 6 seriam **372.000 células por lado**, 5×10¹⁶ células, 4.5×10¹²
+vezes o custo — cerca de 2×10¹⁰ anos de máquina. O custo escala como N⁴
+(N³ células vezes N passos pelo CFL). Não é questão de esperar; é impossível
+por doze ordens de grandeza.
+
+### Mas a MRI passa a ser resolvida durante o próprio run
+
+Eu vinha afirmando que a MRI nunca é resolvida. **Está errado.** λ_MRI escala
+com o campo poloidal, e a instabilidade de Tayler fabrica campo poloidal.
+Usando o max|B_pol| medido:
+
+| t (s) | λ/dx no 192³ | λ/dx no 256³ |
+|---|---|---|
+| 0 | 0.08 | 0.10 |
+| 1.0 | 2.2 | 3.0 |
+| 2.0 | 3.5 | 13.6 |
+| 3.0 | 16.2 | 36.4 |
+| 5.2 | 32.7 | 35.9 |
+| 12.0 | 10.3 | 36.5 |
+
+**A partir de t ≈ 2–3 s a MRI está resolvida e assim permanece.**
+
+A afirmação correta é: *não a resolvemos durante os primeiros ~2 s, e a
+resolvemos depois.* O que fica de fora é exatamente a janela em que o campo é
+ordenado e forte — que é quando a literatura de fusão a vê agir.
+
+Duas ressalvas: usei o **pico** de B_pol, limite superior; o valor típico de
+volume é menor por talvez 3 a 10, o que empurraria o cruzamento para t ≈ 3–4 s
+e deixaria o regime tardio marginal em vez de folgado. E λ/R cresce junto — em
+λ/dx = 36 o comprimento de onda é meia estrela, e aí a MRI global perde
+sentido. **Medir o B_z típico de volume com as fatias em disco é tarefa
+pendente e não precisa de cluster.**
+
+### E a limitação é a padrão do campo, não um defeito nosso
+
+Busca de 8 de agosto. [Subgrid modelling of MRI-driven turbulence in
+differentially rotating neutron stars](https://arxiv.org/abs/2509.07081) abre
+reconhecendo que **a maioria das simulações de fusão de estrelas de nêutrons
+não resolve a MRI**, pelo mesmo motivo: comprimento de onda pequeno demais, e
+resolução proibitiva para cobrir todas as escalas.
+
+As três saídas da comunidade, e nenhuma é refinar:
+
+- **modelos de sub-grade**, representando a turbulência não resolvida em termos
+  das quantidades de larga escala;
+- **large-eddy simulations**, já usadas em fusões binárias;
+- **caixas de cisalhamento locais**, que resolvem a MRI num pedaço e servem
+  para **calibrar** os coeficientes de transporte dos modelos globais.
+
+Nossa densidade de 10⁹ g/cm³ torna o problema pior que num disco de fusão, onde
+ρ é ordens de grandeza menor e λ_MRI proporcionalmente maior.
+
+E o Pakmor & Pelisoli 2024 descreve a mesma estrutura que medimos: dínamo de
+pequena escala primeiro, **depois** dínamo de grande escala dirigido pela MRI.
+Nem eles resolvem a MRI a partir do campo semente — ela entra depois que outro
+mecanismo amplificou o campo.
+
+### A formulação que vai para os relatórios
+
+Não *"não resolvemos a MRI"*, que soa como incompetência. E sim:
+
+> A MRI não é resolvida durante a fase de campo ordenado, como em praticamente
+> toda simulação global desta classe; a literatura contorna isso com modelos de
+> sub-grade calibrados em caixas de cisalhamento, que não implementamos.
+
+Preciso, situa o trabalho no estado da arte, e aponta o caminho em vez de só
+admitir o buraco. **Um modelo de sub-grade é a rota concreta** e não exige
+refinar nada — exige um termo de transporte turbulento no esquema com
+coeficiente vindo da literatura. Mudança no Castro, não trivial, mas de outra
+ordem de dificuldade que 372.000³.
+
+---
+
 ## 7. Produtos
 
 - `reports/report_rot192_rot256.pdf` — relatório I, 13 páginas, física primeiro,
