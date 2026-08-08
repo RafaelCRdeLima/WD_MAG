@@ -11,7 +11,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEPS="$ROOT/deps"
-SRC="$ROOT/src/snoopy-rmoleary-mirror"
+SRC="$ROOT/src/snoopy-v6.0-official"
 PROBLEM="${1:-mri}"
 FFTW_VER=3.3.10
 
@@ -51,13 +51,16 @@ make clean >/dev/null 2>&1 || true
 make -j"$(nproc)" >make.log 2>&1
 
 echo "== done: $SRC/snoopy =="
-"$SRC/snoopy" --version 2>/dev/null || true
+# Do NOT probe the binary for a version string. SNOOPY parses no arguments and
+# ignores unknown ones, so `snoopy --version` does not print and exit -- it
+# starts a full simulation in the current directory. Cost one wedged build.
+grep -o 'The Snoopy code v[0-9.]*' "$SRC/src/snoopy.c" | head -1
 
 cat <<'EOF'
 
 To run:
     mkdir -p runs/<name>/data          # REQUIRED -- see README, the code
     cd runs/<name>                     # segfaults without it
-    cp ../../src/snoopy-rmoleary-mirror/src/problem/mri/snoopy.cfg .
-    OMP_NUM_THREADS=8 ../../src/snoopy-rmoleary-mirror/snoopy
+    cp ../../src/snoopy-v6.0-official/src/problem/mri/snoopy.cfg .
+    OMP_NUM_THREADS=8 ../../src/snoopy-v6.0-official/snoopy
 EOF

@@ -23,27 +23,49 @@ Cartesian box has no curvature, so the $m=1$ kink cannot grow here by
 construction. Since the kink is what destroys the field in the global runs,
 nothing in this directory speaks to that result.
 
-## Provenance — read this before trusting a number
+## Provenance — settled
 
-**This is not the official SNOOPY.** The author's page,
+**We have the official v6.0, and the mirror turned out to be equivalent.**
+
+Getting it needed a human: the author's page,
 `https://ipag.osug.fr/~lesurg/snoopy.html`, sits behind Anubis proof-of-work
-anti-bot protection, which is deliberately there to stop automated fetching and
-was not circumvented. Every path on that host returns the challenge page,
-Software Heritage has no copy, and the Grenoble GitLab was unreachable.
+anti-bot protection, which exists to stop automated fetching and was not
+circumvented. Every path on that host returns the challenge page, Software
+Heritage has no copy, and the Grenoble GitLab was unreachable. Rafael
+downloaded `snoopy_v6.0.tgz` through a browser, where Anubis clears in a
+second. It is GPL-3.0 — the licence was never the obstacle, only the bot
+protection.
 
-What is in `src/snoopy-rmoleary-mirror/` is
-[github.com/rmoleary/snoopy](https://github.com/rmoleary/snoopy), GPL-3.0,
-last pushed 2014-11-20, described by its author as *"Snoopy … originally
-written by Geoffroy Lesur. This version corrects a few bugs so that it works
-with particles."* The VTK writer identifies it as **v5.0**, not the v6.0 the
-literature cites.
+`src/snoopy-v6.0-official/` is that tarball: 2.4 MB, dated 30 March 2011,
+shipping an embedded `.git` whose log runs to *"minor bug in SGS models"* and
+*"Added explicit viscosity/resistivity/th diffusion"*.
 
-So: a third-party fork, one version behind, carrying unaudited modifications.
+`src/snoopy-rmoleary-mirror/` is
+[github.com/rmoleary/snoopy](https://github.com/rmoleary/snoopy), used while
+the official was unreachable. Diffed against it:
 
-**It is fit for preparing the ground and unfit as the reference.** Before any
-result is quoted, the official tarball must be downloaded by hand through a
-browser and diffed against this tree. The parts that matter for us are
-`src/timestep.c`, `src/shear.c`, `src/gfft.c` and `src/problem/mri/`.
+| file | difference |
+|---|---|
+| `src/timestep.c` | **none** |
+| `src/shear.c` | **none** |
+| `src/gfft.c` | **none** |
+| `src/problem/mri/gvars.h` | **none** |
+| `src/problem/mri/snoopy.cfg` | **none** |
+| `src/mainloop.c`, `particles.c`, `snoopy.c` | particle handling only |
+
+The fork's entire change is a `fld` → `fldi` fix in the particle velocity loop
+plus an `init_particles` call under `#ifdef WITH_PARTICLES` — **and
+`WITH_PARTICLES` is not defined in the MRI problem, so none of it is
+compiled** in our configuration. Both binaries run the smoke test to a
+`timevar` that is identical byte for byte.
+
+One earlier claim here was wrong and is corrected: the mirror was dated to
+v5.0 from the string in `output_vtk.c`. That string is stale and present in the
+official tarball too. The real version is in `src/snoopy.c:189`, and both trees
+are v6.0.
+
+`build.sh` now builds the official tree. The mirror is kept only as the record
+of this comparison.
 
 ## Build
 
@@ -74,8 +96,8 @@ look like a physics failure rather than a missing directory.
 
     mkdir -p runs/<name>/data
     cd runs/<name>
-    cp ../../src/snoopy-rmoleary-mirror/src/problem/mri/snoopy.cfg .
-    OMP_NUM_THREADS=8 ../../src/snoopy-rmoleary-mirror/snoopy
+    cp ../../src/snoopy-v6.0-official/src/problem/mri/snoopy.cfg .
+    OMP_NUM_THREADS=8 ../../src/snoopy-v6.0-official/snoopy
 
 ## Parameters, and how they map to our star
 
@@ -118,7 +140,7 @@ physical $10^{14}$.
 are what the closure needs. `em` and `ev` are the magnetic and kinetic
 energies.
 
-## Smoke test, 2026-08-08
+## Smoke test, 2026-08-08 (official v6.0 build)
 
 Stock MRI problem, $64^3$, box $(4,4,1)$, $q = 1.5$,
 $\mathrm{Re} = \mathrm{Rm} = 1000$, run to $t = 12.6$ (two orbits), 8 threads:
@@ -135,12 +157,19 @@ estimate that made this route viable. This is a smoke test and nothing more:
 it is the stock Keplerian disc configuration, not our star, and it has not been
 validated against a published run.
 
+One trap for whoever edits `build.sh`: **do not probe the binary for a version
+string.** SNOOPY parses no arguments and ignores unknown ones, so
+`snoopy --version` does not print and exit — it silently starts a full
+simulation in the current directory. That wedged a build until the process was
+killed by PID; `pkill -f "snoopy --version"` does not work either, because the
+pattern matches the killing shell's own command line and it kills itself.
+
 ## Next
 
 1. Recompute $\nu$, $\eta$ and $\mathrm{Pm}$ for a hot $2\,M_\odot$ degenerate
    remnant. Our EOS is barotropic and carries no temperature, so this needs an
    assumed $T \sim 10^8$–$10^9$ K, stated as the modelling choice it is.
-2. Download the official v6.0 by hand and diff.
+2. ~~Download the official v6.0 and diff.~~ Done; see Provenance.
 3. Reproduce a published $q = 1.5$ MRI run — validating our use, not the code.
 4. Scan $q$, $\mathrm{Pm}$, and the net-toroidal-to-vertical flux ratio, which
    for us runs 2 to 9.5 in amplitude.
