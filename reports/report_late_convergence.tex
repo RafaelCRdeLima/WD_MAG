@@ -184,6 +184,7 @@ accident.
 
 %======================================================================
 \section{The steepening converges --- over a long enough baseline}
+\label{sec:steep}
 
 The differential rotation is the property the configuration depends on: a
 $2\,\Msun$ white dwarf exists here only because $\Omega$ falls steeply outwards.
@@ -253,61 +254,64 @@ measurement, not a principle. Any future convergence test in this problem needs
 a baseline long enough that a plausible lag is a small fraction of it.
 
 %======================================================================
-\section{The residual field does not converge}
+\section{The field stops decaying and regrows --- on both grids}
 \label{sec:residual}
 
-The one place where extending the baseline made the disagreement worse.
+This began as the one section where extending the baseline made the
+disagreement worse. It has become the one positive result in the campaign:
+something the star \emph{does}, rather than something it loses.
 
 \begin{table}[h]
 \centering\small
-\begin{tabular}{lrrr}
+\begin{tabular}{lrrl}
 \toprule
-late-time field & $192^3$ & $256^3$ & ratio \\
+& $192^3$ & $256^3$ & \\
 \midrule
-$\Emag$ plateau (erg) & $\simeq 3\times10^{46}$ & $7.0\times10^{47}$ & $\mathbf{25}$ \\
-$\max|B|$ (G) & $\simeq 1\times10^{12}$ & $6\times10^{12}$ & $6$ \\
-trend for $t > 45$\,s & --- & $\mathbf{+0.012}$\,s$^{-1}$ & \emph{rising} \\
+minimum of $\Emag$ & $t = 41.1$\,s & $t = 44.7$\,s & \textbf{both turn} \\
+$\Emag$ at the minimum (erg) & $2.54\times10^{46}$ & $6.35\times10^{47}$ & $\times 25$ apart \\
+growth after it & $+0.0485$/s & $+0.0196$/s & \emph{coarse grid faster} \\
+\quad as an $e$-folding & $21$\,s & $51$\,s & \\
+minimum to end of run & $+114\%$ & $+21\%$ & \\
 \bottomrule
 \end{tabular}
-\caption{The $192^3$ values are from the single late instant processed with the
-field diagnostics, $t = 38.5$\,s; the $256^3$ values are means over
-$t = 54$--$58.3$\,s. The trend is fitted to $\ln\Emag$ over $t > 45$\,s, with
-$\Etor$ and $\Epol$ both rising.}
-\label{tab:residual}
+\caption{The minima are located by fitting a parabola to $\ln\Emag$ over
+$t = 25$--$55$\,s, so the $1.5$\,s pulsation does not set the answer. That the
+turnaround exists is converged; nothing quantitative about it is.}
+\label{tab:turn}
 \end{table}
 
-This is consistent with what Report~I already found: with no explicit
-resistivity, the decay of $\Etor$ \emph{is} the numerical resistivity, and it
-scales as $\mathrm{d}x^{2.4}$. Less numerical dissipation leaves more field. But
-the consequences are sharper than the factor-of-two disagreement seen at
-$t = 12$\,s:
+\paragraph{What is converged.} Both runs decay, reach a minimum within $4$\,s
+of each other, and then grow monotonically to the end of the available data.
+The mechanism is not exotic and it is available: the differential rotation
+survives and is still \emph{steepening} (Sec.~\ref{sec:steep}), so there
+is free shear energy, and winding residual poloidal field into toroidal is the
+most ordinary thing a shear flow can do to a magnetic field.
 
-\begin{itemize}\itemsep2pt
-\item The ``disordered residual of order $10^{12}$\,G'' reported at $192^3$
-      describes a floor set by the mesh, not a state of the star.
-\item The factor $2170$ by which $\Emag$ falls at $192^3$ is an \textbf{upper
-      bound} on the destruction, and not a tight one.
-\item The $256^3$ run has not reached a final state at all. A run that is
-      gaining magnetic energy when it stops has not finished.
-\end{itemize}
+\paragraph{What is not.} The levels differ by a factor of $25$ at the minimum,
+and the growth rate by a factor of $2.5$ --- with the \emph{coarse} grid
+growing faster. That is the same direction and roughly the same factor as the
+decay rate before it, which fell from $0.282$ to $0.141$\,s$^{-1}$ under the
+same refinement. A rate that halves when the mesh is refined is what a
+mesh-set process looks like, so the regrowth may be as numerical as the decay
+was. Two resolutions cannot separate a shear dynamo whose rate happens to
+scale that way from a numerical effect that does.
 
-\paragraph{Two readings, and two resolutions cannot separate them.} The
-mechanism for genuine regeneration is available and it is not exotic: the
-differential rotation survives and is still steepening, so there is free shear
-energy, and winding residual poloidal field into toroidal is the most ordinary
-thing a shear flow can do to a magnetic field. On that reading the finer grid
-is showing the beginning of a shear dynamo that the coarse grid dissipates
-before it can start.
+\paragraph{A prediction that failed, recorded because it was registered.}
+Before this data existed it was written down that the $192^3$ would turn
+\emph{later} and \emph{more weakly}, on the reasoning that more numerical
+dissipation should delay the point where regeneration overtakes decay. It
+turns $3.6$\,s \textbf{earlier} and grows $2.5$ times \textbf{faster}. The
+prediction was wrong in both directions. What it was testing --- whether the
+turnaround appears at all on the coarse grid --- came out yes, which is why
+the section above survives.
 
-The other reading is that both runs are on the same decaying track and the
-finer one is simply further from the mesh floor, with the apparent rise being
-the last decade of a decay it cannot resolve, contaminated by the pulsation.
-
-The two look identical in the data we have. Distinguishing them needs either a
-third resolution --- $384^3$, about five times the cost of $256^3$ --- or,
-better, explicit resistivity, which would give the problem a physical
-dissipation scale instead of letting the mesh set it. \textsc{Castro} does not
-currently implement it.
+The failure is informative about the mechanism. If the regrowth were a dynamo
+running against numerical dissipation, less dissipation should mean earlier
+and stronger, and the opposite is observed. A reading consistent with the
+numbers is that both grids are winding toward a saturation level, and the one
+starting $25$ times lower has further to travel and so climbs faster in
+relative terms --- but the gap only narrows from $25$ to $16$ over the
+available window, so they are not visibly converging on a common level either.
 
 %======================================================================
 \section{What changes in Report~I}

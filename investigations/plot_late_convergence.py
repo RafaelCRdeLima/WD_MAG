@@ -2,8 +2,9 @@
 
 Run:  scf/.venv/bin/python3 investigations/plot_late_convergence.py
 
-Reads rotation_192.csv (192^3, to 60 s), bt_bp_192.csv (192^3 field, only to
-12 s) and bt_bp_256_long.csv (256^3, everything to 58.2 s).
+Reads rotation_192.csv (192^3 rotation, to 60 s), bt_bp_192.csv (192^3 field
+to 12 s), bt_bp_192_late.csv (192^3 field, 12 to 60 s) and bt_bp_256_long.csv
+(256^3, everything to 64.5 s).
 
 The first report compared the grids at t = 12 s. This figure is the comparison
 over the whole evolution, and it separates cleanly into two panels that
@@ -23,12 +24,24 @@ converge and one that does not.
       factor of eight, which is why the shaded region is drawn: it is the
       window that produced two wrong conclusions in earlier drafts.
 
-  (c) E_mag. The panel that does not converge, and the only one where the
-      longer baseline made the disagreement worse rather than better. The
-      192^3 field data stops at t = 12 s -- the single point at t = 38.5 s is
-      the one late instant that was processed with the field diagnostics, and
-      it is drawn as a marker rather than a curve because that is all it is.
-      The 256^3 plateau sits a factor 25 above it and is still rising.
+  (c) E_mag. Both grids DECAY, reach a minimum, and then GROW: t = 41.1 s at
+      192^3 and 44.7 s at 256^3, located by fitting a parabola to ln E_mag over
+      t = 25-55 s so the 1.5 s pulsation does not set the answer. That the
+      turnaround exists at all is the converged part, and it is the first
+      result in this campaign about something the star DOES rather than loses.
+
+      Nothing quantitative about it converges. The levels differ by 25 at the
+      minimum, and the growth rate is +0.0485/s at 192^3 against +0.0196/s at
+      256^3 -- the COARSE grid grows 2.5 times faster. That is the same
+      direction, and roughly the same factor, as the decay rate before it
+      (0.282 -> 0.141 /s). A rate that halves with refinement is what a
+      mesh-set process looks like, so the regrowth may be numerical too.
+
+      A prediction registered before this data existed said the 192^3 would
+      turn LATER and more WEAKLY, on the reasoning that more numerical
+      dissipation delays the point where regeneration overtakes decay. It
+      turns 3.6 s earlier and grows 2.5 times faster. The prediction failed;
+      the qualitative direction it was testing did not.
 
 Normalising (a) at t = 12 s rather than at t = 0 for the same reason as
 elsewhere in this work: before that the star is in the initial transient,
@@ -55,12 +68,10 @@ C_INK = "#0b0b0b"
 C_SHADE = "#f0efec"
 
 P_PULSE = 1.498
-T_MAX = 58.5
+T_MAX = 65.0
 REGIMES = [(1.5, 11.9), (12.1, 30.0), (30.0, 58.2)]
 
-# The one late 192^3 field instant that was processed, from Table 4 of the
-# first report. A single snapshot, not a curve, and drawn as such.
-T_192_LATE, EMAG_192_LATE = 38.5, 2.782e46
+T_MIN_192, T_MIN_256 = 41.1, 44.7      # minima of ln E_mag, parabola fit
 
 plt.rcParams.update({
     "font.family": "serif", "font.serif": ["Times New Roman", "DejaVu Serif"],
@@ -89,6 +100,7 @@ def smooth(t, y, window=P_PULSE):
 
 def main():
     r192, f192 = load("rotation_192.csv"), load("bt_bp_192.csv")
+    l192 = load("bt_bp_192_late.csv")
     d256 = load("bt_bp_256_long.csv")
 
     fig, (ax_l, ax_o, ax_e) = plt.subplots(
@@ -143,24 +155,31 @@ def main():
     ax_o.set_ylim(0.26, 0.395)
     ax_o.text(0.02, 0.94, "(b)", transform=ax_o.transAxes, fontsize=7, va="top")
 
-    # (c) magnetic energy, the panel that does not converge -------------------
+    # (c) magnetic energy: both decay, both turn, neither rate converges ------
     ax_e.set_yscale("log")
-    ax_e.plot(f192["t"], f192["E_tor"] + f192["E_pol"], color=C_192, linewidth=1.0)
-    ax_e.plot(d256["t"], d256["E_tor"] + d256["E_pol"], color=C_256, linewidth=1.0)
-    ax_e.plot([T_192_LATE], [EMAG_192_LATE], marker="o", markersize=3.2,
-              color=C_192, markeredgewidth=0)
-    ax_e.annotate("192$^3$: one processed\ninstant, $t=38.5$ s",
-                  xy=(T_192_LATE, EMAG_192_LATE), xytext=(-4, 10),
-                  textcoords="offset points", fontsize=5.4, color=C_192,
-                  ha="right", va="bottom")
-    ax_e.annotate("", xy=(46, 3.0e46), xytext=(46, 5.6e47),
-                  arrowprops=dict(arrowstyle="<->", color=C_INK, linewidth=0.6))
-    ax_e.text(47.2, 1.3e47, r"$\times 25$", fontsize=6.2, color=C_INK, va="center")
-    ax_e.text(30.0, 2.6e48, "256$^3$ plateau, still rising",
-              fontsize=5.6, color=C_256, ha="center")
+    t192 = np.concatenate([f192["t"], l192["t"]])
+    e192 = np.concatenate([f192["E_tor"] + f192["E_pol"],
+                           l192["E_tor"] + l192["E_pol"]])
+    o = np.argsort(t192)
+    ax_e.plot(t192[o], e192[o], color=C_192, linewidth=1.0)
+    ax_e.plot(d256["t"], d256["E_tor"] + d256["E_pol"], color=C_256,
+              linewidth=1.0)
+    for tm, c in ((T_MIN_192, C_192), (T_MIN_256, C_256)):
+        ax_e.plot([tm], [np.interp(tm, t192[o], e192[o]) if c == C_192
+                         else np.interp(tm, d256["t"],
+                                        d256["E_tor"] + d256["E_pol"])],
+                  marker="v", markersize=4, color=c, markeredgewidth=0)
+    ax_e.text(T_MIN_192 - 1.5, 1.0e46, f"min {T_MIN_192:.0f} s", fontsize=5.4,
+              color=C_192, ha="right")
+    ax_e.text(T_MIN_256 + 1.5, 2.4e47, f"min {T_MIN_256:.0f} s", fontsize=5.4,
+              color=C_256, ha="left")
+    ax_e.text(30.0, 3.5e48, "both turn, then grow", fontsize=6.0, color=C_INK,
+              ha="center")
+    ax_e.text(30.0, 1.4e48, r"$+0.049$/s $|$ $+0.020$/s", fontsize=5.6,
+              color=C_MUTED, ha="center")
     ax_e.set_ylabel(r"$E_{\rm mag}$  (erg)")
     ax_e.set_xlabel("t (s)")
-    ax_e.set_ylim(8e45, 2e50)
+    ax_e.set_ylim(6e45, 2e50)
     ax_e.text(0.02, 0.94, "(c)", transform=ax_e.transAxes, fontsize=7, va="top")
 
     fig.savefig(HERE / "late_convergence.pdf")
