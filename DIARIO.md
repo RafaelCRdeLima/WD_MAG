@@ -833,7 +833,9 @@ regime.
 > ESPACIAL (tamanho da caixa, células, fator de qualidade), vi 128³ sem
 > autogravidade e concluí "barato" sem calcular o número de PASSOS DE TEMPO.
 > Custo é células × passos, fórmula que eu havia usado duas seções antes para
-> mostrar que refinar escala como N⁴, e esqueci aqui. A correção está em 6.11b.
+> mostrar que refinar escala como N⁴, e esqueci aqui. A correção está em
+> 6.11b — que **também saiu errada**, para o lado oposto. O veredito final
+> está em 6.11c. Leia as três na ordem; o percurso é o registro.
 >
 > Segundo erro do mesmo tipo em dois dias: também escrevi "uma ou duas janelas"
 > para a ML sem contar os retries. **Estimar custo por uma dimensão só.**
@@ -898,7 +900,7 @@ Aproximação a declarar: caixas padrão usam EOS isotérmica ou gamma-law, não
 caixa isotérmica com c_s casado ao valor degenerado provavelmente basta —
 **hipótese a verificar, não fato**.
 
-## 6.11b A conta que faltava: o custo é temporal
+## 6.11b A conta que faltava: o custo é temporal — TAMBÉM ERRADA
 
 ### No Castro, o inventário de implementação
 
@@ -945,17 +947,63 @@ Rodar caixas em β acessível (10³–10⁴) e extrapolar α_SS(β) até 10⁹. 
 padrão, mas reintroduz o que a caixa deveria eliminar — extrapolação para fora
 do regime medido, agora de cinco ordens de grandeza em β.
 
+## 6.11c O custo escala como Q⁴, e Q era escolha minha
+
+> Terceira versão, mesmo dia. Rafael perguntou o óbvio — "qual o problema de ser
+> mais demorado? Quanto tempo?" — e a conta em horas de parede desmontou 6.11b.
+
+**O erro comum às duas versões anteriores:** tratei Q = 32 como dado do
+problema. Era escolha minha, feita sem nota, e é ela que domina o custo.
+Células ∝ Q³, passos ∝ Q (dt ∝ dx), logo **custo ∝ Q⁴**. Nunca variei o
+parâmetro que mandava no resultado. Ontem isso deu "barato" porque olhei só
+células; hoje deu "inviável" porque olhei só passos — sempre no mesmo ponto.
+
+Calibração a partir do nosso próprio 256³: 1.9×10¹² cell-steps por ~1.4×10⁴
+core-h, ou 1.3×10⁸ cell-steps/core-h.
+
+| Q | malha | core-h/órbita | 100 órbitas | % alocação | órbitas que os 497k restantes compram |
+|---|---|---|---|---|---|
+| 8 | 33³ | 6.5×10² | 6.5×10⁴ | 13% | 761 |
+| **16** | **65³** | **1.0×10⁴** | **1.0×10⁶** | **201%** | **48** |
+| 32 | 130³ | 1.7×10⁵ | 1.7×10⁷ | 3214% | 3 |
+
+**Q = 16 é viável, e é a barra certa** — Sano+2004 pede Q ≥ 15–20 para
+turbulência MRI convergida. A alocação restante compra 48 órbitas; a literatura
+mede α com 30–100.
+
+**Tempo de parede: ~40 h por órbita em 2 nós.** Trinta órbitas ≈ 50 dias de
+execução contínua, 2–3 meses reais com fila e janelas de 3 h. Não comprime com
+mais nós: 65³ em 256 cores já são 4300 células/core, e integração temporal é
+sequencial. **O tempo de parede, não a alocação, é o custo que dói.**
+
+**E a objeção de 6.11b cai.** A caixa roda no β real da estrela — é exatamente
+isso que dá λ/H = 6.7×10⁻⁵ e o custo alto. Não há extrapolação em β a fazer:
+α sai medido no regime que nos interessa.
+
+**O que continua valendo de 6.11b:** o inventário de implementação no Castro. O
+referencial rotativo existe, o termo de maré é trivial, a advecção orbital é
+desnecessária, e o trabalho real é o contorno deslizante com remap conservativo
+e EMF consistente com CT ([Stone & Gardiner 2010](https://arxiv.org/abs/1006.0139)).
+Semanas de implementação antes da primeira órbita.
+
 ### Ordenação final das três saídas
 
-1. **MInIT** — a classe certa de modelo para a nossa física ausente, gancho já
-   existe no `problem_source.H`. Depende de coeficientes de outro regime, e os
-   parasíticos só se calibram com caixa. Os da MRI, α = 1 − 4/q, transferem.
-2. **Caixa de cisalhamento** — regime espacial ideal, custo temporal proibitivo
-   por β ~ 10⁹. Viável só em β reduzido, com extrapolação de cinco décadas.
+1. **Caixa de cisalhamento a Q = 16** — a única rota que MEDE α no β da
+   estrela, sem coeficiente emprestado nem extrapolação. Custo: ~10⁴ core-h por
+   órbita, 30 órbitas dentro da alocação, 2–3 meses de parede, mais semanas de
+   implementação do contorno deslizante no Castro. Cara em tempo, não em
+   alocação.
+2. **MInIT** — a classe certa de modelo, gancho já existe no
+   `problem_source.H`, barato. Depende de coeficientes de outro regime; os da
+   MRI (α = 1 − 4/q) transferem, os parasíticos não. É o que a caixa
+   alimentaria.
 3. **LES** — descartado. Modela cascata, e a Rm ≈ 5 não há cascata.
 
-**Nenhuma das três fecha o problema.** A limitação da MRI permanece, e o mais
-honesto é declará-la como tal nos relatórios em vez de prometer rota.
+As duas primeiras compõem: a caixa calibra, o MInIT aplica no run global. Isso
+é o programa, se houver 2–3 meses para gastar.
+
+**Enquanto não houver, a limitação da MRI permanece e deve ser declarada como
+tal nos relatórios** — na primeira página, não nas ressalvas.
 
 ---
 
