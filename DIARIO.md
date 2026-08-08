@@ -1035,7 +1035,7 @@ fluxo E Alfvén são << c_s — no nosso caso não é marginal, é ideal.
 
 O fator 5×10⁴ é simplesmente c_s/v_turb.
 
-**Código: [SNOOPY](http://ipag-old.osug.fr/~lesurg/snoopy.html)** (Lesur),
+**Código: [SNOOPY](https://ipag.osug.fr/~lesurg/snoopy.html)** (Lesur),
 pseudo-espectral, MHD Boussinesq/incompressível em caixa de cisalhamento, GPL.
 Decomposição em ondas de cisalhamento com remap periódico: contorno deslizante
 resolvido, e sem o problema de EMF do CT porque é espectral.
@@ -1240,7 +1240,7 @@ uma anã branca a Pm de ordem unidade?
 
 ### Como usar o SNOOPY
 
-[Página do Lesur](http://ipag-old.osug.fr/~lesurg/snoopy.html), GPL, C com FFTW3
+[Página do Lesur](https://ipag.osug.fr/~lesurg/snoopy.html), GPL, C com FFTW3
 e MPI/OpenMP. Adimensional: fixa-se Ω = 1 e o tamanho da caixa, e o que se
 escolhe é q, L/λ_MRI, Re, Rm.
 
@@ -1399,6 +1399,41 @@ relatórios e a solução está instalada.
   Pakmor & Pelisoli 2024 está citado no nosso `inputs.ml256`. MHD lá é
   Powell/oito ondas, não CT — recuo. Relevante para conectar com a literatura de
   remanescentes, não para a MRI.
+
+### 6.16b GPU: alavanca errada, e a URL do SNOOPY estava morta
+
+> Rafael: "SNOOPY usa GPU?"
+
+**Correção de link.** `ipag-old.osug.fr` recusa conexão. O endereço vivo é
+`https://ipag.osug.fr/~lesurg/snoopy.html`, que responde 200 mas está atrás de
+proteção anti-bot (Anubis) — download tem de ser manual, por navegador.
+
+**SNOOPY não usa GPU.** Nada na literatura nem na descrição menciona CUDA,
+OpenCL ou Kokkos; é C com FFTW3, MPI e OpenMP, V6.0 de 2011. Não verificado na
+fonte por causa do Anubis: tratar como muito provável, não confirmado. Há razão
+estrutural além da data — pseudo-espectral faz FFT global a cada passo, e FFT
+distribuída exige *all-to-all*; é o padrão que menos ganha com GPU, porque o
+gargalo é rede, não aritmética.
+
+**E GPU é a alavanca errada.** SNOOPY roda em horas; acelerar horas não muda
+decisão. O ganho já foi capturado trocando as equações — incompressível deu
+5×10⁴, GPU daria 10–100.
+
+**Onde mudaria: Idefix.** [Mignone/Lesur+2023](https://arxiv.org/abs/2304.13746),
+Kokkos, V100 e Mi250, com caixa de cisalhamento, CT, advecção orbital e MHD
+não-ideal; o artigo cita 12 simulações em ~3000 GPU-horas. No nosso caso
+compressível, 10⁴ core-h/órbita valendo uma GPU por ~100 cores dá ~100
+GPU-h/órbita e **~3000 GPU-horas para 30 órbitas**. GPU *resgata* a rota
+compressível da inviabilidade — mas a incompressível custa horas de CPU e
+continua 10³–10⁴ à frente. **GPU conserta o método errado; o método certo
+dispensa GPU.**
+
+Consequência: a pergunta sobre GPU no CENAPAD (§6.16) perde urgência. Importaria
+indo de Idefix; indo de SNOOPY, uma estação de trabalho basta.
+
+**A ler antes de fixar parâmetros das caixas:**
+[On the numerical convergence of MRI simulations](https://arxiv.org/pdf/2511.06022)
+(nov/2025) — fala direto da nossa discussão de Q.
 
 
 ---
