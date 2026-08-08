@@ -1286,13 +1286,16 @@ um.**
 
     k_MRI = √(1 − (2−q)²/4) · Ω / v̄_Az        v̄_Az = b̄_z/√ρ̄
 
-Só a componente **vertical**. Nosso campo é toroidal-dominado por 10⁷ em energia,
-e o que destrói o campo nos nossos runs é o kink de Tayler m=1 — instabilidade
-diferente da que o modelo carrega. A literatura diz que em configuração
-toroidal-dominada a relevante é a MRI não-axissimétrica de campo toroidal.
+Só a componente **vertical**.
 
-Ligar o MInIT continua legítimo, mas a resposta significa "quanto a MRI
-axissimétrica acrescentaria", não "o que a física ausente faz".
+> **CORRIGIDA no mesmo dia — ver §6.17.** Eu escrevi aqui que o campo é
+> toroidal-dominado por 10⁷, número do **modelo analítico em t=0**. A estrela
+> evoluída fica entre E_tor/E_pol = 4 e 90. A ressalva enfraquece muito.
+
+O que sobra dela: o que destrói o campo nos nossos runs é o kink de Tayler m=1,
+instabilidade diferente da que o modelo carrega, e o MInIT não a cobre. Ligar o
+MInIT continua legítimo, mas a resposta significa "quanto a MRI axissimétrica
+acrescentaria", não "o que a física ausente faz".
 
 ### Ressalva 2: com B_z fraco a saturação vira dependente de malha
 
@@ -1434,6 +1437,66 @@ indo de Idefix; indo de SNOOPY, uma estação de trabalho basta.
 **A ler antes de fixar parâmetros das caixas:**
 [On the numerical convergence of MRI simulations](https://arxiv.org/pdf/2511.06022)
 (nov/2025) — fala direto da nossa discussão de Q.
+
+## 6.17 O campo NÃO é toroidal por 10⁷, e isso reordena o programa
+
+> Rafael: "o SNOOPY vai servir para calibrarmos o impacto do campo toroidal no
+> MRI?" Fui verificar a razão antes de responder e ela me desmentiu.
+
+### O número que eu vinha repetindo é da condição inicial
+
+| t (s) | E_tor/E_pol |
+|---|---|
+| 0.03 | 7.3×10⁵ |
+| **13.5** | **4.0** ← mínimo |
+| 32.5 | 20 |
+| 78.0 | 89 |
+
+O 2.18×10⁷ é do **modelo analítico**; na malha em t=0 já são 3.1×10⁵, e a tabela
+do relatório sempre trouxe as duas colunas — o erro foi só meu, ao repetir o
+número do modelo como se descrevesse a estrela evoluída. Em amplitude,
+B_tor/B_pol fica entre 2 e 9.5. **O poloidal deixa de ser desprezível nos
+primeiros segundos.**
+
+Corrigido em `references/README.md` e na ressalva 1 da §6.15. A legenda do
+`report_rot192_rot256.tex` está correta: é tabela de t=0 e traz modelo e malha
+lado a lado.
+
+### O que o SNOOPY pode e não pode sobre o toroidal
+
+**Pode.** Uma caixa carrega fluxo azimutal líquido e vertical líquido ao mesmo
+tempo, na razão que se quiser, e modos não-axissimétricos são k_y ≠ 0 — nativos
+num código espectral. Dá para medir se o transporte é dominado pela MRI de campo
+vertical (a que o MInIT modela) ou pela azimutal, e qual α sai de cada.
+
+**Não pode: Tayler.** A instabilidade é movida pela curvatura das linhas
+toroidais em torno do eixo, a tensão de aro. Caixa cartesiana não tem curvatura,
+logo o m=1 não cresce ali por construção. E o kink de Tayler é o que destrói
+nosso campo. **Nem SNOOPY nem MInIT tocam o segundo resultado principal** — não
+por falta de ferramenta, mas por o problema ser global.
+
+### A medida pendente virou a primeira coisa a fazer
+
+Com B_tor/B_pol entre 2 e 9.5, v_Az é fração real de v_A e λ_MRI não é minúsculo.
+O número que temos — λ/dx cruza 6 em t ≈ 2–3 s e chega a 36 no 256³ — foi
+calculado do **pico** de B_z. Pico não é típico, e medir o típico em volume
+ficou pendente há dias.
+
+**Se o típico ficar em 6–36, já estamos resolvendo a MRI axissimétrica**, ao
+menos marginalmente. Então "a rotação diferencial acentua" já inclui MRI, e nem
+SNOOPY nem MInIT são o próximo passo.
+
+Usa fatias que já estão em disco, não precisa de cluster, e **decide qual dos
+três programas é sequer necessário.** Vai na frente de tudo.
+
+### Ordem revisada
+
+0. **λ_MRI/dx do B_z típico em volume**, das fatias em disco. Horas.
+1. SNOOPY, se 0 disser que não resolvemos.
+2. Coeficientes.
+3. MInIT nos dois grids.
+
+E segue sem plano para o campo, em qualquer ramo.
 
 
 ---

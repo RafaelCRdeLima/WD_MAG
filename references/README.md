@@ -132,8 +132,11 @@ parameterisation is a modelling choice rather than something our ideal-MHD run
 contains. The transferable point is that **field geometry is not a detail**: it
 decides the sign of the mass shift here, just as it decides the deformation
 (prolate vs oblate) in paper 1 and the stability in our simulations. Our field
-is toroidal-dominated by a factor $10^7$ in energy, which is the most extreme
-corner of that space.
+starts toroidal-dominated by a factor $2\times10^7$ in the analytic model
+($3\times10^5$ as reconstructed on the grid), the most extreme corner of that
+space — but it does not stay there. $E_{\rm tor}/E_{\rm pol}$ falls to $4$ by
+$t = 13.5$ s and recovers only to $\sim90$ by $t = 78$ s, so the evolved star is
+toroidal-dominated by a factor of a few to a hundred, not $10^7$.
 
 ---
 
