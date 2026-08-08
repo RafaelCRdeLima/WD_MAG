@@ -614,6 +614,58 @@ menor. Ambos são mudanças de setup, não de modelo, e nenhum é barato.
 
 ---
 
+## 6.8 O que fica depois da ML — a limitação que vai para a primeira página
+
+Duas campanhas mortas na mesma parede, e a parede agora está medida.
+
+**A conta que fecha as duas.** O ambiente de 2×10⁴ g/cm³ suporta 3.4×10¹⁰ G
+antes de o campo dominar a pressão do gás. A MRI na fase linear exige
+λ/dx > 6. Escalando a amplitude, as duas exigências só coexistem se
+B_int/B_ext × λ/dx > 1757, e o máximo da família é 661. Confinar mais sobe a
+razão e transforma o campo numa agulha, derrubando o B_z de volume que dá o
+comprimento de onda. Não é ajuste malfeito; é a geometria do problema.
+
+**A consequência para os relatórios, e ela é desconfortável.** A busca de
+literatura (seção 6.2) mostrou que a MRI apaga rotação diferencial em
+remanescentes de fusão quando é resolvida — Ji & Fisher 2013, Pakmor &
+Pelisoli 2024. Nós não a resolvemos, e agora sabemos que **não conseguimos
+resolvê-la neste setup a nenhum custo acessível**.
+
+Portanto: *"a rotação diferencial sobrevive"* continua indistinguível de
+*"nossa simulação não tem como destruí-la"*, e essa ambiguidade deixou de ser
+provisória. Ela pertence à primeira página dos dois relatórios como limitação
+declarada, não ao fim como caveat. Hoje os relatórios apresentam a
+sobrevivência da rotação como resultado; depois da busca isso não se sustenta
+sem a ressalva.
+
+**O que continua de pé, e é bastante.** Nada disso toca a frenagem de L_z, que
+converge em três regimes nas duas malhas e identifica o transporte como
+magnético. Nem o afinamento do perfil, convergido em 10% sobre 46 s. Nem a
+virada do campo em t ≈ 41–45 s nas duas malhas. O que cai é a interpretação da
+rotação diferencial como *resultado sobre a estrela* em vez de *comportamento
+deste setup*.
+
+**O que restaria tecnicamente**, e nenhum é barato: fronteira de vácuo em vez de
+atmosfera preenchendo a caixa, ou ambiente muito mais denso numa caixa menor.
+Ambos são mudanças de setup, não de modelo, e ambos invalidariam a
+comparabilidade com os dois runs já feitos.
+
+### Infraestrutura consertada no mesmo dia
+
+**Retry no `qsub` da corrente**, nos três scripts. Três correntes morreram
+porque o script chamava `qsub` uma vez, a fila estava cheia com a outra
+campanha naquele segundo, e a submissão era recusada — com a linha
+`chain: submission N of M` já impressa, então o `.out` parecia entrega saudável
+com o ID faltando. Custava um run *e* parecia sucesso. Seis tentativas de dez
+em dez minutos cobrem uma janela inteira da campanha concorrente, e cada
+tentativa fica registrada.
+
+**`ONBOARDING.md` ganhou as duas assinaturas de falha do dia:** o retry no
+`qsub`, e a de que taxa de retry constante pode esconder um run morrendo —
+vigiar `dt`.
+
+---
+
 ## 7. Produtos
 
 - `reports/report_rot192_rot256.pdf` — relatório I, 13 páginas, física primeiro,
