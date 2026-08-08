@@ -274,22 +274,91 @@ liberando 198 GB.
 
 ## 6. Literatura
 
-Quatro artigos em `references/`, todos com Mukhopadhyay como autor. São um
-programa em quatro estágios: equilíbrios GRMHD com rotação (2015),
-observabilidade (2020), anisotropia de matéria e orientação de campo (2022),
-canal de formação por evolução estelar 1D (2024).
+### 6.1 Os quatro artigos em `references/`
 
-**O ponto que importa:** os quatro calculam *estrutura*. Nenhum evolui o campo
-em 3D, e o de 1D não poderia — num modelo esférico unidimensional um campo
-toroidal entra como termo de pressão e não tem como ficar instável. Estabilidade
-nessa literatura significa razão de energias, critério radial ou ponto de
-retorno ao longo de uma sequência, nunca teste dinâmico.
+Todos com Mukhopadhyay como autor. São um programa em quatro estágios:
+equilíbrios GRMHD com rotação (Subramanian & Mukhopadhyay 2015, MNRAS 454,
+752), observabilidade (Gupta, Mukhopadhyay & Tout 2020, MNRAS 496, 894),
+anisotropia de matéria e orientação de campo (Deb, Mukhopadhyay & Weber 2022,
+ApJ 926, 1), e canal de formação por evolução estelar 1D (Zuraiq et al. 2024,
+ASSP).
 
-É a lacuna que esta campanha ataca. A pergunta não é se dá para construir uma
-anã magnetizada de 2 M⊙ — dá, por vários métodos — mas se ela sobrevive quando
-se deixa evoluir.
+Os quatro calculam **estrutura**. Nenhum evolui o campo em 3D, e o de 1D não
+poderia — num modelo esférico unidimensional um campo toroidal entra como termo
+de pressão e não tem como ficar instável.
 
----
+### 6.2 A busca de agosto de 2026: o que existe e o que não existe
+
+**Não existe MHD 3D de uma anã branca isolada, magnetizada, em rotação
+diferencial, testada dinamicamente.** A lacuna que esta campanha ataca é real.
+O que existe se divide em duas literaturas que não se tocam: equilíbrios (6.1) e
+remanescentes de fusão, que fazem MHD 3D mas de outro objeto — núcleo quente
+mais disco espesso, não uma configuração super-Chandrasekhar em equilíbrio.
+
+**Ji & Fisher 2013** (arXiv:1302.5700), primeiras simulações multidimensionais
+de fusão de anãs com campo. O disco é fortemente instável à MRI, o campo cresce
+rápido até ~2×10⁸ G, e a MRI **freia** o remanescente. Quando a MRI é
+resolvida, ela apaga rotação diferencial.
+
+**Pakmor & Pelisoli 2024** (arXiv:2407.02566), fusão de anãs de hélio em alta
+resolução, ~50 rotações. Duas fases de amplificação: dínamo de pequena escala
+primeiro, depois **dínamo de grande escala dirigido pela MRI** produzindo campo
+azimutal ordenado ao longo de dezenas de períodos rotacionais.
+
+**Becerra, Rueda, Lorén-Aguilar & García-Berro 2018** (ApJ 857), o mais próximo
+do nosso objeto — anãs super-Chandrasekhar magnetizadas pós-fusão. Mas é modelo
+1D com torques, campo fixo entre 10⁶ e 10⁹ G, sem MHD 3D.
+
+**Braithwaite & Spruit** (astro-ph/0510316) e trabalhos relacionados:
+equilíbrios estáveis exigem intensidades poloidal e toroidal **comparáveis**;
+puramente toroidal e puramente poloidal são ambos instáveis. A configuração
+estável é o toro torcido — dipolo polar estabilizado por toroidal semelhante,
+como Prendergast previu em 1956. Isso valida o desenho da campanha TT.
+
+### 6.3 O que a busca faz com os nossos resultados
+
+**A sobrevivência da rotação diferencial não se sustenta como resultado.** A
+literatura mostra a MRI apagando rotação diferencial quando resolvida. Nós não
+a resolvemos — λ_MRI = 0.004 de uma célula — e vemos a rotação sobreviver. Isso
+é indistinguível de "nossa simulação não tem como destruí-la", e precisa ser
+dito na primeira página dos relatórios, não nos caveats.
+
+**O crescimento do campo ficou ambíguo.** Antes da busca eu o via como imune à
+objeção do Rm, por ser efeito Ω puro. Não é: existe um dínamo de grande escala
+conhecido neste contexto, e ele é dirigido pela MRI. Ou vemos efeito Ω, que é
+mecanismo diferente e mais fraco, ou um análogo numérico de algo que precisa de
+MRI para existir.
+
+**Estender o 192³ perdeu o valor que eu havia atribuído.** Convergência entre
+malhas não distingue efeito Ω de MRI mal resolvida: as duas malhas têm o mesmo
+problema. O teste que distingue é rodar **sem rotação diferencial**. Se o
+crescimento sumir, é cisalhamento; se persistir, é numérico.
+
+### 6.4 A MRI é alcançável — o cálculo
+
+λ_MRI = 2π v_Az/Ω depende do campo **vertical**, então ela é ajustável por
+construção, não só por refinamento.
+
+| B_z (G) | λ_MRI (cm) | λ/dx no 256³ | λ/R |
+|---|---|---|---|
+| 3.6×10⁹ (atual) | 2.9×10⁴ | 0.004 | 4×10⁻⁵ |
+| 5×10¹² | 4.0×10⁷ | 5.7 | 0.13 |
+| **10¹³** | **8.0×10⁷** | **11.4** | **0.27** |
+| 2×10¹³ | 1.6×10⁸ | 22.8 | 0.53 |
+
+Existe uma **janela**: λ = 10 dx exige B_z > 8.8×10¹² G no 256³, e a MRI é
+suprimida quando λ > R, isto é B_z > 2.4×10¹⁴ G. Fator 27 entre os dois
+limites.
+
+E em B_z = 10¹³ G o campo total ao lado do toroidal de 3.2×10¹³ dá 0.76 B_c —
+dentro da faixa de validade da EOS. No núcleo β = 792, folgado.
+
+**O obstáculo não é resolução, é geometria.** β cai abaixo de 1 já em
+ρ = 10⁷ g/cm³ com esse campo, então ele tem que ser **confinado** ao interior,
+não um dipolo de vácuo. É exatamente o mesmo obstáculo que matou a campanha TT,
+e a mesma correção resolve os dois: uma fonte de Grad–Shafranov concentrada
+num toro em vez de ∝ ρϖ², recalibrada pelo pico interior em vez do dipolo de
+superfície.
 
 ## 7. Produtos
 
@@ -305,70 +374,30 @@ se deixa evoluir.
 
 ---
 
-## 8. Em aberto
+## 8. Em aberto, revisto depois da busca de literatura
 
-**Crescimento ou oscilação?** Precisa de tempo físico, não de resolução nem de
-análise adicional. Se E_mag virar para baixo até t ≈ 90 s é oscilação; se seguir
-acelerando, é regeneração. O 256³ está rodando rumo a 100 s.
+**O teste que decide o crescimento: rodar sem rotação diferencial.** Se E_mag
+parar de crescer, o mecanismo é cisalhamento e a afirmação fica limpa. Se
+persistir, é numérico. Mais barato que estender o 192³ e responde o que a
+comparação entre malhas não responde — porque as duas malhas compartilham o
+mesmo defeito.
 
-**A taxa de crescimento é física?** Ela cai 2.5× de 192³ para 256³, igual ao
-decaimento antes dela. Ou é dominada pela malha, ou depende do nível de
-partida, que difere por 25×. Duas malhas não separam as duas leituras; uma
-terceira seria necessária, e 384³ custa ~5× o 256³.
+**Incluir a MRI é possível e não exige refinamento.** λ_MRI ∝ B_z, então basta
+um campo poloidal interior de ~10¹³ G para trazê-la a ~11 células no 256³,
+dentro da janela 8.8×10¹² < B_z < 2.4×10¹⁴ G e com o campo total em 0.76 B_c.
+O obstáculo é o mesmo da campanha TT: o campo precisa ser **confinado**, e o
+SCF atual só sabe impor dipolo de vácuo.
 
-### A campanha TT falhou na primeira tentativa, e por quê
+**A correção única que destrava as duas coisas:** trocar a fonte de
+Grad–Shafranov por uma concentrada num toro e recalibrar pelo pico interior.
+Isso dá simultaneamente o toro torcido (energias comparáveis, geometria estável
+de Braithwaite) e a MRI resolvida. É a próxima peça de trabalho e é de
+modelagem, não de máquina.
 
-Primeira submissão em 7 de agosto: a estrela explode em **t = 0.06 s**, com
-densidade negativa (−5.3×10⁵ g/cm³) em células a ϖ ≈ z ≈ 1.6×10⁸ cm — o raio
-polar, onde a densidade despenca e o dipolo imposto é mais forte.
+**Continua em aberto sem caminho barato:** se a taxa de crescimento é física.
+Ela cai 2.5× de 192³ para 256³, igual ao decaimento antes dela. Uma terceira
+malha custaria ~5× o 256³ e ainda assim não separaria efeito Ω de MRI mal
+resolvida.
 
-A causa não é numérica. Verifiquei `max|B|/B_c` ao escolher B_pole = 3×10¹² e
-ignorei a razão β entre pressão magnética e do gás:
-
-| B (G) | β no envelope (ρ=10⁶) | β no ambiente (ρ=2×10⁴) |
-|---|---|---|
-| 10⁹ (config. atual) | 7.9×10⁵ | 1.2×10³ |
-| 10¹² | 0.79 | 1.2×10⁻³ |
-| 3×10¹² | **0.088** | **1.3×10⁻⁴** |
-
-O campo domina a pressão do gás por uma ordem de grandeza dentro da estrela e
-por quatro fora. Ele empurra o fluido, a densidade cruza zero, o Castro aborta.
-
-**A raiz é geométrica.** O campo toroidal é confinado por construção
-(`B_φ ∝ ρ`, some onde a estrela acaba). O poloidal imposto é um dipolo de
-vácuo que se estende para fora indefinidamente — multiplicar sua amplitude por
-3000 põe 10¹² G num ambiente de 2×10⁴ g/cm³. Os toros torcidos de Braithwaite
-não são assim: neles o poloidal fecha *dentro* da estrela e só a parcela que
-atravessa a superfície vira dipolo exterior, fraco.
-
-O limite é severo: β = 1 no ambiente exige B ≲ 3.4×10¹⁰ G, o que deixa
-E_tor/E_pol na casa de 10⁴. **Por este caminho o toro torcido é inalcançável**
-— não por B_c, não pelo virial, mas porque um dipolo exterior não tem o que o
-segure.
-
-Custo do erro: sete janelas desperdiçadas, porque o guard de "nenhum checkpoint
-novo" tinha um furo. A detecção de reinício exclui `chk00000` (escrito na
-inicialização) mas o guard não excluía, então na primeira janela ele comparava
-`""` com `"chk00000"`, concluía que houve progresso e ressubmetia — para
-sempre, num run que morre logo após inicializar. Corrigido nos dois scripts.
-
-**O caminho que resta é o de Braithwaite:** não construir o toro torcido
-analiticamente, e sim partir de um campo qualquer e deixar a estrela relaxar
-para o dele. `castro_problems/wd_braithwaite` já existe com essa
-infraestrutura, e o rascunho `papers/wd-braithwaite-relaxation` é sobre isso.
-Tem a vantagem de não exigir equilíbrio inicial nenhum — a relaxação é o
-método, não uma concessão.
-
-**Campanha TT — o toro torcido.** O run que falhou. Configuração mista com energias
-poloidal e toroidal comparáveis, com rotação, a 192³. É pergunta de estabilidade,
-portanto ideal, portanto robusta ao Rm ~ 6 que não temos como consertar — a única
-coisa que não dá para consertar. Gerador em
-`investigations/export_tt_model.py`.
-
-O que se abre mão: com o SCF atual o campo poloidal é imposto sobre um
-equilíbrio já convergido, não resolvido junto, então o par sai do balanço virial
-pela própria energia poloidal. A B_t/B_p = 8.8 o erro virial é 2.3×10⁻², vinte
-vezes o limiar. O modelo **não é equilíbrio** e não pode ser apresentado como
-tal — é condição inicial a relaxar, que é o que o rascunho
-`papers/wd-toroidal-poloidal` prescreve para essa faixa. O transiente inicial
-passa a ser parte do experimento.
+**Descartado:** MHD não ideal, por aritmética (seção 3.3). Estender o 192³ além
+de 60 s, porque o ganho que eu atribuía a isso não existe (seção 6.3).
