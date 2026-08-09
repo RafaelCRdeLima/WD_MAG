@@ -1,0 +1,121 @@
+#!/bin/bash
+#PBS -N snbox
+#PBS -q paralela
+#PBS -l nodes=2:ppn=128
+#PBS -l walltime=03:00:00
+#PBS -o snbox.out
+#PBS -e snbox.err
+#
+# Incompressible shearing boxes, SNOOPY v6.0. A parameter scan is embarrassingly
+# parallel -- N independent boxes, no communication -- which is what makes this
+# a good fit for one node and a short window.
+#
+# Submit with the address on the command line rather than in the file; this
+# repository is public:
+#     qsub -M your@email -m ae cluster/cenapad/job_box_scan.pbs
+#
+# ---------------------------------------------------------------------------
+# THE HONEST NOTE ABOUT ALLOCATION
+# ---------------------------------------------------------------------------
+# Our SNOOPY build is OpenMP-only (its MPI support is marked experimental by
+# configure and is not needed for independent boxes). So this uses ONE node,
+# and the second sits idle. It is requested anyway because `paralela` refuses
+# nodes=1 -- "Job violates queue and/or server resource limits", learned the
+# hard way on the Castro runs.
+#
+# That wastes half the allocation for this job. Before making a habit of it,
+# check `qstat -q` for a queue that accepts a single node, or pack the payload
+# so the 128 cores are actually full: at 8 threads a box, this node holds 16
+# concurrent runs, which is more than any scan we have planned.
+#
+# ---------------------------------------------------------------------------
+# WALLTIME
+# ---------------------------------------------------------------------------
+# 3 h, following the measured lesson that short requests backfill and long ones
+# sit: 24 h waited 9.5 h, 12 h waited on two queues, 3 h ran.
+#
+# A 64^3 box to t_final = 200 took 2.2 h at 4 threads on a workstation. At 8
+# threads here it should fit one window with room. It is NOT chained: if a run
+# does not finish, raise THREADS or lower T_FINAL rather than adding chaining
+# machinery, because unlike Castro each box is independent and a lost box costs
+# only itself.
+#
+# A 128^3 box is 16x the work and does NOT fit. For that, set `restart = true`
+# in its snoopy.cfg and resubmit -- SNOOPY writes restart dumps every dump_step.
+# ---------------------------------------------------------------------------
+
+set -u
+
+SNOOPY="$HOME/snoopy_build/snoopy6/snoopy"
+CFG="$HOME/snoopy_build/snoopy6/src/problem/mri/snoopy.cfg"
+BASE="$PBS_O_WORKDIR/box_runs"
+
+THREADS=8
+RE=1000
+T_FINAL=200.0
+
+cd "$PBS_O_WORKDIR" || exit 1
+echo "host: $(hostname)   started: $(date)"
+[ -x "$SNOOPY" ] || { echo "no binary at $SNOOPY -- run build_snoopy.sh first"; exit 1; }
+
+mkdir -p "$BASE"
+
+# ---------------------------------------------------------------------------
+# THE PAYLOAD
+# ---------------------------------------------------------------------------
+# name            shear   Pm   bz0    by0
+# The toroidal scan is the point of this job. Our star's field runs from
+# B_tor/B_pol = 2 to 9.5 in amplitude, and MInIT is built on the AXISYMMETRIC
+# VERTICAL-FIELD MRI. A box carrying net toroidal flux alongside the vertical
+# one measures directly whether that is the instability operating at our ratio
+# -- which is the check MInIT cannot perform on itself.
+#
+# by0 = 0 is the vertical-only reference; it duplicates the workstation's
+# pm04 run and is included so the cluster and workstation can be compared
+# before any conclusion rests on mixing the two.
+RUNS="
+tor0p0   1.5   4   0.1   0.0
+tor2     1.5   4   0.1   0.2
+tor5     1.5   4   0.1   0.5
+tor9p5   1.5   4   0.1   0.95
+"
+
+launch() {
+    local name=$1 shear=$2 pm=$3 bz=$4 by=$5
+    local dir="$BASE/$name"
+    # data/ MUST exist: output_vtk does fopen() without checking the result, so
+    # a missing directory becomes a null FILE* and segfaults inside fwrite at
+    # the first snapshot -- after t=0 has already been written to timevar, which
+    # makes it look like a physics failure rather than a missing directory.
+    mkdir -p "$dir/data"
+    sed -e "s/reynolds = 1000.0;/reynolds = ${RE}.0;/" \
+        -e "s/reynolds_magnetic = 1000.0;/reynolds_magnetic = $((RE * pm)).0;/" \
+        -e "s/shear = 1.5;/shear = ${shear};/" \
+        -e "s/t_final = 620.0;/t_final = ${T_FINAL};/" \
+        -e "s/snapshot_step = 1.0;/snapshot_step = 1000.0;/" \
+        -e "s/dump_step = 1.0;/dump_step = 25.0;/" \
+        -e "s/bz0 = 0.1;/bz0 = ${bz};/" \
+        -e "s/by0 = 0.0;/by0 = ${by};/" \
+        "$CFG" > "$dir/snoopy.cfg"
+    ( cd "$dir" && OMP_NUM_THREADS=$THREADS "$SNOOPY" >run.log 2>&1
+      echo "$name rc=$?" >> "$BASE/status" ) &
+}
+
+: > "$BASE/status"
+n=0
+while read -r name shear pm bz by; do
+    [ -z "${name:-}" ] && continue
+    echo "launch $name: shear=$shear Pm=$pm bz0=$bz by0=$by threads=$THREADS"
+    launch "$name" "$shear" "$pm" "$bz" "$by"
+    n=$((n + 1))
+done <<< "$(echo "$RUNS" | grep -v '^[[:space:]]*$')"
+
+echo "$n boxes running on $((n * THREADS)) of 128 cores"
+wait
+
+echo "finished: $(date)"
+cat "$BASE/status"
+for d in "$BASE"/*/; do
+    [ -f "$d/timevar" ] && printf "  %-10s last t = %s\n" \
+        "$(basename "$d")" "$(tail -1 "$d/timevar" | awk '{print $1}')"
+done

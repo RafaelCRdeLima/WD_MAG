@@ -1920,6 +1920,65 @@ exatamente o ganho da formulação incompressível (§6.12).
 - EOS barotrópica: `microphysics/EOS/helmholtz` está instalado e ataca uma
   ressalva que está nos dois primeiros relatórios (§6.16).
 
+## 6.24 Varredura de q lançada aqui; SNOOPY preparado para o lovelace
+
+### A divisão, decidida por medida e não por palpite
+
+A varredura de Pm deu o número que faltava: **2.1–2.4 h por caixa a 4 threads**,
+e a leva de cinco levou 4.5 h. Com o teto de 10 cores e o limite de 4 h que o
+Rafael pôs, isso divide as duas varreduras restantes:
+
+| | runs | local |
+|---|---|---|
+| **q** | 3 novos | 3 × 3 threads, uma leva, **~1.5–3 h** ✓ |
+| **toroidal/vertical** | 3–4 | segunda leva, estouraria somando |
+
+Então: q aqui, toroidal no cluster. E construir o SNOOPY no lovelace **também
+destrava o 128³** que eu tinha adiado por custar 17 h na estação.
+
+**Memória medida: 81 MB por caixa, 243 MB no total.** Risco zero — a
+preocupação era razoável mas o problema é minúsculo. Carga 6.5 de 12.
+
+### A varredura de q
+
+Re = 1000, Pm = 4, q = 0.5, 1.0, 1.9. O q = 1.5 já existe em `pm_scan/pm04`,
+mesmo Re e Pm, e a análise o puxa de lá em vez de repetir.
+
+**q = 1.9 e não 2.0:** em q = 2 o escoamento é marginalmente Rayleigh e o
+critério da MRI degenera.
+
+Comprimento de onda conferido antes de lançar, k_MRI = √(1−(2−q)²/4)·Ω/v_Az:
+λ = 0.95, 0.73, 0.63 para q = 0.5, 1.0, 1.9 — **todos dentro de Lz = 1**, o modo
+mais instável cabe em todo q.
+
+Ordem de progresso confirma a física: q = 0.5 avança mais rápido em tempo de
+parede (turbulência fraca, passo grande) e q = 1.9 é o mais lento.
+
+### Por que q importa duas vezes
+
+Ele fixa o transporte que medimos **e** o coeficiente do próprio MInIT,
+α^MRI = 1 − 4/q (Pessah & Chan 2008). A análise imprime os dois lado a lado.
+
+E há uma singularidade a observar: **α^MRI diverge quando q → 0**, que é
+exatamente o eixo de rotação da nossa estrela. A implementação publicada zera o
+termo MRI para q ≤ 0; se o transporte medido também colapsa ali é o que a ponta
+de baixo desta varredura testa.
+
+### O pacote do cluster
+
+`cluster/cenapad/build_snoopy.sh` e `job_box_scan.pbs`.
+
+Notas honestas gravadas no PBS: nosso build é **OpenMP puro** (o MPI do SNOOPY é
+marcado experimental pelo configure e é desnecessário para caixas
+independentes), então usa **um nó e o segundo fica ocioso** — pedido só porque
+`paralela` recusa nodes=1, aprendido nos runs do Castro. Isso desperdiça metade
+da alocação; antes de virar hábito, checar `qstat -q` por fila que aceite um nó,
+ou encher o nó (a 8 threads cabem 16 caixas).
+
+Sem encadeamento, deliberadamente: ao contrário do Castro cada caixa é
+independente, e uma perdida custa só a si mesma. O 128³ é 16× e **não** cabe em
+3 h — para ele, `restart = true` e resubmeter.
+
 
 ---
 
