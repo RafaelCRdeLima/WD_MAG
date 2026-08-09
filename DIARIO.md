@@ -1665,6 +1665,68 @@ sabemos.
 - **Nossa EOS é barotrópica e não tem temperatura alguma.** T é hipótese sobre
   remanescente de fusão, não saída da simulação. Daí a varredura.
 
+## 6.20 Varredura de Pm no SNOOPY — lançada
+
+`shearing_box/scan_pm.sh`, análise em `analyse_pm_scan.py`.
+
+### Por que q = 1.5 e não o nosso q, primeiro
+
+Cisalhamento Kepleriano é onde Lesur & Longaretti 2007 e Fromang+2007
+publicaram α(Pm). Rodar ali **mede a tendência que precisamos e ao mesmo tempo
+confere o nosso uso do código** contra números de terceiros. Varrer o nosso
+q = 0–2 vem depois que essa conferência passar; fazer na ordem inversa deixaria
+qualquer discordância sem atribuição possível.
+
+### A configuração padrão já é o nosso caso
+
+Verificado antes de mexer: `bz0 = 0.1`, **fluxo vertical líquido** — a MRI é
+instabilidade linear, não dínamo, que é a nossa situação. E λ_MRI/dz = 40,
+folgadamente resolvido. `by0` existe para o toroidal líquido que vamos precisar
+depois, na razão 2 a 9.5 da §6.17.
+
+### Parâmetros
+
+| | |
+|---|---|
+| malha | 64³, caixa (4,4,1) |
+| q | 1.5 (Kepleriano, para validação) |
+| Re | 1000, **fixo** — só a escala resistiva se move |
+| Pm | 1, 2, 4, 8, 16 |
+| t_final | 200 ≈ 32 órbitas; média sobre t > 60 |
+| execução | 3 concorrentes × 4 threads = 12 cores |
+| duração medida | ~87 min por run, ~2.9 h no total |
+
+### Ressalva declarada antes de existirem números
+
+**A 64³ o topo da varredura é marginal.** Rm = 16000 põe a escala resistiva
+perto da malha, e as rodadas publicadas de alto Pm usam 128³. **Pm = 8 e 16 são
+provisórios** até que um deles seja repetido a 128³ — o que custa 16× e fica
+para depois.
+
+### Convenções, para não errar sinal depois
+
+SNOOPY trabalha em unidades de Alfvén: b **é** v_A, e a energia magnética é
+b²/2. O fluxo total de momento angular é
+
+    W = ⟨v_x v_y⟩ − ⟨b_x b_y⟩       (Reynolds + Maxwell)
+
+com Maxwell entrando como **menos** ⟨bxby⟩ — daí `bxby` sair negativo numa
+rodada que transporta para fora. Sem velocidade do som numa caixa
+incompressível, o α = W/c_s² usual não existe; usa-se a normalização de fluxo
+líquido, W/B0² com B0 = bz0.
+
+### O que a varredura pode e não pode concluir
+
+Nossa estrela está em Pm ≈ 750 (§6.19), que DNS nenhuma alcança. **A varredura é
+limite, não medida.** O que se extrai é a *inclinação* de α(Pm), e ela é
+extrapolada 1.7 décadas além da faixa ajustada. Isso tem de ser citado junto com
+o resultado: é limite inferior **apenas se a tendência não saturar**, e estes
+dados não estabelecem isso.
+
+Critério de sanidade fixado agora: a literatura acha inclinação de ordem 0.5–1
+sobre Pm = 1–16. **Inclinação perto de zero ou negativa significa que o nosso
+arranjo está errado, não a física.**
+
 
 ---
 
