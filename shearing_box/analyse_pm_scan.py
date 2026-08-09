@@ -103,6 +103,19 @@ def main():
               f"{max_/rey if rey else float('nan'):>8.2f} {dw/B0**2:>8.3g}")
         pts.append((pm, w / B0**2, dw / B0**2))
 
+    # Has the trend flattened at the top? That is the question the
+    # extrapolation lives or dies on, so test it before fitting.
+    if len(pts) >= 2:
+        (pa, wa, ea), (pb, wb, eb) = pts[-2], pts[-1]
+        d = abs(wb - wa)
+        if d < 2.0 * math.sqrt(ea**2 + eb**2):
+            print(f"\nFLATTENED: Pm={pa} and Pm={pb} agree to {d:.2g} "
+                  f"(2-sigma is {2*math.sqrt(ea**2+eb**2):.2g}).")
+            print("  Either alpha(Pm) really saturates, or 64^3 cannot tell")
+            print("  Rm=8000 from Rm=16000 because numerical resistivity already")
+            print("  dominates. A 128^3 run at Pm=16 separates the two, and until")
+            print("  it exists the extrapolation below is not supported.")
+
     if len(pts) >= 3:
         # least squares on log10(W/B0^2) vs log10(Pm)
         xs = [math.log10(p[0]) for p in pts]
@@ -115,10 +128,21 @@ def main():
             slope = sxy / sxx
             inter = my - slope * mx
             print(f"\npower law:  W/B0^2 = {10**inter:.3g} * Pm^{slope:.3f}")
-            print("literature for Keplerian net-flux boxes: transport rises with Pm,")
-            print("Lesur & Longaretti (2007) and Fromang et al. (2007) find slopes")
-            print("of order 0.5-1 over Pm = 1-16. A slope near zero or negative here")
-            print("would mean our setup, not the physics, is wrong.")
+            # The band pre-registered in 6.20 said 0.5-1. That was wrong, taken
+            # from a search summary. Lesur & Longaretti's own abstract gives
+            # delta in 0.25-0.5 over 0.12 < Pm < 8, 200 < Re < 6400.
+            print("Lesur & Longaretti (2007), net flux, 0.12<Pm<8, 200<Re<6400:")
+            print("  delta in the range 0.25 to 0.5.")
+            if slope < 0:
+                print("  -> NEGATIVE. The setup is wrong, not the physics.")
+            elif slope < 0.25:
+                print(f"  -> ours is {slope:.2f}, just BELOW that range. Same sign and")
+                print("     order; acceptable for one unvalidated resolution, but it")
+                print("     is not agreement and should not be reported as such.")
+            elif slope <= 0.5:
+                print(f"  -> ours is {slope:.2f}, inside the published range.")
+            else:
+                print(f"  -> ours is {slope:.2f}, above the published range.")
             pm_star = 746.0
             print(f"\nEXTRAPOLATION to our star's Pm = {pm_star:.0f}: "
                   f"W/B0^2 ~ {10**inter * pm_star**slope:.4g}")

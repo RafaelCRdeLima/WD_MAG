@@ -1727,6 +1727,76 @@ Critério de sanidade fixado agora: a literatura acha inclinação de ordem 0.5�
 sobre Pm = 1–16. **Inclinação perto de zero ou negativa significa que o nosso
 arranjo está errado, não a física.**
 
+## 6.21 Resultado da varredura: inclinação 0.19, e o topo achatou
+
+Figura em `shearing_box/pm_scan.pdf`. Cinco rodadas completas a 31.8 órbitas,
+1401 amostras saturadas cada, média sobre t > 60.
+
+| Pm | ⟨E_mag⟩ | Maxwell | Reynolds | W/B0² | Max/Rey |
+|---|---|---|---|---|---|
+| 1 | 0.262 | 0.160 | 0.0335 | 19.32 ± 0.21 | 4.76 |
+| 2 | 0.326 | 0.191 | 0.0362 | 22.67 ± 0.26 | 5.26 |
+| 4 | 0.389 | 0.215 | 0.0374 | 25.24 ± 0.30 | 5.74 |
+| 8 | 0.499 | 0.271 | 0.0479 | **31.84 ± 0.33** | 5.65 |
+| 16 | 0.511 | 0.272 | 0.0473 | **31.88 ± 0.32** | 5.74 |
+
+Ajuste: **W/B0² = 19.7 · Pm^0.194**
+
+### O critério que registrei estava errado — mesmo erro de antes
+
+Escrevi em §6.20 que a literatura dá inclinação 0.5–1. **Errado.** O resumo do
+próprio [Lesur & Longaretti 2007](https://arxiv.org/abs/0704.2943) diz
+**δ entre 0.25 e 0.5**, sobre 0.12 < Pm < 8 e 200 < Re < 6400.
+
+Peguei "0.5–1" de um resumo de busca e registrei como se tivesse verificado —
+**exatamente o que produziu o erro do Pm = 0.58 na §6.19**, dois dias seguidos.
+A regra que falta é simples: *pré-registro só vale contra número que eu li na
+fonte.* Um critério pré-registrado errado é pior que nenhum, porque dá falsa
+autoridade ao veredito.
+
+Com a faixa correta, nosso 0.19 fica **logo abaixo** de 0.25–0.5. Mesmo sinal,
+mesma ordem. Aceitável para uma resolução não validada, mas **não é
+concordância** e não deve ser relatado como tal.
+
+### O achado real: o topo achatou
+
+Pm = 8 e Pm = 16 concordam em 0.039, contra 2σ = 0.92. **Indistinguíveis.**
+
+Duas leituras, e os dados não separam:
+
+1. **α(Pm) satura de verdade** acima de Pm ~ 8. Note que LL07 parou em Pm = 8 —
+   ninguém mediu além.
+2. **A 64³ a resistividade numérica já domina**, e o código não distingue
+   Rm = 8000 de Rm = 16000. Foi a ressalva que registrei em §6.20 antes de
+   existirem números, e ela disparou.
+
+O teste que separa: **Pm = 16 a 128³.** Se W subir, o ponto de 64³ era limitado
+por resolução. Custo 16× o de 64³ — cerca de 17 h com 12 threads a t_final = 100.
+**Não lancei; é a estação de trabalho do Rafael e são muitas horas de todos os
+cores.** Decisão dele.
+
+### O que dá para dizer sobre a estrela, hoje
+
+Transporte no nosso Pm ≈ 746, relativo a Pm = 1:
+
+- se a tendência continuar: **3.7×** (extrapolando 1.7 décadas)
+- se já saturou em Pm ~ 8: **1.6×**
+
+**Nos dois casos é fator de poucas unidades, não ordens de grandeza.** Isso é
+resultado útil por si: a correção de alto Pm ao transporte MRI é modesta, então
+o que decide o destino da rotação diferencial é o α em si, não o Pm.
+
+Também favorável ao MInIT: se α varia tão pouco de Pm = 1 a 746, a diferença de
+regime entre protoestrela de nêutrons e anã branca importa menos do que a §6.14
+temia — os coeficientes parasitas têm boa chance de transferir.
+
+### Aferições que passaram
+
+- Maxwell/Reynolds entre 4.8 e 5.7, acima da faixa 3–5 de fluxo nulo mas
+  esperado para fluxo líquido.
+- Saturação em ~2 órbitas nas cinco, com 30 órbitas de turbulência sustentada.
+- Nenhuma morreu — coerente com §6.19: estamos acima do Pm crítico.
+
 
 ---
 
