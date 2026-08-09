@@ -1979,6 +1979,67 @@ Sem encadeamento, deliberadamente: ao contrário do Castro cada caixa é
 independente, e uma perdida custa só a si mesma. O 128³ é 16× e **não** cabe em
 3 h — para ele, `restart = true` e resubmeter.
 
+## 6.25 Resultado da varredura de q — e o primeiro teste direto de um coeficiente do MInIT
+
+Figura em `shearing_box/q_scan.pdf`. As três a t = 200, 31.8 órbitas.
+Tempos: 1.62, 1.97 e 2.28 h — **dentro do limite de 4 h**, como previsto.
+
+| q | W/B0² | Max/Rey | \|1−4/q\| |
+|---|---|---|---|
+| 0.5 | 18.10 ± 0.39 | 30.37 | 7.000 |
+| 1.0 | 22.84 ± 0.37 | 10.87 | 3.000 |
+| 1.5 | 25.24 ± 0.30 | 5.74 | 1.667 |
+| 1.9 | 30.73 ± 0.28 | 3.62 | 1.105 |
+
+### O transporte, e por que é boa notícia
+
+**W/B0² ∝ q^0.37.** Sobe com o cisalhamento, como tem de ser — a MRI se alimenta
+dele, e γ_MRI = qΩ/2.
+
+Mas é **dependência fraca**: só 1.7× de q = 0.5 a 1.9, que é praticamente toda a
+faixa que a nossa estrela cobre. Junto com a fraqueza em Pm da §6.21, isso
+começa a formar um padrão: **α é notavelmente insensível aos parâmetros do
+regime.** Bom para nós — significa que o α ≈ 8×10⁻⁴ da §6.22 não desmonta ao
+mudar de q ou de Pm.
+
+### O achado: a lei de cisalhamento do MInIT bate
+
+Esta é a primeira vez que testamos um coeficiente do MInIT contra medida nossa.
+
+O modelo toma da teoria α^MRI = 1 − 4/q (Pessah & Chan 2008), o que **fixa a
+razão Maxwell/Reynolds como função só do cisalhamento**. Comparando:
+
+    Max/Rey medido = 3.18 · |1 − 4/q|^1.15
+
+**O expoente previsto é 1. Medimos 1.15.**
+
+A razão medida varia por fator 8.4 na nossa faixa de q, e |1−4/q| por fator 6.3 —
+o modelo captura a forma. E o expoente é **independente de convenção**: um fator
+constante entre a nossa definição de tensão e a deles muda o intercepto, não a
+inclinação.
+
+**O deslocamento de 3.2× é a questão em aberto**, e pode ser convenção pura — a
+decomposição de tensores do Pessah & Chan e o `bxby`/`vxvy` do SNOOPY em
+unidades de Alfvén não foram conferidos um contra o outro. Antes de chamar isso
+de discrepância física, ler a definição no artigo.
+
+### O que isso muda no plano
+
+Era a objeção que mais pesava contra usar os coeficientes publicados: eles vêm
+de estrela de nêutrons, e não sabíamos se transferiam. Agora sabemos que **a
+dependência em cisalhamento transfere**, ao menos em forma, no nosso regime.
+
+Falta a razão toroidal/vertical, que é a outra metade — e essa vai para o
+cluster.
+
+### Ressalva sobre o limite inferior
+
+α^MRI = 1 − 4/q **diverge quando q → 0**, que é o eixo de rotação da nossa
+estrela. A implementação publicada zera o termo MRI para q ≤ 0. Nosso ponto mais
+baixo é q = 0.5, e ali o transporte medido ainda é 18.1 — **não colapsa.** Se
+colapsa mais perto do eixo, esta varredura não diz; precisaria de q = 0.1–0.25,
+e ali o crescimento é tão lento que o custo sobe.
+
 
 ---
 
