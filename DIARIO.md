@@ -1578,6 +1578,93 @@ sobrevive num regime onde a MRI não tem como existir na malha.**
 Nenhuma merece mais precisão: a resposta é fator 15 abaixo do limiar, e as três
 juntas não movem isso.
 
+## 6.19 Pm ≈ 750, não 0.58 — e isso é boa notícia
+
+`investigations/magnetic_prandtl.py`.
+
+### A reversão
+
+Eu citei Pm ~ 0.58 a partir de um resultado de busca e construí em cima disso a
+ressalva de que os coeficientes do MInIT não transferiam e de que estaríamos
+**abaixo** do Pm crítico. Calculado para as nossas condições, **Pm ≈ 750**.
+
+O 0.58 é da zona convectiva de uma anã branca CO **fria em cristalização** —
+outro objeto, densidade e temperatura muito menores, e possivelmente com
+viscosidade iônica dominando em vez da eletrônica.
+
+### O cálculo
+
+Transporte eletrônico em matéria degenerada, [Shternin
+2008](https://arxiv.org/abs/0803.3893) Eq. (1)–(2):
+
+    η_visc = n_e v_F p_F/(5 ν_e),   ν_e = ν_ee + ν_ei
+
+A assimetria que fixa o Pm: **colisões elétron-elétron conservam o momento
+total dos elétrons**, logo não degradam corrente e **não entram na
+condutividade** — mas degradam tensão de cisalhamento e entram na viscosidade.
+
+    σ = n_e e²/(m* ν_ei)          só ei
+    η_mag = c²/(4πσ)
+    Pm = (η_visc/ρ)/η_mag ∝ 1/ν_coll²
+
+Como ν_ei ∝ n_i e tanto ν quanto σ carregam um n_e compensante, **a densidade
+iônica cancela** e o Pm depende de T só via ν_ee e o logaritmo de Coulomb —
+muito menos sensível a T do que eu supunha.
+
+### Resultado, ρ = 4.8×10⁷ g/cm³, T = 10⁸ K
+
+| | |
+|---|---|
+| x = p_F/m_e c | 2.91 (relativístico) |
+| Γ (acoplamento iônico) | 13 — líquido, fusão em ~175 |
+| ν_ee/ν_ei | 0.038 — **ei domina**, ee é correção |
+| σ | 2.2×10²² s⁻¹ |
+| ν | 2.4 cm²/s |
+| η | 3.3×10⁻³ cm²/s |
+| **Pm** | **746** |
+
+Robusto: Pm > 190 em toda a faixa ρ = 5×10⁷–10⁹ e T = 10⁷–10⁹, e permanece 31
+mesmo com logaritmo de Coulomb = 5. Para chegar a Pm = 1 seria preciso Λ ≈ 27,
+impossível.
+
+Escala estelar: Re = 2.9×10¹⁷, Rm = 2.2×10²⁰.
+
+### Duas consequências, ambas a favor
+
+1. **A preocupação com Pm_crit ~ 2–4 morre.** Estamos duas a três ordens
+   **acima**, não abaixo. A turbulência MRI não corre risco de morrer por Pm
+   baixo.
+2. **Estamos no mesmo regime de alto Pm das caixas de protoestrela de nêutrons**
+   onde os coeficientes parasitas do MInIT foram calibrados. A chance de
+   transferirem é muito maior do que eu temia em §6.14.
+
+### Mas a caixa continua sem alcançar
+
+Pm = 750 exige Rm = 750·Re. Uma DNS chegando a Re ~ 10³ precisaria de
+Rm ~ 10⁶ — fora de alcance, como o Rm = 10²⁰ físico.
+
+**A caixa limita em vez de medir:** varrer Pm = 1, 2, 4, 8, 16 a Re fixo, medir
+a tendência, e declarar a extrapolação. E aqui o sinal é conhecido — **o
+transporte cresce com Pm na literatura de discos, logo uma caixa a Pm = 16 dá
+um LIMITE INFERIOR do transporte a 750.** Limite inferior basta, se já apagar a
+rotação diferencial.
+
+A extrapolação sai de β e vai para (Rm, Pm) — mas num parâmetro cujo sinal
+sabemos.
+
+### Limitações declaradas no cabeçalho do script
+
+- Λ_ei é o ponto fraco: Pm ∝ 1/Λ² e Λ é de ordem 1 mas não é conhecido sem
+  tabelas de condutividade (condegin de Potekhin, Itoh et al.). Fica como
+  parâmetro, com a sensibilidade impressa.
+- Correlações íon-íon em líquido fortemente acoplado suprimem ν_ei abaixo da
+  estimativa não correlacionada, o que **empurraria Pm para cima**.
+- Viscosidade iônica e radiativa ignoradas. No interior degenerado os elétrons
+  dominam; num envelope convectivo frio talvez não — a razão mais provável de o
+  valor da literatura diferir.
+- **Nossa EOS é barotrópica e não tem temperatura alguma.** T é hipótese sobre
+  remanescente de fusão, não saída da simulação. Daí a varredura.
+
 
 ---
 

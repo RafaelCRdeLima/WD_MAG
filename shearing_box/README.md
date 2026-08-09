@@ -119,20 +119,35 @@ Note the inversion: $\mathrm{Pm} = \nu/\eta =$ `reynolds_magnetic`/`reynolds`.
 The stock MRI config has both at 1000, i.e. $\mathrm{Pm} = 1$. For
 $\mathrm{Pm} = 0.6$ at $\mathrm{Re} = 1000$, set `reynolds_magnetic = 600`.
 
-**$\mathrm{Pm}$ is the open parameter and the reason this matters.** A white
-dwarf sits near $\mathrm{Pm} \sim 0.6$ against very large $\mathrm{Pm}$ in a
-protoneutron star, which is where the published closure coefficients were
-calibrated — and the disc literature finds transport dying below
-$\mathrm{Pm}_{\rm crit} \sim 2$–$4$. Two things stop that from being a
-conclusion: that threshold comes from zero-net-flux boxes that rely on a
-dynamo, while we have net vertical flux and a linear instability; and the
-$0.6$ is quoted for a cool crystallising CO white dwarf, not a hot $2\,M_\odot$
-merger remnant, so it has to be recomputed for our conditions. **That
-calculation should come before the parameter scans.**
+**$\mathrm{Pm} \approx 750$, computed for our conditions**
+(`investigations/magnetic_prandtl.py`, DIARIO §6.19). An earlier note here
+said $\mathrm{Pm} \sim 0.6$, taken from the literature on the convective zone
+of a *cool crystallising* CO white dwarf. That is a different object: at our
+mean density and an assumed remnant temperature of $10^8$ K, electron
+transport gives $\nu = 2.4$ and $\eta = 3.3\times10^{-3}$ cm$^2$/s. The result
+is robust — $\mathrm{Pm}$ stays above $30$ even for a Coulomb logarithm of
+$5$, and above $190$ across the whole $\rho = 5\times10^7$–$10^9$,
+$T = 10^7$–$10^9$ range.
 
-The box does not remove extrapolation, it moves it from $\beta$ to
-$\mathrm{Rm}$: a DNS reaches $\mathrm{Rm} \sim 10^3$–$10^4$ against our
-physical $10^{14}$.
+Two consequences, both favourable:
+
+- **The $\mathrm{Pm}_{\rm crit} \sim 2$–$4$ worry is gone.** We are two to
+  three orders above it, not below.
+- **We are in the same high-$\mathrm{Pm}$ regime as the protoneutron-star
+  boxes** where the MInIT parasitic coefficients were calibrated, so they have
+  a much better chance of transferring than feared.
+
+**But the box still cannot reach it.** $\mathrm{Pm} = 750$ needs
+$\mathrm{Rm} = 750\,\mathrm{Re}$, and a DNS reaching $\mathrm{Re} \sim 10^3$
+would need $\mathrm{Rm} \sim 10^6$. So the box brackets rather than matches:
+scan $\mathrm{Pm} = 1, 2, 4, 8, 16$ at fixed $\mathrm{Re}$, measure the trend,
+and extrapolate with the extrapolation stated. **Transport rises with
+$\mathrm{Pm}$ in the disc literature, so a box at $\mathrm{Pm} = 16$ gives a
+LOWER BOUND on the transport at $750$** — and a lower bound is enough if it
+already erases the differential rotation.
+
+The box therefore does not remove extrapolation, it moves it from $\beta$ to
+$(\mathrm{Rm}, \mathrm{Pm})$, in a direction we can sign.
 
 ## What comes out
 
@@ -166,9 +181,7 @@ pattern matches the killing shell's own command line and it kills itself.
 
 ## Next
 
-1. Recompute $\nu$, $\eta$ and $\mathrm{Pm}$ for a hot $2\,M_\odot$ degenerate
-   remnant. Our EOS is barotropic and carries no temperature, so this needs an
-   assumed $T \sim 10^8$–$10^9$ K, stated as the modelling choice it is.
+1. ~~Recompute $\nu$, $\eta$ and $\mathrm{Pm}$.~~ Done: $\mathrm{Pm} \approx 750$.
 2. ~~Download the official v6.0 and diff.~~ Done; see Provenance.
 3. Reproduce a published $q = 1.5$ MRI run — validating our use, not the code.
 4. Scan $q$, $\mathrm{Pm}$, and the net-toroidal-to-vertical flux ratio, which
