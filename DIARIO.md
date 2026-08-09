@@ -1797,6 +1797,63 @@ temia — os coeficientes parasitas têm boa chance de transferir.
 - Saturação em ~2 órbitas nas cinco, com 30 órbitas de turbulência sustentada.
 - Nenhuma morreu — coerente com §6.19: estamos acima do Pm crítico.
 
+## 6.22 α ≈ 8×10⁻⁴, e o tempo de frenagem bate com a duração do run
+
+`reports/report_shearing_box.tex` (Relatório III, 8 páginas).
+
+### α, o número que faltava nomear
+
+Pm e Rm dizem em que regime o plasma está. **α é a resposta que se quer:**
+eficiência de transporte, tensão turbulenta em unidades da pressão,
+
+    α = W_ϖφ/P = [⟨ρ δv_ϖ δv_φ⟩ − ⟨B_ϖ B_φ⟩/4π]/P
+
+entrando na dinâmica como viscosidade efetiva ν_t = α c_s H.
+
+**Caixa incompressível não dá α direto** — não há pressão, o denominador não
+existe. Ela dá W/B0², e a conversão precisa do campo e da pressão da estrela:
+
+    α = (2/β)·(W/B0²),      β = P/(B_z²/8π)
+
+Logo α é pequeno na nossa estrela **não porque a MRI seja ineficiente, mas
+porque o campo vertical é fraco perante a pressão.**
+
+### A conta que incomoda
+
+Com B_pol,rms = 7×10¹⁰ G tardio (logo B_z ≈ 5×10¹⁰), P = 7.8×10²⁴ erg/cm³
+degenerada a ρ = 4.8×10⁷, e W/B0² = 32 do topo da varredura:
+
+| | |
+|---|---|
+| β no campo vertical | 8×10⁴ |
+| **α implicado** | **8×10⁻⁴** |
+| ν_t = α c_s H, H ~ R_eq | 7.6×10¹⁴ cm²/s |
+| **tempo de frenagem R²/ν_t** | **~130 s** |
+| **duração do nosso run mais longo** | **78 s** |
+
+**O tempo de frenagem é da ordem da duração do run.** Se a MRI operasse no nível
+que esta caixa mede, com o campo que a estrela de fato tem, ela teria apagado
+fração substancial da rotação diferencial dentro da janela simulada. **Nossos
+runs mostram o perfil acentuando 22.6%.**
+
+É a tensão posta quantitativamente, e é por isso que a MRI não resolvida não é
+ressalva acadêmica. Coerente em sinal com Miravet-Tenés+2025, que ligam subgrade
+numa estrela de nêutrons diferencialmente rotativa e acham achatamento.
+
+### O que enfraquece a estimativa
+
+Envelope, e declarada como tal no relatório:
+
+- **H ~ R_eq é grosseiro.** A divergência da tensão age na escala em que campo e
+  rotação variam; H efetivo maior alonga a frenagem.
+- **W/B0² = 32 é medido a Pm = 16 e q = 1.5**, não no nosso Pm nem na nossa
+  faixa de q.
+- **α ∝ B_z², e o campo usado é o tardio já decaído** — exatamente a quantidade
+  que o Relatório II mostra não convergida.
+
+Fator dez para qualquer lado não surpreenderia. **Fator 10⁴, que é o que "a
+rotação diferencial está a salvo" exigiria, surpreenderia muito.**
+
 
 ---
 
