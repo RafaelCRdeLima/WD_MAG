@@ -157,9 +157,14 @@ decaimento antes dela. O fenômeno é robusto; a escala de tempo dele não é.
 
 Extraindo a difusividade magnética numérica do decaimento medido: η_num ≈
 0.6–0.9 c_s·dx, dando **Rm ≈ 3 no 192³ e ≈ 6 no 256³**. A resistividade física
-da matéria degenerada dá Rm ~ 10¹⁸ e tempo ôhmico de 3×10¹⁰ anos.
+da matéria degenerada dá tempo ôhmico de ~10¹⁰ anos.
 
-Nossa resistividade é dezessete ordens de grandeza maior que a real. Rm ~ 5 não
+> **Número atualizado em 9/ago.** Aqui estava "Rm ~ 10¹⁸", de uma estimativa
+> antiga. O cálculo de transporte eletrônico da §6.19 dá η = 3.3×10⁻³ cm²/s e
+> portanto **Rm ≈ 2×10²⁰**. Fisicamente dizem o mesmo — "efetivamente ideal" —
+> mas fica um número só.
+
+Nossa resistividade é **vinte** ordens de grandeza maior que a real. Rm ~ 5 não
 é MHD quase-ideal — é regime difusivo, sem faixa inercial.
 
 **Consequência:** MHD não ideal é inviável aqui. Para o η explícito dominar o
@@ -1213,6 +1218,10 @@ entropia; **para nós o modo incompressível puro é exatamente certo.**
 
 ### Mas o Pm é um problema, e talvez um resultado
 
+> **Superado pela §6.19.** Os números abaixo são da zona convectiva de anã
+> branca fria em cristalização, não da nossa estrela. Calculado para as nossas
+> condições: **Pm ≈ 750**, η = 3.3×10⁻³ cm²/s, Rm ≈ 2×10²⁰.
+
 Anã branca: ν ~ 3×10⁻² cm²/s, η ~ 6×10⁻² cm²/s, **Pm ~ 0.5–0.6**, Rm ~ 10¹⁴–10¹⁵
 (zona convectiva de anã branca CO em cristalização —
 [Fuentes+2024](https://iopscience.iop.org/article/10.3847/2041-8213/ad3100)).
@@ -1853,6 +1862,63 @@ Envelope, e declarada como tal no relatório:
 
 Fator dez para qualquer lado não surpreenderia. **Fator 10⁴, que é o que "a
 rotação diferencial está a salvo" exigiria, surpreenderia muito.**
+
+## 6.23 Onde estamos, e o próximo passo
+
+### Estado em 9 de agosto
+
+| | |
+|---|---|
+| 192³ | completo, t = 60 s |
+| 256³ | analisado até 58.2 s, dados até 78 s, cadeia rumo a 100 s |
+| MRI no run global | **não resolvida**, Q ≈ 0.4 na janela da medida |
+| Pm da estrela | ≈ 750 |
+| varredura Pm | feita; inclinação 0.19, topo achatado |
+| α implicado | 8×10⁻⁴, frenagem ~130 s contra run de 78 s |
+| MInIT | não implementado |
+| Relatórios I, II, III | limitação da MRI na primeira página dos três |
+
+### O que vem: varreduras de q e de razão toroidal/vertical, na mesma leva
+
+O α de 8×10⁻⁴ foi medido em **cisalhamento Kepleriano com campo puramente
+vertical**. Nenhuma das duas condições é a nossa, e é isso que enfraquece a conta
+mais afiada que temos.
+
+**q de 0 a 2** — faixa da lei de Komatsu. Entra duas vezes: no α medido e no
+próprio coeficiente do MInIT, α^MRI = 1 − 4/q. Fecha as duas de uma vez.
+
+**Razão toroidal/vertical de 2 a 9.5** — testa a objeção da §6.15, que segue
+aberta: o MInIT é construído sobre a MRI de campo vertical e o nosso campo não é.
+Caixa com `by0` e `bz0` na nossa proporção mede qual instabilidade domina. **É o
+teste que o MInIT não pode fazer sobre si mesmo.**
+
+~3 h cada, as duas numa noite, estação local.
+
+### Em paralelo, sem custo de máquina
+
+Refazer a frenagem **radialmente**: temos Ω(ϖ), ρ e B_z do run global, dá para
+integrar o torque em vez de usar H ~ R_eq. Ataca a entrada mais fraca da §6.22.
+
+### Adiado, com razão
+
+- **128³ a Pm = 16** — resolve o achatamento, mas só move a extrapolação entre
+  1.6× e 3.7×, e já sabemos que é fator de poucas unidades. 17 h de máquina
+  inteira para não mudar conclusão.
+- **MInIT no Castro** — a resposta de verdade, semanas. Depois que as varreduras
+  disserem se os coeficientes publicados servem.
+
+### O que precisa de cluster
+
+**Só a Fase 3**, o run global 256³ com MInIT ligado. Tudo acima roda local — é
+exatamente o ganho da formulação incompressível (§6.12).
+
+### Pontas soltas
+
+- Os três relatórios estão medidos até 58.2 s enquanto há dados até 78 s.
+  Recalcular não depende de cluster e deveria vir antes de mandar ao Jorge.
+- `994518` no lovelace sem notícia desde 8/ago. Ou passou de 82.67 s, ou morreu.
+- EOS barotrópica: `microphysics/EOS/helmholtz` está instalado e ataca uma
+  ressalva que está nos dois primeiros relatórios (§6.16).
 
 
 ---
