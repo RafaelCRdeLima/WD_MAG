@@ -16,7 +16,8 @@ import math
 import re
 from pathlib import Path
 
-from analyse_pm_scan import B0, T_SAT, ORBIT, load, mean, std
+from analyse_pm_scan import (B0, T_SAT, ORBIT, load, mean, std,
+                             block_error, drifting)
 
 HERE = Path(__file__).parent
 BZ = 0.1
@@ -30,9 +31,10 @@ def summarise(tv):
     if len(sat) < 10:
         return dict(partial=True, t_end=rows[-1][0])
     w = [r[3] - r[4] for r in sat]
+    dw, bm = block_error([r[0] for r in sat], w)
     rey, mx = mean([r[3] for r in sat]), mean([-r[4] for r in sat])
-    return dict(partial=False, t_end=rows[-1][0],
-                W=mean(w) / B0**2, dW=std(w) / math.sqrt(len(w)) / B0**2,
+    return dict(partial=False, t_end=rows[-1][0], drift=drifting(bm), blocks=bm,
+                W=mean(w) / B0**2, dW=dw / B0**2,
                 em=mean([r[2] for r in sat]),
                 ratio=mx / rey if rey else float("nan"))
 
@@ -64,7 +66,11 @@ def main():
             print(f"{by:>6.2f} {by/BZ:>12.1f} {r['t_end']/ORBIT:>7.1f}   still spinning up")
             continue
         print(f"{by:>6.2f} {by/BZ:>12.1f} {r['t_end']/ORBIT:>7.1f} "
-              f"{r['W']:>9.4g} +-{r['dW']:>4.2f} {r['em']:>9.4g} {r['ratio']:>8.2f}")
+              f"{r['W']:>9.4g} +-{r['dW']:>5.2f} {r['em']:>9.4g} {r['ratio']:>8.2f}"
+              + ("   DRIFTING" if r.get("drift") else ""))
+        if r.get("blocks"):
+            print(f"{'':>28} blocos de 5 orbitas: "
+                  + " ".join(f"{b/B0**2:.1f}" for b in r["blocks"]))
 
     done = [(by, r) for by, r in pts if not r["partial"]]
     if len(done) >= 2:

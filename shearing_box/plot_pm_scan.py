@@ -25,7 +25,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from analyse_pm_scan import RUNS, B0, T_SAT, ORBIT, load, mean, std
+from analyse_pm_scan import (RUNS, B0, T_SAT, ORBIT, load, mean,
+                             block_error, drifting)
 
 PM_STAR = 746.0
 
@@ -49,7 +50,9 @@ def collect():
         if rec["saturated"]:
             w = [r[3] - r[4] for r in sat]
             rec["W"] = mean(w) / B0**2
-            rec["dW"] = std(w) / math.sqrt(len(w)) / B0**2
+            dw, bm = block_error([r[0] for r in sat], w)
+            rec["dW"] = dw / B0**2
+            rec["drift"] = drifting(bm)
             rey, mx = mean([r[3] for r in sat]), mean([-r[4] for r in sat])
             rec["ratio"] = mx / rey if rey else float("nan")
         out.append(rec)

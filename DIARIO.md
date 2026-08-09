@@ -2141,6 +2141,72 @@ incerteza dominante é a MRI não resolvida, não o comprimento da série. O
 trabalho de maior retorno é reprocessar os relatórios sobre os 78 s que já
 existem — sem cluster, e pendente há dias.
 
+## 6.28 Erro nas barras de erro de TODAS as varreduras — e o que sobra
+
+A varredura toroidal terminou (3.0–3.5 h, dentro do teto) com resultado **não
+monotônico**: 1.29×, 0.60×, 1.86× em relação à referência vertical. Antes de
+interpretar, fui checar as barras de erro. Bem que fui.
+
+### O erro
+
+Eu usava `std/√N` com N = 1401 amostras. **Amostras separadas por 0.1 unidades
+de tempo num escoamento turbulento são fortemente correlacionadas** — N não é o
+número de medidas independentes. Média por blocos de 5 órbitas mostra que as
+barras estavam subestimadas por **5 a 12×**.
+
+| run | erro ingênuo | erro por blocos | fator |
+|---|---|---|---|
+| pm04 | 0.30 | 2.10 | 7.0× |
+| by0=0.2 | 0.31 | 1.61 | 5.2× |
+| by0=0.5 | 0.14 | 1.58 | 11.2× |
+| by0=0.95 | 0.72 | 9.01 | 12.4× |
+
+Afeta **as três varreduras**. Corrigido em `analyse_pm_scan.py` com
+`block_error()`, propagado para q, toroidal e os dois gráficos.
+
+### E uma coisa que a barra de erro não capta
+
+Adicionei `drifting()` junto, porque as médias de bloco carregam informação que
+o erro sozinho esconde: **deriva monotônica significa que o run não atingiu
+estado estacionário, e aí a média não é medida nenhuma**, por menor que seja a
+barra.
+
+`by0 = 0.95`: blocos de 62.5, 60.3, 43.9, 23.6. **Caindo por fator 2.6 e ainda
+caindo.** Aquele 46.89 ± 0.72 que eu quase reportei não significava nada.
+
+### O que sobrevive
+
+**Pm:** 19.3±0.9, 22.7±0.7, 25.2±2.1, 31.8±2.0, 31.9±2.9. Extremos separados por
+~4σ, inclinação 0.19 de pé. Pm=8 e 16 indistinguíveis com 2σ = 7 — conclusão
+inalterada e agora **corretamente** justificada.
+
+**q:** 18.1±3.9, 22.8±0.9, 25.2±2.1, 30.7±2.9. Extremos por ~2.6σ. Inclinação
+0.37 sobrevive, marginal. O teste da lei de cisalhamento do MInIT usa Max/Rey,
+que varia 8.4× — muito além de erro plausível, então **aquele resultado se
+mantém**.
+
+**Toroidal:** razão 2 dá +2.7σ, razão 5 dá −3.8σ, razão 9.5 **não converge**.
+
+### O veredito da toroidal: não reportável ainda
+
+Mesmo as que não disparam a flag mostram deriva descendente nos blocos —
+by0=0.2 vai 36.6→31.9, by0=0.5 vai 19.7→14.7. Só a referência pm04 está estável
+(21.7, 31.6, 26.4, 24.3, sem tendência).
+
+Padrão claro: **quanto mais campo toroidal, mais longo o transiente.** Faz
+sentido — mais energia magnética para redistribuir antes do equilíbrio.
+
+t_final = 200 é curto demais para fluxo toroidal. Precisa de 400–600 com média
+sobre a metade final, o que é 2–3× o custo: **7–10 h, acima do teto local, vai
+para o cluster.** O `job_box_scan.pbs` já está lá; basta subir o `T_FINAL`.
+
+### A lição, que é a mesma de sempre nesta campanha
+
+Um número com barra de erro pequena e uma série que ainda deriva **parece** um
+resultado. Foi o que quase aconteceu, e o que pegou foi olhar as médias de bloco
+em vez de confiar no σ. Vale como regra: *toda média temporal reporta as médias
+de bloco junto, ou não é reportada.*
+
 
 ---
 

@@ -23,7 +23,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from analyse_pm_scan import B0, T_SAT, ORBIT, load, mean, std
+from analyse_pm_scan import (B0, T_SAT, ORBIT, load, mean,
+                             block_error, drifting)
 
 HERE = Path(__file__).parent
 INK, MUTED, ACCENT, CAUTION = "#1A1A1A", "#6B6B6B", "#31699F", "#B0561A"
@@ -43,9 +44,9 @@ def collect():
             continue
         w = [r[3] - r[4] for r in sat]
         rey, mx = mean([r[3] for r in sat]), mean([-r[4] for r in sat])
-        pts.append(dict(q=q, W=mean(w) / B0**2,
-                        dW=std(w) / math.sqrt(len(w)) / B0**2,
-                        ratio=mx / rey))
+        dw, bm = block_error([r[0] for r in sat], w)
+        pts.append(dict(q=q, W=mean(w) / B0**2, dW=dw / B0**2,
+                        drift=drifting(bm), ratio=mx / rey))
     pts.sort(key=lambda p: p["q"])
     return pts
 

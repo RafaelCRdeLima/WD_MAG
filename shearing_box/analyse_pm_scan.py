@@ -66,6 +66,43 @@ def std(xs):
     return math.sqrt(sum((x - m) ** 2 for x in xs) / (len(xs) - 1))
 
 
+BLOCK_ORBITS = 5.0
+
+
+def block_error(times, vals, block_orbits=BLOCK_ORBITS):
+    """Standard error from block averages, plus the block means themselves.
+
+    std(x)/sqrt(N) is WRONG here and was used in the first pass of all three
+    scans. Samples 0.1 time units apart in a turbulent flow are strongly
+    correlated, so N is not the number of independent measurements; the naive
+    error came out 5 to 12 times too small. Averaging over blocks longer than
+    the correlation time and taking the scatter of the block means fixes it.
+
+    The block means are returned as well, because they carry information the
+    error bar does not: a monotonic drift across them means the run has not
+    reached a statistical steady state and its mean is not a measurement at
+    all, whatever the error bar says.
+    """
+    if len(times) < 4:
+        return float("nan"), []
+    dt = times[1] - times[0]
+    per = max(1, int(round(block_orbits * ORBIT / dt)))
+    bm = [mean(vals[i:i + per]) for i in range(0, len(vals) - per + 1, per)]
+    if len(bm) < 2:
+        return float("nan"), bm
+    return std(bm) / math.sqrt(len(bm)), bm
+
+
+def drifting(bm, frac=0.35):
+    """True if the block means fall or rise monotonically by more than frac."""
+    if len(bm) < 3:
+        return False
+    mono = all(b <= a for a, b in zip(bm, bm[1:])) or \
+           all(b >= a for a, b in zip(bm, bm[1:]))
+    span = abs(bm[-1] - bm[0]) / max(abs(mean(bm)), 1e-30)
+    return mono and span > frac
+
+
 def main():
     dirs = sorted(RUNS.glob("pm*"), key=lambda p: int(re.sub(r"\D", "", p.name)))
     if not dirs:
@@ -97,10 +134,13 @@ def main():
         rey = mean([r[3] for r in sat])
         max_ = mean([-r[4] for r in sat])
         w_series = [r[3] - r[4] for r in sat]
-        w, dw = mean(w_series), std(w_series) / math.sqrt(len(w_series))
+        w = mean(w_series)
+        dw, bm = block_error([r[0] for r in sat], w_series)
+        flag = "  DRIFTING, not a steady state" if drifting(bm) else ""
         print(f"{pm:>4} {t_end/ORBIT:>7.1f} {len(sat):>5} {em:>10.4g} "
               f"{max_:>10.4g} {rey:>10.4g} {w:>10.4g} {w/B0**2:>9.4g} "
-              f"{max_/rey if rey else float('nan'):>8.2f} {dw/B0**2:>8.3g}")
+              f"{max_/rey if rey else float('nan'):>8.2f} {dw/B0**2:>8.3g}"
+              + flag)
         pts.append((pm, w / B0**2, dw / B0**2))
 
     # Has the trend flattened at the top? That is the question the
