@@ -2089,6 +2089,58 @@ passar, em vez de eu prometer acompanhar. Projeção inicial dá 0.85 h, mas é 
 fase pré-saturação com passo grande — a da varredura de q também parecia rápida
 e terminou em 2.3 h.
 
+## 6.27 Fim do 256³ em t = 82.67 s — e eu caí na armadilha que documentei
+
+### O que aconteceu
+
+O `994518` sumiu da fila. O `wdrot256.out`:
+
+    start: 15:05:26   restarting from chk58251
+    amrex::Abort::115::Error: too many subcycles. !!!
+    end:   15:06:03
+    chain: stopping, this window produced no new checkpoint
+
+**Morreu em 37 segundos, com falha numérica.** A guarda de checkpoint parou a
+cadeia corretamente — funcionou como projetada.
+
+### O erro de diagnóstico
+
+Eu li o `run_rot256.log`, achei `PRTE has lost communication ... on node adano44`
+e diagnostiquei **falha de nó**, recomendando ressubmeter. Errado.
+
+Aquele erro é de uma **janela anterior**. O `run_rot256.log` é cumulativo, e o
+`ONBOARDING.md` que eu mesmo escrevi tem a seção *"A cumulative log makes old
+errors look new"*, com a receita de limitar a busca à janela corrente:
+
+    MARK="$(wc -l < run.log)"; mpirun ...; tail -n "+$((MARK+1))" run.log
+
+Não segui. O diagnóstico certo estava no `.out` do PBS, que contém só a última
+janela porque `#PBS -o` sobrescreve — a mesma propriedade que noutro contexto é
+armadilha, aqui salvou.
+
+Segundo erro na mesma sequência: eu disse que a ausência do lock `RUNNING`
+provava saída limpa. Não prova — houve abort e o lock sumiu do mesmo jeito.
+**O diagnóstico vem do log, nunca do lock.**
+
+Terceiro: gastei duas rodadas adivinhando caminhos. Os runs do Castro vivem em
+`~/wd-mag/Castro/Exec/science/wd_scf_stability/`, seis níveis fundo — meus
+`find -maxdepth 4` e `-maxdepth 5` não alcançavam.
+
+### Consequência
+
+É **determinístico**: ressubmeter igual bate no mesmo muro em 37 s. Mesmo modo
+de falha da campanha ML e do 256³ original — `dt` colapsando até estourar o
+limite de subciclos.
+
+Duas saídas: `cfl = 0.2` com `max_subcycles = 64`, que é a alavanca que
+funcionou antes; ou **aceitar t = 82.67 s como fim do run**.
+
+**Recomendo aceitar.** Os relatórios estão medidos até 58.2 s e já temos 78 s
+processados. Chegar a 100 s acrescenta 20% de baseline a um resultado cuja
+incerteza dominante é a MRI não resolvida, não o comprimento da série. O
+trabalho de maior retorno é reprocessar os relatórios sobre os 78 s que já
+existem — sem cluster, e pendente há dias.
+
 
 ---
 
