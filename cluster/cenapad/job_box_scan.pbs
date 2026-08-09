@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -N snbox
-#PBS -q paralela
-#PBS -l nodes=2:ppn=128
+#PBS -q par128
+#PBS -l nodes=1:ppn=128
 #PBS -l walltime=03:00:00
 #PBS -o snbox.out
 #PBS -e snbox.err
@@ -15,18 +15,25 @@
 #     qsub -M your@email -m ae cluster/cenapad/job_box_scan.pbs
 #
 # ---------------------------------------------------------------------------
-# THE HONEST NOTE ABOUT ALLOCATION
+# QUEUE: par128, one node
 # ---------------------------------------------------------------------------
-# Our SNOOPY build is OpenMP-only (its MPI support is marked experimental by
-# configure and is not needed for independent boxes). So this uses ONE node,
-# and the second sits idle. It is requested anyway because `paralela` refuses
-# nodes=1 -- "Job violates queue and/or server resource limits", learned the
-# hard way on the Castro runs.
+# An earlier draft of this file used `paralela` with nodes=2, on the recorded
+# lesson that nodes=1 is refused with "Job violates queue and/or server
+# resource limits". That lesson is real but QUEUE-SPECIFIC: it was learned on
+# `paralela`. Rafael's own bwmcmc jobs run `nodes=1:ppn=128` on `par128`
+# without complaint, so the single-node request belongs here and the second
+# node -- which our OpenMP-only build could not have used anyway -- is not
+# wasted.
 #
-# That wastes half the allocation for this job. Before making a habit of it,
-# check `qstat -q` for a queue that accepts a single node, or pack the payload
-# so the 128 cores are actually full: at 8 threads a box, this node holds 16
-# concurrent runs, which is more than any scan we have planned.
+# Our SNOOPY build is OpenMP-only; its MPI support is marked experimental by
+# configure and is unnecessary for independent boxes. At 8 threads a box this
+# node holds 16 concurrent runs, more than any scan we have planned, so the
+# 128 cores can be genuinely filled by widening the payload rather than by
+# requesting more hardware.
+#
+# CHECK BEFORE THE FIRST SUBMISSION: `qstat -Qf par128 | grep -i walltime`.
+# If par128 caps walltime below the 3 h requested here, lower it and lower
+# T_FINAL to match rather than letting the job be rejected or killed.
 #
 # ---------------------------------------------------------------------------
 # WALLTIME
@@ -61,27 +68,41 @@ echo "host: $(hostname)   started: $(date)"
 mkdir -p "$BASE"
 
 # ---------------------------------------------------------------------------
-# THE PAYLOAD
+# THE PAYLOAD: TALL BOXES, which is what needs the cluster
 # ---------------------------------------------------------------------------
-# name            shear   Pm   bz0    by0
-# The toroidal scan is the point of this job. Our star's field runs from
-# B_tor/B_pol = 2 to 9.5 in amplitude, and MInIT is built on the AXISYMMETRIC
-# VERTICAL-FIELD MRI. A box carrying net toroidal flux alongside the vertical
-# one measures directly whether that is the instability operating at our ratio
-# -- which is the check MInIT cannot perform on itself.
+# The short-box toroidal scan already ran on the workstation. It measures how a
+# net toroidal field modifies the VERTICAL-field MRI, and that is all it can do:
+# the non-axisymmetric azimuthal mode has lambda ~ 6.5 v_Ay, which at our
+# ratios needs Lz of about 2, 5 and 9 against the Lz = 1 used there. It cannot
+# grow in that domain, so its absence is geometry and not physics.
 #
-# by0 = 0 is the vertical-only reference; it duplicates the workstation's
-# pm04 run and is included so the cluster and workstation can be compared
-# before any conclusion rests on mixing the two.
+# These runs give it room. That is the test MInIT cannot perform on itself:
+# MInIT builds k_MRI from v_Az alone, so if the azimuthal mode dominates at our
+# B_tor/B_pol, the closure is describing the wrong instability.
+#
+# NX, NY and NZ are #defines in gvars.h -- COMPILE TIME. Only boxsize is
+# runtime. So a taller box at fixed NZ means coarser dz, and the vertical mode
+# must stay resolved as the domain grows:
+#
+#   ratio  by0    Lz    dz(NZ=64)  Q_vert   azimuthal fits?
+#     2    0.20   2.0     0.031      21        yes
+#     5    0.50   5.0     0.078       8        yes, Q marginal
+#     9.5  0.95   9.0     0.141       5        yes, but Q_vert BELOW 6
+#
+# So the 64^3 binary covers ratios 2 and 5 and cannot do 9.5 honestly. For that
+# one, rebuild with NZ = 256 in src/problem/mri/gvars.h: Lz = 9 then gives
+# dz = 0.035 and Q = 18, at 4x the cells. Run build_snoopy.sh again into a
+# separate directory and point SNOOPY at it.
+#
+# name       shear  Pm   bz0   by0    Lz
 RUNS="
-tor0p0   1.5   4   0.1   0.0
-tor2     1.5   4   0.1   0.2
-tor5     1.5   4   0.1   0.5
-tor9p5   1.5   4   0.1   0.95
+tall_ref     1.5    4    0.1   0.0    2.0
+tall_tor2    1.5    4    0.1   0.2    2.0
+tall_tor5    1.5    4    0.1   0.5    5.0
 "
 
 launch() {
-    local name=$1 shear=$2 pm=$3 bz=$4 by=$5
+    local name=$1 shear=$2 pm=$3 bz=$4 by=$5 lz=$6
     local dir="$BASE/$name"
     # data/ MUST exist: output_vtk does fopen() without checking the result, so
     # a missing directory becomes a null FILE* and segfaults inside fwrite at
@@ -96,6 +117,7 @@ launch() {
         -e "s/dump_step = 1.0;/dump_step = 25.0;/" \
         -e "s/bz0 = 0.1;/bz0 = ${bz};/" \
         -e "s/by0 = 0.0;/by0 = ${by};/" \
+        -e "s/boxsize = (4.0, 4.0, 1.0);/boxsize = (4.0, 4.0, ${lz});/" \
         "$CFG" > "$dir/snoopy.cfg"
     ( cd "$dir" && OMP_NUM_THREADS=$THREADS "$SNOOPY" >run.log 2>&1
       echo "$name rc=$?" >> "$BASE/status" ) &
@@ -103,10 +125,10 @@ launch() {
 
 : > "$BASE/status"
 n=0
-while read -r name shear pm bz by; do
+while read -r name shear pm bz by lz; do
     [ -z "${name:-}" ] && continue
-    echo "launch $name: shear=$shear Pm=$pm bz0=$bz by0=$by threads=$THREADS"
-    launch "$name" "$shear" "$pm" "$bz" "$by"
+    echo "launch $name: shear=$shear Pm=$pm bz0=$bz by0=$by Lz=$lz threads=$THREADS"
+    launch "$name" "$shear" "$pm" "$bz" "$by" "$lz"
     n=$((n + 1))
 done <<< "$(echo "$RUNS" | grep -v '^[[:space:]]*$')"
 
