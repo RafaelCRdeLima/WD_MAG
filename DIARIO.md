@@ -2040,6 +2040,55 @@ baixo é q = 0.5, e ali o transporte medido ainda é 18.1 — **não colapsa.** 
 colapsa mais perto do eixo, esta varredura não diz; precisaria de q = 0.1–0.25,
 e ali o crescimento é tão lento que o custo sobe.
 
+## 6.26 Varredura toroidal lançada — e uma limitação de geometria pega a tempo
+
+`shearing_box/scan_toroidal.sh`. Re = 1000, Pm = 4, q = 1.5, bz0 = 0.1,
+by0 = 0.2, 0.5, 0.95 (razões 2, 5, 9.5). O by0 = 0 é o `pm_scan/pm04`.
+
+### Coube aqui, ao contrário do que eu disse ontem
+
+Em §6.24 mandei a toroidal para o cluster. Aquela conta era para **q + toroidal
+somadas**, 6 runs. Com q pronta sobram 3, uma leva de 3 × 3 threads. O cluster
+fica para o 128³, que é 16× e genuinamente não cabe.
+
+### A limitação, conferida ANTES de lançar
+
+Eu tinha prometido que esta varredura responderia *"qual instabilidade domina no
+nosso campo"*. **Ela não responde.**
+
+O modo mais instável tem λ ≈ 6.5 v_A. Com o campo toroidal:
+
+| by0 | razão | λ_toroidal | Lz preciso | cabe em Lz = 1? |
+|---|---|---|---|---|
+| 0.20 | 2.0 | 1.30 | ~2 | **não** |
+| 0.50 | 5.0 | 3.25 | ~5 | **não** |
+| 0.95 | 9.5 | 6.17 | ~9 | **não** |
+
+**A MRI azimutal não cabe na caixa em nenhuma das nossas razões**, nem na menor.
+Ela não vai crescer, e a ausência dela nestes runs será propriedade do domínio,
+não da física. Se eu não tivesse conferido, teria lido "o modo não-axissimétrico
+não aparece" como resultado.
+
+### O que a varredura responde, então
+
+**Um campo toroidal líquido, na razão da nossa estrela, modifica o transporte
+que a MRI de campo vertical produz?** Pergunta legítima e sem termo no MInIT —
+o k_MRI dele é construído só de v_Az. Se a resposta for "quase nada", a omissão
+é inofensiva na nossa geometria; se for grande, é termo que falta no fechamento.
+
+### O teste próprio, para o cluster
+
+Caixa alta. Relaxando Q de 42 para 16, dz = 0.041; com Lz = 2 e Lx = Ly = 4 dá
+98 × 98 × 49, cerca de **1.8× o custo atual** — viável para a ponta baixa da
+faixa. A ponta alta precisa de Lz ~ 9 e ~33×, com encadeamento.
+
+### Vigia com corte automático
+
+O limite de 4 h do Rafael está codificado num vigia que mata os processos se
+passar, em vez de eu prometer acompanhar. Projeção inicial dá 0.85 h, mas é a
+fase pré-saturação com passo grande — a da varredura de q também parecia rápida
+e terminou em 2.3 h.
+
 
 ---
 
