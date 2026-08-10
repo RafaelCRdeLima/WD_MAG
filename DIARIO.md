@@ -2207,6 +2207,49 @@ resultado. Foi o que quase aconteceu, e o que pegou foi olhar as médias de bloc
 em vez de confiar no σ. Vale como regra: *toda média temporal reporta as médias
 de bloco junto, ou não é reportada.*
 
+## 6.29 Relatórios reprocessados sobre 78 s — e a convergência melhorou
+
+Os três recompilam: 15, 7 e 8 páginas.
+
+### O acentuamento converge melhor
+
+Era 11% de diferença; agora é **4.5%**.
+
+| janela | 192³ | 256³ | diferença |
+|---|---|---|---|
+| t = 12 → 26.5 s | −8.2% | −1.0% | fator 8 |
+| t = 12 → 58.2 s | −22.6% | −20.3% | 11% |
+| **até o fim de cada run** | **−24.3%** (60 s) | **−25.4%** (78 s) | **4.5%** |
+
+Reforça a lição já registrada: *teste de convergência sobre janela mais curta
+que o atraso entre grids mede o atraso.* A concordância melhorou **toda vez**
+que a base foi estendida — três vezes seguidas.
+
+### Um quarto regime de frenagem
+
+Além de 60 s o 256³ vai a −0.037 %/s, contra −0.052 no terceiro. **A
+desaceleração continua em vez de assentar** — nenhuma taxa citada deve ser lida
+como assintótica, e a base de 58.2 s sugeria exatamente o contrário.
+
+E_mag segue subindo em t = 78: +131% acima do mínimo, contra +124% antes.
+
+### Um erro meu, corrigido
+
+Eu tinha invertido a atribuição: escrevi "−22.6% (256³) e −20.3% (192³)" aqui e
+em `references/README.md`. **O correto é 192³ = −22.6%, 256³ = −20.3%.**
+
+Os relatórios estavam certos — usam a convenção "192 contra 256" de forma
+consistente, incluindo nas taxas de frenagem (0.200 = 192, 0.214 = 256). Fui eu
+que li a ordem errada ao citá-los. Verificado reproduzindo os dois números do
+zero antes de mexer em qualquer coisa.
+
+### Também registrado nos relatórios
+
+O fim do 256³ em 82.7 s com a causa: abort determinístico por
+`too many subcycles` ao reiniciar, e a guarda da cadeia parando em vez de
+ressubmeter no mesmo muro. O status anterior dizia "a cadeia continua rumo a
+100 s", o que já não era verdade.
+
 
 ---
 
