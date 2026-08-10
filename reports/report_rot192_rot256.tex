@@ -65,14 +65,17 @@ $t = 12$\,s they agree on it to $1.4\%$. The instability is $m=1$ and grows in
 a few Alfv\'en times. Its rate is not converged --- it rises $47\%$ from
 $192^3$ to $256^3$ --- and the post-saturation decay is not converged either,
 in the opposite direction; the finer grid holds twice the magnetic energy at
-$t = 12$\,s. Both grids now reach $t \simeq 58$\,s, and over that baseline the
-two central dynamical claims converge: \textbf{the profile steepens by $22.6\%$
-against $20.3\%$}, and \textbf{$L_z$ brakes at half the rate once the field is
-gone --- $0.200$ against $0.214\%$\,s$^{-1}$ while it lives, $0.087$ against
-$0.094\%$\,s$^{-1}$ after --- so the identification of the transport as
-magnetic holds at two resolutions}. What does not converge is the leftover
-field: the residual magnetic energy is $25$ times larger at $256^3$ than at
-$192^3$, and at $256^3$ it is still slowly growing at $t = 58$\,s.
+$t = 12$\,s. The $192^3$ reaches $t = 60$\,s and the $256^3$
+$t = 78$\,s, and over that baseline the two central dynamical claims converge:
+\textbf{the profile steepens by $24.3\%$ against $25.4\%$}, each grid read to
+the end of its own data, and \textbf{$L_z$ brakes at half the rate once the
+field is gone --- $0.200$ against $0.214\%$\,s$^{-1}$ while it lives, $0.087$
+against $0.094\%$\,s$^{-1}$ after --- so the identification of the transport as
+magnetic holds at two resolutions}. Past $60$\,s the $256^3$ enters a
+\emph{fourth} braking regime at $-0.037\%$\,s$^{-1}$, so the deceleration
+continues rather than settling. What does not converge is the leftover field:
+the residual magnetic energy is $25$ times larger at $256^3$ than at $192^3$,
+and at $256^3$ it is still growing at $t = 78$\,s, $131\%$ above its minimum.
 \textbf{One limitation governs how the rotation result must be read: the
 magnetorotational instability is not resolved.} Measured from the
 volume-typical vertical field, the quality factor $Q = \lambda_{\mathrm{MRI}}/
@@ -110,7 +113,7 @@ disruption, when $\Epol$ is at its largest --- and decays to $\simeq 0.4$
 thereafter. $Q \ge 6$ holds in $3\%$ of the $210$ samples under the central
 assumption, in none under the isotropic one. $Q \ge 15$ is reached under no
 assumption at any time. \emph{This figure alone uses the run extended to
-$t = 78$\,s}; everything else in the report is measured to $t = 58.2$\,s. Data:
+$t = 78$\,s}, as is the rest of the report. Data:
 \texttt{investigations/mri\_wavelength.py}.}
 \label{fig:mri}
 \end{figure}
@@ -612,7 +615,7 @@ problem a physical dissipation scale instead of letting the mesh set it;
 \subsection{Past $12$\,s: three tests over a $46$\,s baseline}
 \label{sec:latewindow}
 
-The $256^3$ run reached $t = 58.2$\,s, so the two grids now overlap over almost
+The $256^3$ run reached $t = 78$\,s, so the two grids now overlap over almost
 the whole evolution. Means of two pulsation periods at each end, so the
 $\pm14\%$ breathing is averaged out rather than interpolated through.
 
@@ -655,13 +658,15 @@ $t = 30 \to 38$\,s & $-3.8\%$ & $\mathbf{-5.2\%}$ \\
 \midrule
 $t = 12 \to 26.5$\,s (a $14$\,s baseline) & $-8.2\%$ & $-1.0\%$ \\
 $t = 12 \to 58.2$\,s (a $46$\,s baseline) & $-22.6\%$ & $-20.3\%$ \\
+$t = 12 \to$ end of each run & $-24.3\%$ & $\mathbf{-25.4\%}$ \\
 \bottomrule
 \end{tabular}
 \caption{The finer grid starts about $6$\,s later, then steepens faster. The
-last two rows are the same comparison made over two baselines: at $14$\,s the
-two grids appear to disagree by a factor of eight, at $46$\,s they agree to
-$10\%$. Neither number is wrong; the short one simply does not contain the
-onset. \emph{A convergence test over a window shorter than the lag between the
+last three rows are the same comparison made over three baselines: at $14$\,s
+the two grids appear to disagree by a factor of eight, at $46$\,s they agree to
+$10\%$, and read to the end of each run ($60$ and $78$\,s) to $4.5\%$. Neither
+number is wrong; the short one simply does not contain the onset, and the
+agreement has improved every time the baseline has been extended. \emph{A convergence test over a window shorter than the lag between the
 grids measures the lag, not the physics.}}
 \label{tab:segments}
 \end{table}
@@ -703,7 +708,7 @@ This is consistent with the $\mathrm{d}x^{2.4}$ scaling of the decay: less
 numerical resistivity leaves more residual field. Taken at face value it says
 the ``disordered residual'' reported at $192^3$ is a floor set by the mesh, not
 by the star, and that the true residual is larger --- possibly much larger,
-since a run that is still gaining magnetic energy at $t = 58$\,s has not
+since a run that is still gaining magnetic energy at $t = 78$\,s has not
 reached a final state at all. The obvious mechanism is available: the
 differential rotation survives and is \emph{steepening}, so there is free shear
 energy to wind residual poloidal field back into toroidal. Whether that is a
@@ -739,7 +744,7 @@ not something two resolutions can settle.
 \item \textbf{A short baseline can invert the sign of a delayed effect.} The
       $256^3$ steepening begins about $6$\,s after the $192^3$ one. Measured to
       $t = 26.5$\,s the two grids appear to disagree by a factor of eight;
-      measured to $t = 58$\,s they agree to $10\%$. Two earlier drafts of this
+      measured to the end of each run they agree to $4.5\%$. Two earlier drafts of this
       report drew two different wrong conclusions from the short window
       (Sec.~\ref{sec:latewindow}). Any convergence test here needs a baseline
       longer than the lag between the grids, and the lag is not known in
@@ -747,7 +752,7 @@ not something two resolutions can settle.
 \item \textbf{The residual field is not converged and is not settled.} At
       $192^3$ the magnetic energy plateaus at $\simeq 3\times10^{46}$\,erg; at
       $256^3$ at $7\times10^{47}$\,erg, twenty-five times higher, and still
-      \emph{rising} at $t = 58$\,s. Everything this report says about a
+      \emph{rising} at $t = 78$\,s. Everything this report says about a
       ``disordered residual'' therefore describes a mesh-set floor rather than
       a state of the star, and the $192^3$ factor of $2170$ in $\Emag$ is an
       upper bound on the destruction. Whether the finer grid is showing a
@@ -764,11 +769,13 @@ not something two resolutions can settle.
 %======================================================================
 \section*{Status}
 
-$192^3$: complete, $t = 60$\,s. \quad
-$256^3$: analysed here to $t = 58.2$\,s. The run has since been carried to
-$t = 78$\,s and the chain continues towards $100$\,s; only
-Fig.~\ref{fig:mri} uses the longer baseline, and no other number here has been
-recomputed over it.
+$192^3$: complete, $t = 60$\,s. \quad $256^3$: complete at $t = 82.7$\,s, with
+diagnostics processed to $78$\,s; every number here is measured over that.
+
+The $256^3$ ended short of its $100$\,s target rather than reaching it:
+restarting from the last checkpoint aborted after $37$\,s with
+\texttt{too many subcycles}, deterministically, and the chain's own guard
+stopped the sequence rather than resubmitting into the same wall.
 
 Inputs, submission scripts, diagnostic tools, data and figure code are under
 version control in the \texttt{WD\_MAG} repository.

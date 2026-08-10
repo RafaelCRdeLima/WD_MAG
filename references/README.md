@@ -267,7 +267,9 @@ energies is roughly independent of rotation frequency.
 
 **This is the paper our central result has to be tested against, and the
 prediction runs the other way.** Both our grids find the differential rotation
-*steepening* — $-22.6\%$ at $256^3$, $-20.3\%$ at $192^3$. They find flattening.
+*steepening* — $-22.6\%$ at $192^3$, $-20.3\%$ at $256^3$ over the published
+baseline, and $-24.3\%$ against $-25.4\%$ once each grid is taken to the end of
+its own data. They find flattening.
 If MInIT is switched on in our runs and the profile flattens, our steepening was
 the signature of the missing MRI.
 

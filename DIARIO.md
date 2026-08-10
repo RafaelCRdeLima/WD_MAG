@@ -1118,8 +1118,8 @@ e "e se migrarmos?".
 
 ### O teste científico que isto destrava
 
-Nossos dois grids concordam que a rotação diferencial **acentua**: −22.6% (256³)
-e −20.3% (192³). Miravet-Tenés+2025, com MInIT ligado, encontram **achatamento**
+Nossos dois grids concordam que a rotação diferencial **acentua**: −22.6% (192³)
+e −20.3% (256³) — atribuição corrigida em 9/ago, eu a tinha invertido aqui. Miravet-Tenés+2025, com MInIT ligado, encontram **achatamento**
 do perfil interno, transporte de momento angular para fora, e Ω_max decaindo
 mais rápido quanto mais forte o campo (10¹⁴ G contra 3.5×10¹³ G).
 

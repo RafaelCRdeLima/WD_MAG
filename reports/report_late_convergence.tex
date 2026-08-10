@@ -44,15 +44,21 @@
 \begin{abstract}
 \noindent
 The first report compared the $192^3$ and $256^3$ runs at $t = 12$\,s. The
-$256^3$ run has since been carried to $t = 58.2$\,s, so the comparison now
-spans $46$ seconds rather than three. Three results follow. \textbf{The
-braking of $L_z$ converges}: three successive regimes, each about half the rate
-of the one before, agreeing between the grids to $7$, $7$ and $15$ percent --- so
-the identification of the angular-momentum transport as magnetic, previously
-resting on one resolution, now rests on two. \textbf{The steepening of the
-differential rotation converges}, $22.6\%$ against $20.3\%$ over the full
-baseline. \textbf{The residual magnetic field does not}: it settles a factor of
-$25$ higher on the finer grid and is still rising at $t = 58$\,s. A
+$256^3$ run has since been carried to $t = 78$\,s and the $192^3$ to $60$\,s,
+so the comparison spans $48$ seconds rather than three and the finer grid runs
+$18$ seconds beyond it. Three results follow. \textbf{The
+braking of $L_z$ converges}: three successive regimes over the shared baseline,
+each about half the rate of the one before, agreeing between the grids to $7$,
+$7$ and $19$ percent --- so the identification of the angular-momentum transport
+as magnetic, previously resting on one resolution, now rests on two. Past
+$60$\,s the $256^3$ shows a \emph{fourth} regime at $-0.037\%$\,s$^{-1}$: the
+braking does not settle at the third rate, which is what the shorter baseline
+had suggested. \textbf{The steepening of the differential rotation converges,
+and the longer baseline improves it}: $22.6\%$ against $20.3\%$ to $58.2$\,s,
+but $24.3\%$ against $25.4\%$ once each grid is taken to the end of its own
+data --- from $11\%$ apart to $4.5\%$. \textbf{The residual magnetic field does not}: it settles a factor of
+$25$ higher on the finer grid and is still rising at $t = 78$\,s, $131\%$ above
+its minimum. A
 methodological result comes with the second: over a $14$\,s window the same two
 runs appear to disagree about the steepening by a factor of eight, because the
 $256^3$ onset is some $6$\,s late. Two earlier drafts drew two different wrong
@@ -343,8 +349,14 @@ available window, so they are not visibly converging on a common level either.
 \begin{enumerate}\itemsep3pt
 \item \textbf{Strengthened.} The magnetic identification of the transport. Two
       grids, three regimes, agreement of $7$--$15\%$.
-\item \textbf{Strengthened.} The steepening of the differential rotation, now
-      converged in amplitude as well as direction.
+\item \textbf{Strengthened, and more so with the longer baseline.} The
+      steepening of the differential rotation: $11\%$ apart at $58.2$\,s,
+      $4.5\%$ apart when each grid is read to the end of its own data. Longer
+      baselines have improved this agreement every time it has been remeasured.
+\item \textbf{New.} A fourth braking regime past $60$\,s, at
+      $-0.037\%$\,s$^{-1}$ against $-0.052$ in the third. The deceleration
+      continues rather than settling, so no rate quoted here should be read as
+      the asymptotic one.
 \item \textbf{Weakened.} Everything about the end state of the field. The
       residual is a mesh floor and the destruction factor is an upper bound.
       Report~I's Table~4 should be read with that in mind: its mass, radii and
@@ -363,11 +375,12 @@ available window, so they are not visibly converging on a common level either.
 %======================================================================
 \section*{Status and next steps}
 
-$192^3$: complete, $t = 60$\,s, field diagnostics now processed over the whole
-run. \quad $256^3$: analysed here to $t = 58.2$\,s, all $164$ plotfiles
-processed; the run has since reached $t = 78$\,s and the chain continues
-towards $100$\,s. Nothing in this report has been recomputed over the longer
-baseline.
+$192^3$: complete, $t = 60$\,s, field diagnostics processed over the whole run.
+\quad $256^3$: complete at $t = 82.7$\,s, diagnostics processed to $78$\,s, and
+everything in this report is measured over that. The run ended there rather than
+at the $100$\,s target: restarting from the last checkpoint aborted after
+$37$\,s with \texttt{too many subcycles}, deterministically, and the chain's
+own guard stopped the sequence.
 
 The $192^3$ field data between $t = 12$ and $60$\,s has since been processed,
 which is why Fig.~\ref{fig:late}c carries a curve rather than the single point
@@ -403,8 +416,8 @@ $\beta \ge 1$ in the envelope and the run failed at $t = 0.06$\,s.
 \noindent
 Inputs, submission scripts, diagnostic tools, data and figure code are under
 version control in the \texttt{WD\_MAG} repository. The data behind every number
-here is \texttt{investigations/bt\_bp\_256\_long.csv}, read to $t = 58.2$\,s
-(the file has since grown to $210$ rows and $t = 78$\,s),
+here is \texttt{investigations/bt\_bp\_256\_long.csv} ($210$ rows to
+$t = 78$\,s),
 \texttt{investigations/bt\_bp\_192\_late.csv} and
 \texttt{investigations/rotation\_192.csv}.
 

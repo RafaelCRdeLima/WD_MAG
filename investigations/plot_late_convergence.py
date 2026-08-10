@@ -69,7 +69,11 @@ C_SHADE = "#f0efec"
 
 P_PULSE = 1.498
 T_MAX = 79.0
-REGIMES = [(1.5, 11.9), (12.1, 30.0), (30.0, 58.2)]
+# Three regimes both grids cover -- the 192^3 data ends at 60 s -- plus a
+# fourth that only the 256^3 reaches. The braking keeps decelerating: it does
+# not settle at the third rate, which is what the 58.2 s baseline suggested.
+REGIMES = [(1.5, 11.9), (12.1, 30.0), (30.0, 60.0)]
+REGIME_256_ONLY = (60.0, 78.0)
 
 T_MIN_192, T_MIN_256 = 41.1, 44.7      # minima of ln E_mag, parabola fit
 
@@ -127,9 +131,21 @@ def main():
             tt = np.linspace(lo, hi, 12)
             ax_l.plot(tt, s * tt + b, color=C_INK, linewidth=0.6,
                       linestyle=(0, (1, 1.6)))
+    # the 256^3-only fourth regime
+    t, lz = d256["t"], d256["Lz_star"]
+    ref = lz[np.abs(t - 12.0) <= 1.5].mean()
+    m = (t >= REGIME_256_ONLY[0]) & (t <= REGIME_256_ONLY[1])
+    if m.sum() >= 4:
+        s4, b4 = np.polyfit(t[m], lz[m] / ref, 1)
+        tt = np.linspace(*REGIME_256_ONLY, 12)
+        ax_l.plot(tt, s4 * tt + b4, color=C_256, linewidth=0.8,
+                  linestyle=(0, (1, 1.6)))
+        ax_l.text(69.0, 0.9565, r"$-0.037$", color=C_256, fontsize=5.4,
+                  ha="center", va="bottom")
+
     for (lo, hi), lab, yy in zip(REGIMES,
                                  (r"$-0.200\,|\,-0.214$", r"$-0.087\,|\,-0.094$",
-                                  r"$-0.045\,|\,-0.052$"),
+                                  r"$-0.044\,|\,-0.052$"),
                                  (0.9565, 0.9565, 0.9565)):
         # along the bottom, not the top: the top-left corner belongs to the
         # panel letter and the first label landed on top of it
