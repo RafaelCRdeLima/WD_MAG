@@ -43,12 +43,26 @@ remanescente de fusão, não modelo de estrela observada.
 
 | run | malha | alcance | estado |
 |---|---|---|---|
-| `dir_rot192` | 192³ | t = 60 s | completo, campo processado até 60 s |
-| `dir_rot256` | 256³ | rumo a 100 s | processado até 64.5 s; corrente ativa |
+| `dir_rot192` | 192³ | t = 60 s | **completo**, campo processado até 60 s |
+| `dir_rot256` | 256³ | t = 82.7 s | **encerrado**, diagnósticos até 78 s |
 | `dir_mixed192` | 192³ | — | campanha TT, morreu em t = 0.06 s, removido |
+| `dir_ml256` | 256³ | — | campanha ML, abortou no passo 712 |
 
-O 256³ foi encadeado em janelas de 3 h, quatorze submissões, ~35–40 h de CPU em
-256 núcleos e ~460 GB de saída depois da poda de checkpoints.
+O 256³ foi encadeado em janelas de 3 h em 256 núcleos, ~460 GB de saída depois
+da poda. **Parou em 82.7 s em vez dos 100 s do alvo:** reiniciar do último
+checkpoint abortou em 37 s com `too many subcycles`, deterministicamente, e a
+guarda da cadeia parou a sequência em vez de ressubmeter no mesmo muro (§6.27).
+
+### Caixas de cisalhamento — SNOOPY, local
+
+| varredura | pontos | estado |
+|---|---|---|
+| Pm = 1…16 | 5 | completa, 31.8 órbitas cada |
+| q = 0.5…1.9 | 3 + 1 | completa |
+| toroidal/vertical = 2…9.5 | 3 + 1 | **não reportável** — transiente longo demais (§6.28) |
+
+Todas a 64³, Re = 1000, fluxo vertical líquido. Rodam na estação em ~2–3 h por
+leva; o cluster só volta a ser necessário para caixa alta e para o 128³.
 
 ---
 
@@ -2326,42 +2340,93 @@ para qualquer lado permanece.
 
 ## 7. Produtos
 
-- `reports/report_rot192_rot256.pdf` — relatório I, 13 páginas, física primeiro,
-  numérica ao fim.
-- `reports/report_late_convergence.pdf` — relatório II, 6 páginas, os três
-  testes sobre 46 s de base.
-- `investigations/bt_bp_256_long.csv` — 178 linhas, t = 0 a 64.5 s, 18 colunas.
-- `investigations/bt_bp_192_late.csv` — campo do 192³ de t = 12 a 60 s.
-- `investigations/plot_late_convergence.py` — a figura dos três testes.
+### Relatórios
+
+- `reports/report_rot192_rot256.pdf` — **relatório I**, 15 páginas. Física
+  primeiro, numérica ao fim, limitação da MRI na primeira página.
+- `reports/report_late_convergence.pdf` — **relatório II**, 7 páginas. Os três
+  testes de convergência, agora sobre a base completa.
+- `reports/report_shearing_box.pdf` — **relatório III**, 9 páginas. Pm, Rm e α
+  definidos; a varredura; o torque.
+
+### Dados
+
+- `investigations/bt_bp_256_long.csv` — 210 linhas, t = 0 a 78 s, 18 colunas.
+- `investigations/bt_bp_192_late.csv` — campo do 192³, t = 12 a 60 s.
+- `investigations/rotation_192.csv` — rotação do 192³ até 60 s, com `r_half`.
+- `shearing_box/runs/{pm,q,tor}_scan/` — as três varreduras (não versionadas).
+
+### Análise
+
+- `investigations/mri_wavelength.py` — Q do B_z típico em volume. **Q ≈ 0.4.**
+- `investigations/magnetic_prandtl.py` — transporte eletrônico. **Pm ≈ 750.**
+- `investigations/braking_torque.py` — o torque através de r½, e a comparação
+  com o transporte observado.
+- `investigations/plot_late_convergence.py` — os três testes, com o quarto
+  regime de frenagem.
+- `shearing_box/analyse_*.py`, `plot_*.py` — as varreduras, com erro por blocos
+  e detecção de deriva.
 - `tools/fbtbp.cpp`, `fslice.cpp`, `fmodes.cpp` — diagnósticos reconstruídos.
+
+### Infraestrutura
+
+- `shearing_box/build.sh` — FFTW + SNOOPY local, sem root.
+- `cluster/cenapad/build_snoopy.sh`, `job_box_scan.pbs` — o mesmo no lovelace,
+  `par128` com um nó.
 - `cluster/cenapad/ONBOARDING.md` — o que a infraestrutura custou aprender.
+- `references/` — seis artigos com fichas, incluindo os dois do MInIT.
 
 ---
 
-## 8. Em aberto, revisto depois da busca de literatura
+## 8. Em aberto, revisto em 9 de agosto
 
-**O teste que decide o crescimento: rodar sem rotação diferencial.** Se E_mag
-parar de crescer, o mecanismo é cisalhamento e a afirmação fica limpa. Se
-persistir, é numérico. Mais barato que estender o 192³ e responde o que a
-comparação entre malhas não responde — porque as duas malhas compartilham o
-mesmo defeito.
+### O estado da questão central
 
-**Incluir a MRI é possível e não exige refinamento.** λ_MRI ∝ B_z, então basta
-um campo poloidal interior de ~10¹³ G para trazê-la a ~11 células no 256³,
-dentro da janela 8.8×10¹² < B_z < 2.4×10¹⁴ G e com o campo total em 0.76 B_c.
-O obstáculo é o mesmo da campanha TT: o campo precisa ser **confinado**, e o
-SCF atual só sabe impor dipolo de vácuo.
+A campanha tem dois resultados sólidos — a estrela sobrevive a 2 M⊙, e o campo
+ordenado é destruído por m=1 — e uma limitação quantificada em vez de omitida:
+**Q ≈ 0.4**, a MRI não é resolvida.
 
-**A correção única que destrava as duas coisas:** trocar a fonte de
-Grad–Shafranov por uma concentrada num toro e recalibrar pelo pico interior.
-Isso dá simultaneamente o toro torcido (energias comparáveis, geometria estável
-de Braithwaite) e a MRI resolvida. É a próxima peça de trabalho e é de
-modelagem, não de máquina.
+A tensão que isso gerava está **reformulada, não dissolvida** (§6.30). Não é que
+a MRI teria apagado a rotação diferencial dentro do run; é que ela carrega
+**1.3× o transporte observado, no sentido oposto**. Efeito competidor de
+primeira ordem, de tamanho conhecido.
 
-**Continua em aberto sem caminho barato:** se a taxa de crescimento é física.
-Ela cai 2.5× de 192³ para 256³, igual ao decaimento antes dela. Uma terceira
-malha custaria ~5× o 256³ e ainda assim não separaria efeito Ω de MRI mal
-resolvida.
+**Isso é publicável.** A limitação deixa de ser incerteza ilimitada.
 
-**Descartado:** MHD não ideal, por aritmética (seção 3.3). Estender o 192³ além
-de 60 s, porque o ganho que eu atribuía a isso não existe (seção 6.3).
+### O próximo passo de verdade
+
+**MInIT no Castro**, com a hipótese que a §6.30 tornou específica: ligue-a e
+veja se o acentuamento sobrevive. Semanas de código; o gancho existe no
+`problem_source.H`. A dependência em cisalhamento do modelo já foi verificada
+contra medida nossa (§6.25) e bate em forma.
+
+Antes disso, uma leitura: a convenção do Pessah & Chan, que decide se o
+deslocamento de 3.2× no teste é discrepância física ou fator de unidade.
+
+### Barato e ainda não feito
+
+- **Caixa toroidal com t_final = 400–600** no cluster; a de 200 não converge.
+- **128³ a Pm = 16**, para separar achatamento físico de resistividade numérica.
+- **EOS não barotrópica**: `microphysics/EOS/helmholtz` está instalado e ataca
+  a ressalva dos 6×10⁴⁹ erg sem destino, que está nos relatórios I e II.
+
+### Continua em aberto sem caminho barato
+
+Se a taxa de crescimento do campo residual é física. Ela cai 2.5× de 192³ para
+256³, igual ao decaimento antes dela, e uma terceira malha custaria ~5× o 256³
+sem separar efeito Ω de MRI mal resolvida.
+
+E **nada toca o campo**: a caixa não tem curvatura, logo não tem Tayler, e o
+MInIT entra só no momento, não na indução. Metade da história segue sem
+contraparte de cálculo.
+
+### Descartado, com razão registrada
+
+- **MHD não ideal**, por aritmética (§3.3): não há janela entre η explícito
+  dominar o numérico e Rm ≳ 10.
+- **LES**, porque a Rm ≈ 5 não há cascata a modelar (§6.10).
+- **Toro torcido**, que violou β ≥ 1 no envelope e morreu em t = 0.06 s.
+- **Estender o 192³ além de 60 s** (§6.3).
+- **Trocar de código** — FLASH segura a estrela 10× pior, Einstein Toolkit
+  falha na compacidade de 9.3×10⁻⁴, e PLUTO tem a mesma parede acústica
+  (§6.16).
