@@ -69,10 +69,15 @@ is not settled here. Either way the transport at the stellar $\Pm$ is
 $1.6$--$3.7$ times the $\Pm = 1$ value --- a factor of a few, not orders of
 magnitude, so it is $\alpha$ and not the Prandtl number that decides the
 outcome. Converting the measured stress to the star gives
-$\alpha \sim 8\times10^{-4}$ and a braking time of order $130$\,s against a
-run length of $78$\,s: \textbf{if the MRI ran at the level this box measures, it
-should already have erased much of the differential rotation our runs find
-steepening.} That estimate is an order of magnitude and is presented as one.
+$\alpha \sim 8\times10^{-4}$. An envelope estimate put the braking time at
+$130$\,s against a $78$\,s run; replacing it with an actual torque across the
+half-mass radius gives $293$--$557$\,s, four times longer, so the rotation would
+\emph{not} have been erased inside our run. What replaces that claim is sharper:
+\textbf{the predicted MRI torque is $1.3$ times the angular-momentum transport
+we actually observe, and opposite in sign.} The observed transport is inward and
+produces the steepening; the MRI would drive it outward. It is a leading-order
+competing effect of the same size, and whether the steepening survives it cannot
+be settled by anything measured here.
 \end{abstract}
 
 %======================================================================
@@ -391,27 +396,82 @@ matter are the last two.}
 \label{tab:brake}
 \end{table}
 
-The braking time is comparable to the duration of the run. If the MRI operated
-at the transport level this box measures, with the field the star actually has,
-it would have erased a substantial fraction of the differential rotation within
-the window we simulated. \textbf{Our runs instead show the profile steepening by
-$22.6\%$.}
+\subsection{Done properly: an actual torque}
 
-That is the tension stated quantitatively, and it is the reason the unresolved
-MRI is not an academic caveat. It is also consistent in sign with
-\citet{miravet2025}, who switch on a subgrid MRI closure in a differentially
-rotating magnetised neutron star and find the inner profile flattening while we
-find it steepening.
+$H \sim \Req$ was the crudest input in that chain and the conclusion is sharp
+enough to be worth replacing. The turbulent stress exerts a torque across the
+cylinder separating the inner half of the mass from the outer half, so the
+inner region redistributes its angular momentum on
+\begin{equation}
+  \tau = \frac{L_{z,\mathrm{inner}}}{G(r_{1/2})},
+  \qquad
+  G = 2\pi r_{1/2}^2\, Z(r_{1/2})\, W,
+  \qquad
+  W = \Big(\tfrac{W}{B_0^2}\Big)_{\!\mathrm{box}} \frac{B_z^2}{4\pi},
+\end{equation}
+with $L_{z,\mathrm{inner}}$, $r_{1/2}$ and the shell definitions taken from the
+diagnostic itself and $Z$ the star's vertical extent there. A second
+improvement comes with it: $r_{1/2} = 0.26\,\Req$, where the Komatsu law gives
+$q = 0.47$, and the $q$ scan measures $W/B_0^2 = 18.1$ there rather than the
+$32$ of Keplerian shear.
 
-\paragraph{What would weaken this estimate.} It is a back-of-envelope and
-should be read as one. $H \sim \Req$ is crude: the stress divergence acts over
-whatever scale the field and rotation vary on, and a larger effective $H$ gives
-a longer braking time. $W/B_0^2 = 32$ is measured at $\Pm = 16$ and $q = 1.5$,
-not at our star's $\Pm$ or its range of $q$. The field used is the decayed
-late-time one, and $\alpha \propto B_z^2$, so it is sensitive to exactly the
-quantity Report~II shows is not converged. A factor of ten in the braking time
-in either direction would not be surprising --- but a factor of $10^{4}$, which
-is what ``the differential rotation is safe'' would require, would be.
+This gives $\tau = 557$\,s, or $293$--$428$\,s once the $\Pm$ correction is
+folded in --- \textbf{four times longer than the envelope}. So the sharpest
+version of the claim, that the rotation should already have been erased inside
+our run, does not survive doing the calculation properly.
+
+\subsection{What replaces it, and it is sharper}
+
+The comparison that decides the question is not against the star's total
+angular-momentum loss, which is $L_z$ leaving the star altogether and a
+different thing from internal redistribution. It is against the observed rate
+of change of the \emph{inner} region's angular momentum, since that and the MRI
+torque are both the rate at which $L_z$ crosses $r_{1/2}$.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lrr}
+\toprule
+over $t = 30$--$78$\,s & & \\
+\midrule
+observed $\mathrm{d}L_{z,\mathrm{inner}}/\mathrm{d}t$ & $+4.21\times10^{46}$ & erg \\
+observed $\mathrm{d}L_{z,\mathrm{outer}}/\mathrm{d}t$ & $-1.35\times10^{47}$ & erg \\
+\midrule
+predicted MRI torque $G$ & $5.59\times10^{46}$ & erg \\
+\bottomrule
+\end{tabular}
+\caption{The inner region \emph{gains} angular momentum while the outer loses
+it: transport is inward, which is the steepening. The MRI would drive it
+outward.}
+\label{tab:torque}
+\end{table}
+
+\textbf{The predicted MRI torque is $1.3$ times the observed inward transport,
+and opposite in sign.} That is the result: not that the MRI would have erased
+the differential rotation, but that it is a \emph{leading-order competing
+effect} of the same size as the transport producing the steepening, pointing
+the other way. Switching it on could plausibly cancel the steepening rather
+than merely dent it, and the sign of the outcome is not predictable from
+anything measured here.
+
+This is consistent with \citet{miravet2025}, who switch on a subgrid MRI
+closure in a differentially rotating magnetised neutron star and find the inner
+profile flattening where we find it steepening.
+
+\paragraph{Two things the late window adds.} Past $60$\,s the inner region stops
+gaining --- $\mathrm{d}L_{z,\mathrm{inner}}/\mathrm{d}t$ falls to
+$-1.5\times10^{44}$, essentially zero --- while the outer keeps losing. The
+steepening continues at half its earlier rate, $-0.32$ against
+$-0.62\%$\,s$^{-1}$, but it is now driven by the outer region shedding angular
+momentum rather than the inner gaining it. Those are different mechanisms and
+only the first competes directly with the MRI.
+
+\paragraph{What still limits the estimate.} $B_z$ is taken uniform at the
+volume-typical value, and $\alpha \propto B_z^2$; if the field is weaker at
+$r_{1/2}$ than on average, the torque falls and $\tau$ rises. $r_{1/2}$ is
+imported from the $192^3$ diagnostic, which carries it where the $256^3$ CSV
+does not. And the field itself is the decayed late-time one, which Report~II
+shows is not converged. A factor of a few either way remains.
 
 %======================================================================
 \section{What this says about the star, and what it does not}

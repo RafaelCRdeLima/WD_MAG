@@ -2250,6 +2250,77 @@ O fim do 256³ em 82.7 s com a causa: abort determinístico por
 ressubmeter no mesmo muro. O status anterior dizia "a cadeia continua rumo a
 100 s", o que já não era verdade.
 
+## 6.30 A tensão resolvida — reformulada, não dissolvida
+
+`investigations/braking_torque.py`. Era o item que eu vinha adiando e que
+decidia se o artigo sai como está.
+
+### A estimativa de 130 s não sobrevive
+
+Trocando o H ~ R_eq por um torque de verdade através do raio de meia-massa:
+
+    τ = L_z,inner / G(r½),   G = 2π r½² Z(r½) W,   W = (W/B0²)_caixa · B_z²/4π
+
+com L_z,inner, r½ e as cascas vindo do próprio diagnóstico. Segunda melhoria
+junto: r½ = 0.26 R_eq, onde a lei de Komatsu dá **q = 0.47**, e a varredura de q
+mede 18.1 ali em vez dos 32 do Kepleriano.
+
+**τ = 557 s**, ou 293–428 s com a correção de Pm. **Quatro vezes mais que os
+135 s do envelope.** A afirmação de que a rotação já teria sido apagada dentro
+do run **não sobrevive** à conta feita direito.
+
+### O que a substitui é mais afiado
+
+A comparação certa não é contra a perda total de L_z da estrela — isso é L_z
+saindo do objeto, coisa diferente de redistribuição interna. É contra a taxa
+observada de variação do L_z **interno**, porque ela e o torque da MRI são ambos
+a taxa com que L_z cruza r½.
+
+| t = 30–78 s | |
+|---|---|
+| dL_z,inner/dt observado | **+4.21×10⁴⁶ erg** |
+| dL_z,outer/dt observado | −1.35×10⁴⁷ erg |
+| torque MRI previsto | **5.59×10⁴⁶ erg** |
+
+O interno **ganha** enquanto o externo perde: o transporte é **para dentro**, e
+é isso que produz o acentuamento. A MRI o levaria para fora.
+
+**O torque previsto é 1.3× o transporte observado, e de sinal oposto.**
+
+Não é que a MRI teria apagado a rotação diferencial. É que ela é **efeito
+competidor de primeira ordem, do mesmo tamanho do que produz o acentuamento,
+apontando ao contrário.** Ligá-la pode cancelar o acentuamento em vez de apenas
+amassá-lo — e o sinal do resultado não é previsível por nada medido aqui.
+
+Coerente com Miravet-Tenés+2025, que ligam subgrade numa estrela de nêutrons
+diferencialmente rotativa e acham achatamento onde nós achamos acentuamento.
+
+### O que a janela tardia acrescenta
+
+Além de 60 s o interno **para de ganhar** — dL_z,inner/dt cai para
+−1.5×10⁴⁴, praticamente zero — enquanto o externo segue perdendo. O
+acentuamento continua a metade da taxa anterior (−0.32 contra −0.62 %/s), mas
+agora é o **externo perdendo**, não o interno ganhando. São mecanismos
+diferentes, e só o primeiro compete diretamente com a MRI.
+
+### O que isso decide
+
+**O artigo sai como está**, com a limitação da MRI declarada como efeito
+competidor de tamanho conhecido em vez de incerteza ilimitada. Isso é
+qualitativamente diferente de "não sabemos".
+
+E dá ao MInIT a motivação específica que faltava: não "a MRI pode importar",
+mas **"a MRI carrega 1.3× o torque observado, no sentido oposto; ligue-a e veja
+se o acentuamento sobrevive."**
+
+### Limitações que ficam
+
+B_z tomado uniforme no valor típico em volume, e α ∝ B_z² — se o campo for mais
+fraco em r½ que na média, o torque cai e τ sobe. O r½ é importado do
+diagnóstico do 192³, que o carrega onde o CSV do 256³ não. E o campo é o tardio
+já decaído, que o Relatório II mostra não convergido. Fator de poucas unidades
+para qualquer lado permanece.
+
 
 ---
 
