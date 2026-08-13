@@ -24,22 +24,22 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LIVE="$REPO_ROOT/castro/Exec/science/wd_scf_stability"
 MIRROR="$REPO_ROOT/castro_problems/wd_scf_stability"
 
+# Sources are listed explicitly; inputs files are NOT, and are globbed below.
+#
+# They used to be listed, and the list silently fell behind: it was written
+# before inputs.rot128/rot192/rot256, mixed192, ml256, res96/res128,
+# control_equil and hz256 existed, so `restore` quietly delivered a tree
+# missing the input file the run actually needed. That cost a build cycle on
+# lovelace, where the failure surfaced as "qsub: script file: No such file"
+# three commands later rather than as a missing input.
+#
+# Globbing is right here because every inputs.* in either tree belongs to this
+# problem. A file appearing on one side and not the other is the normal case
+# during development and is what sync exists to fix.
 SOURCE_FILES=(
     GNUmakefile
     Make.package
     _prob_params
-    inputs.ic_check
-    inputs.evolve
-    inputs.control_nofield
-    inputs.prod96
-    inputs.control96
-    inputs.control64
-    inputs.nodamp96
-    inputs.nodamp128
-    inputs.scan_M1p50
-    inputs.scan_M1p70
-    inputs.scan_M1p85
-    inputs.tightbox
     mu2.net
     problem_initialize.H
     problem_initialize_state_data.H
@@ -55,6 +55,14 @@ SOURCE_FILES=(
     Problem_Derives.H
 )
 
+# every inputs.* present on the side being read from
+collect_inputs() {
+    local dir="$1" f
+    for f in "$dir"/inputs.*; do
+        [ -e "$f" ] && SOURCE_FILES+=("$(basename "$f")")
+    done
+}
+
 usage() {
     echo "usage: $0 {save|restore}" >&2
     exit 1
@@ -65,6 +73,7 @@ usage() {
 case "$1" in
     save)
         [ -d "$LIVE" ] || { echo "error: $LIVE does not exist -- nothing to save" >&2; exit 1; }
+        collect_inputs "$LIVE"
         mkdir -p "$MIRROR"
         for f in "${SOURCE_FILES[@]}"; do
             if [ -f "$LIVE/$f" ]; then
@@ -77,6 +86,7 @@ case "$1" in
         ;;
     restore)
         [ -d "$MIRROR" ] || { echo "error: $MIRROR does not exist -- nothing to restore" >&2; exit 1; }
+        collect_inputs "$MIRROR"
         mkdir -p "$LIVE"
         for f in "${SOURCE_FILES[@]}"; do
             if [ -f "$MIRROR/$f" ]; then
