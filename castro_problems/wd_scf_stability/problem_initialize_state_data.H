@@ -25,12 +25,17 @@ void problem_initialize_state_data (int i, int j, int k,
     // these runs, docs/teoria.md Sec 6.5) or Castro aborts at init.
     state(i,j,k,URHO) = amrex::max(rho, problem::ambient_density);
 
-    // The EOS here is ztwd, the same zero-temperature degenerate equation of
-    // state the SCF solved with, so the density profile IS an equilibrium
-    // under it -- that is what makes this a test of the FIELD's stability
-    // rather than of a structural transient. Temperature is carried but
-    // thermodynamically inert.
-    state(i,j,k,UTEMP) = 1.0e5_rt;
+    // With EOS_DIR = ztwd, the same zero-temperature degenerate equation of
+    // state the SCF solved with, the density profile IS an equilibrium under
+    // it -- that is what makes this a test of the FIELD's stability rather
+    // than of a structural transient, and temperature is carried but
+    // thermodynamically inert, so the default 1.0e5 is a placeholder.
+    //
+    // With EOS_DIR = helmholtz it is NOT inert. Set problem.initial_temperature
+    // from the inputs file to a value at which the ion and radiation pressures
+    // are still negligible against the degenerate one, or the star is balanced
+    // against one EOS and evolved under another. See _prob_params.
+    state(i,j,k,UTEMP) = problem::initial_temperature;
     for (int n = 0; n < NumSpec; n++) {
         state(i,j,k,UFS+n) = (n == 0) ? 1.0_rt : 0.0_rt;
     }

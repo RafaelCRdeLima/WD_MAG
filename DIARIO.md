@@ -2430,3 +2430,81 @@ contraparte de cálculo.
 - **Trocar de código** — FLASH segura a estrela 10× pior, Einstein Toolkit
   falha na compacidade de 9.3×10⁻⁴, e PLUTO tem a mesma parede acústica
   (§6.16).
+
+---
+
+## 9. Avaliação de 9 de agosto: é publicável, e o que falta
+
+Rafael voltou depois de uma semana e pediu um veredito. Registro o que respondi
+e o que decorreu dele.
+
+### O enquadramento que funciona
+
+Não dá para escrever "mostramos que uma anã branca magnetizada de 2 M⊙ é
+dinamicamente estável". Dá para escrever algo mais forte:
+
+> A literatura de equilíbrio constrói essas estrelas com campo ordenado de
+> 10¹⁴ G. Uma evolução 3D destrói esse campo em poucos tempos de Alfvén — mas a
+> estrela e a rotação diferencial que a sustenta sobrevivem.
+
+Bate direto nos quatro artigos de `references/`, todos de estrutura, nenhum com
+dinâmica.
+
+### A objeção que dói, e ela é pior do que o relatório dizia
+
+Fui verificar quando o campo excede B_c e a resposta é **concentrada, não
+espalhada**:
+
+| janela | acima de B_c | max |
+|---|---|---|
+| 0–12 s | **49%** | 1.88 B_c |
+| 12–30 s | 0% | 0.77 |
+| 30–78 s | 0% | 0.35 |
+
+Primeira em t = 0.4 s, última em t = 4.4 s. **É exatamente a janela da ruptura
+m=1.** O relatório dizia "48% dos instantes amostrados", o que soa como ruído
+distribuído; na verdade é o resultado negativo principal caindo justo no regime
+onde uma EOS degenerada não-magnética é menos defensável.
+
+Os resultados de rotação, medidos de 12 s em diante, estão **inteiramente
+limpos**.
+
+### Campanha HZ, preparada
+
+A resposta é rodar com `helmholtz`, que já está instalado. Números que
+justificam:
+
+| | T = 10⁷ K | após absorver 6.06×10⁴⁹ erg |
+|---|---|---|
+| ΔT | — | 4.9×10⁸ K |
+| P_ion/P_deg (média) | 1.3×10⁻³ | **6.2%** |
+| P_ion/P_deg (núcleo) | 4.3×10⁻⁴ | 2.1% |
+| T/T_F | — | 0.027, segue degenerado |
+
+A frio o perfil ztwd **continua equilíbrio a 0.1%** — o run parte sem o
+transiente estrutural que causou o colapso do Step 3. Quente, a estrela ganha
+6% de pressão iônica: resposta estrutural que a EOS barotrópica não pode
+mostrar.
+
+**Mudança mínima:** a temperatura inicial virou `problem.initial_temperature`
+em vez de hardcode, para uma árvore servir aos dois EOS. Sob ztwd fica no 1e5
+inerte de sempre.
+
+Arquivos: `castro_problems/wd_scf_stability/inputs.hz256`,
+`cluster/cenapad/job_hz256.pbs`. Alvo t = 20 s — o campo morre em ~12 s e a
+resposta térmica segue em poucos t_dyn, então 20 s cobre o fenômeno em 3–4
+janelas em vez de quatorze.
+
+### O que falsificaria o ponto
+
+Se T ficar perto de 10⁷, a energia dissipada **não** está chegando à energia
+interna — está saindo pela malha, e a EOS barotrópica não escondia nada. Isso
+seria um resultado por si, e negativo para a motivação do run.
+
+### Ordem de prioridade que sai disso
+
+1. **HZ**, que transforma o resultado do campo de "com ressalva séria" em
+   sólido. Se não der, rebaixar o campo a resultado secundário e construir o
+   artigo sobre a rotação, que está limpa.
+2. **MInIT**, com a hipótese específica da §6.30.
+3. Caixa toroidal longa e 128³, ambos no cluster.

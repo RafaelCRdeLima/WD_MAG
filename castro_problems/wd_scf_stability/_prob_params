@@ -26,6 +26,20 @@ field_cutoff_frac                 real           0.8_rt         y
 
 surface_density_frac              real           1.0e-6_rt      y
 
+# Initial temperature of the star. Under ztwd this is thermodynamically inert
+# and 1.0e5 is a placeholder. Under helmholtz it is NOT inert, and it has to be
+# low enough that the ztwd density profile is still an equilibrium under the
+# new EOS -- otherwise the star arrives balanced against one pressure and is
+# evolved under another, which is the Step 3 collapse (docs/teoria.md 6.4).
+#
+# At 1.0e7 K, P_ion/P_deg is 1.3e-3 at the mean density and 4.3e-4 in the core,
+# so the profile is undisturbed to a tenth of a percent. That leaves the star
+# cold enough to START clean and free to heat: the 6.06e49 erg the field loses
+# would raise it by ~4.9e8 K if it all went to the ions, at which point
+# P_ion/P_deg reaches 6% -- a structural response the barotropic EOS cannot
+# show, and the reason for running this at all.
+initial_temperature               real           1.0e5_rt       y
+
 # Ambient floor for the initial data. MUST sit above castro.small_dens
 # (1.0e4 g/cm^3 for these runs, Sec 6.5) or Castro aborts at init with
 # "initial data has rho <~ small_dens". Kept separate from

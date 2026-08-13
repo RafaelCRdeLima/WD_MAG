@@ -1,0 +1,151 @@
+# Campaign HZ -- the same star under a NON-BAROTROPIC equation of state.
+#
+# ================================================================
+# WHY
+# ================================================================
+#
+# Every result this campaign has about the FIELD rests on runs whose EOS has
+# no thermal reservoir. ztwd is zero-temperature degenerate, so the
+# 6.06e49 erg that leave the ordered field have no physical destination and
+# are dissipated at the grid scale. We can say the field is destroyed; we
+# cannot say where the energy went, and we cannot let the star respond to it.
+#
+# Worse, and this is what makes the run urgent rather than tidy: the field
+# exceeds the Landau critical field B_c ONLY between t = 0.4 and 4.4 s --
+# 49% of the samples in the first 12 s, and never afterwards. That window is
+# exactly where the m=1 disruption happens. So the headline negative result,
+# "the ordered field is destroyed", is the one part of the campaign that sits
+# inside the regime where a non-magnetic degenerate EOS is least defensible.
+# The rotation results, measured from t = 12 s on, are entirely clean.
+#
+# ================================================================
+# WHAT IS DIFFERENT, AND WHAT IS DELIBERATELY NOT
+# ================================================================
+#
+# Different: EOS_DIR = helmholtz at build time, problem.initial_temperature,
+# castro.small_temp, and Temp/pressure added to the plot variables.
+#
+# NOT different: the model, the domain, the resolution, cfl, the damping
+# window, the sponge. This has to be comparable to dir_rot256 over the same
+# interval, so nothing else moves.
+#
+# ================================================================
+# THE TEMPERATURE, AND WHY 1e7
+# ================================================================
+#
+# The density profile was solved by the SCF under ztwd. Handing it to a
+# different EOS balanced against a different pressure is the Step 3 collapse
+# (docs/teoria.md 6.4), diagnosed there only after it had been blamed on the
+# magnetic field. The escape is that the mismatch vanishes if the star is cold
+# enough, and that is measured rather than assumed:
+#
+#   T = 1e7 K   P_ion/P_deg = 1.3e-3 (mean density), 4.3e-4 (core)
+#               P_rad/P_deg = 3.2e-12
+#
+# So the profile is an equilibrium under helmholtz to a tenth of a percent,
+# and the run starts clean.
+#
+# It is also cold enough to have somewhere to go. If all 6.06e49 erg reach the
+# ions, T rises by 4.9e8 K, and there
+#
+#   T = 4.9e8 K  P_ion/P_deg = 6.2% (mean), 2.1% (core)
+#                T/T_F = 0.027, so still strongly degenerate
+#
+# A six percent pressure boost is a structural response, not a rounding error,
+# and the barotropic runs cannot show it. That is the measurement.
+#
+# ================================================================
+# WHAT TO WATCH, AND WHAT WOULD FALSIFY THE POINT
+# ================================================================
+#
+# 1. Does T rise to ~5e8 K? If it stays near 1e7, the dissipated energy is NOT
+#    reaching the internal energy -- it is leaving through the grid, and the
+#    barotropic run was not hiding anything.
+# 2. Does the star expand? R_vol and rho_c against dir_rot256 at the same t.
+# 3. Does the m=1 disruption survive? Growth rate and E_mag decay against
+#    dir_rot256 over t = 0 to 12 s. If it changes, the field result needs
+#    restating; if it does not, it is strengthened.
+#
+# ================================================================
+# STOP TIME 20 s, NOT 100
+# ================================================================
+#
+# The field is destroyed by t ~ 12 s and the thermal response follows within a
+# few t_dyn (0.28 s), so 20 s covers the whole phenomenon with room to see the
+# settled state. That is a quarter of the 78 s the ztwd run reached, so about
+# three or four chained windows rather than fourteen. The rotation results do
+# not need repeating here: they are already clean under ztwd.
+
+max_step  = 200000
+stop_time = 20.0
+
+geometry.is_periodic =  0    0    0
+geometry.coord_sys   =  0
+geometry.prob_lo     = -9.0468750000e+08 -9.0468750000e+08 -9.0468750000e+08
+geometry.prob_hi     = 8.9531250000e+08 8.9531250000e+08 8.9531250000e+08
+amr.n_cell           =  256  256  256
+
+castro.lo_bc       =  2   2   2
+castro.hi_bc       =  2   2   2
+
+castro.do_hydro = 1
+castro.do_react = 0
+castro.ppm_type = 0
+castro.use_flattening = 0
+
+castro.do_grav = 1
+gravity.gravity_type = PoissonGrav
+gravity.drdxfac = 2
+
+# 0.3 from t = 0, not the 0.5 the growth phase of dir_rot256 used.
+#
+# That run hit a deterministic "too many subcycles" abort at t = 5.15 s, where
+# the instability saturates, and needed 0.3 to get past it. Starting there
+# costs 40% more steps and avoids repeating a known failure. It does mean the
+# growth phase is NOT computed at the same cfl as dir_rot256's, so if the
+# measured growth rate differs, cfl is a candidate before the EOS is.
+castro.cfl            = 0.3
+castro.init_shrink    = 0.01
+castro.change_max     = 1.1
+castro.sum_interval   = 1
+castro.v              = 1
+amr.v                 = 1
+
+amr.max_level       = 0
+amr.blocking_factor = 8
+amr.max_grid_size   = 32
+
+amr.plot_file       = plt
+amr.check_file      = chk
+amr.plot_per        = 0.25
+amr.check_int       = 1000
+# Temp and pressure added: under ztwd they carried no information, and here
+# they are the measurement.
+amr.derive_plot_vars = density x_velocity y_velocity z_velocity B_x B_y B_z Temp pressure
+
+castro.small_dens = 1.0e2
+# Raised from 1.0e3. helmholtz is table-based and the bottom of the table is
+# near 1e3 K; a floor at 1e5 keeps every cell, including the ambient, well
+# inside it. The ambient sits at 2e4 g/cm^3 and 1e7 K, which is comfortably
+# in range for both axes.
+castro.small_temp = 1.0e5
+
+castro.limit_fluxes_on_small_dens = 1
+castro.max_subcycles = 32
+
+castro.do_sponge = 1
+castro.sponge_upper_density = 1.0e5
+castro.sponge_lower_density = 1.0e4
+castro.sponge_timescale     = 1.0e-4
+
+castro.add_ext_src = 1
+problem.damping_timescale_in_tdyn = 0.2
+problem.damping_end_time_in_tdyn = 2.0
+problem.damping_ramp_in_tdyn = 0.5
+
+problem.model_name = "rotating_mixed.txt"
+problem.surface_density_frac = 1.0e-6
+
+# See the header. 1e7 K leaves the ztwd profile an equilibrium to 0.1% and
+# leaves room for the 4.9e8 K the field could deposit.
+problem.initial_temperature = 1.0e7
