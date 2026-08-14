@@ -67,8 +67,26 @@ if [ ! -x ../Castro3d.gnu.MPI.helm.ex ]; then
     exit 1
 fi
 ln -sf ../Castro3d.gnu.MPI.helm.ex .
-# helmholtz reads its table at startup and looks in the working directory
-[ -f helm_table.dat ] || ln -sf "$HOME/wd-mag/Microphysics/EOS/helmholtz/helm_table.dat" . 2>/dev/null || true
+# helmholtz reads its table at startup and looks in the working directory.
+#
+# The path is searched rather than hardcoded, because the first version of this
+# script guessed $HOME/wd-mag/Microphysics/... and was wrong: Microphysics lives
+# under Castro/external/, as the compile line's -I flags show. The guess failed
+# silently behind a `|| true`, which would have surfaced as an unexplained abort
+# at startup rather than as a missing file.
+if [ ! -f helm_table.dat ]; then
+    for cand in \
+        "$HOME/wd-mag/Castro/external/Microphysics/EOS/helmholtz/helm_table.dat" \
+        "$HOME/wd-mag/Microphysics/EOS/helmholtz/helm_table.dat" \
+        "$PBS_O_WORKDIR/../../../external/Microphysics/EOS/helmholtz/helm_table.dat"
+    do
+        [ -f "$cand" ] && { ln -sf "$cand" .; echo "helm_table.dat <- $cand"; break; }
+    done
+fi
+if [ ! -f helm_table.dat ]; then
+    echo "WARNING: helm_table.dat not found by any candidate path."
+    echo "  find \$HOME -name helm_table.dat, then link it into $PWD"
+fi
 ln -sf ../rotating_mixed.txt .
 ln -sf ../inputs.hz256 .
 
