@@ -1,0 +1,205 @@
+# Campaign HZ at 192^3 -- the same star under a NON-BAROTROPIC EOS.
+#
+# ================================================================
+# WHY 192^3 AND NOT 256^3
+# ================================================================
+#
+# Two reasons, and the second is the real one.
+#
+# Cost: helmholtz is table-based and inverts energy to temperature by Newton
+# iteration on every EOS call, against a closed-form expression for ztwd.
+# Measured on the 256^3 attempt, that is 15x more wall time per step, with dt
+# 1.8x smaller on top -- 26x per second of simulated time. Reaching t = 6 s at
+# 256^3 would take about 28 three-hour windows. No EOS convergence warnings
+# appear in that log, so the cost is intrinsic and not a misconfiguration.
+#
+# The control: we have a COMPLETE ztwd run on this mesh, dir_rot192, to t = 60 s.
+# Comparing against it isolates the equation of state as the only variable --
+# same resolution, same numerical resistivity, same everything. Comparing a
+# helmholtz 256^3 against a ztwd 256^3 would have been fine too, but this one
+# is three times cheaper and the baseline is already finished.
+#
+# ================================================================
+# WHAT IS DIFFERENT FROM inputs.rot192
+# ================================================================
+#
+# EOS_DIR = helmholtz at build time, and in this file exactly four things:
+# small_temp, initial_temperature, stop_time, and Temp/pressure kept in the
+# plot variables. Everything else is inherited unchanged, including cfl = 0.5,
+# so the comparison is not confounded.
+#
+# ================================================================
+# THE TEMPERATURE, AND WHY 1e7
+# ================================================================
+#
+# The SCF solved this profile under ztwd. Handing it to a different EOS
+# balanced against a different pressure is the Step 3 collapse
+# (docs/teoria.md 6.4). The mismatch vanishes if the star is cold enough, and
+# that is measured rather than assumed:
+#
+#   T = 1e7 K    P_ion/P_deg = 1.3e-3 (mean), 4.3e-4 (core)
+#                P_rad/P_deg = 3.2e-12
+#
+# so the profile is an equilibrium under helmholtz to a tenth of a percent.
+# The 256^3 attempt confirmed this empirically: 261 steps with dt stable at
+# 1.6e-3 and no abort, which is what a star in equilibrium looks like.
+#
+# It is also cold enough to have somewhere to go. If all 6.06e49 erg reach the
+# ions, T rises by 4.9e8 K, where P_ion/P_deg is 6.2% at mean density and
+# T/T_F is still only 0.027. That six percent is the measurement.
+#
+# ================================================================
+# WHAT WOULD FALSIFY THE POINT
+# ================================================================
+#
+# If T stays near 1e7, the dissipated energy is NOT reaching internal energy --
+# it is leaving through the grid, the barotropic runs were hiding nothing, and
+# this campaign has answered its own question in the negative.
+#
+# Watch also: rho_c and R_vol against dir_rot192 at the same t, and the m=1
+# growth rate and E_mag decay over 0-12 s. cfl is 0.5 here as it is there, so
+# unlike the 256^3 attempt a difference in growth rate cannot be blamed on it.
+#
+# stop_time 12 s: the field is destroyed by then and the thermal response
+# follows within a few t_dyn. At an estimated 16 s/step and dt ~ 2e-3 that is
+# roughly ten windows.
+
+max_step  = 200000
+stop_time = 12.0
+
+# HALF-SHIFT geometry (docs/teoria.md Sec 6.6): prob_lo = -(N+1)/2*dx and
+# prob_hi = (N-1)/2*dx puts a cell CENTRE exactly on r = 0. With N = 192 and
+# dx = 9.375e6 cm the half-width is 9.0e8 cm, well outside R_eq = 3.917e8.
+geometry.is_periodic =  0    0    0
+geometry.coord_sys   =  0
+geometry.prob_lo     = -9.0468750000e+08 -9.0468750000e+08 -9.0468750000e+08
+geometry.prob_hi     = 8.9531250000e+08 8.9531250000e+08 8.9531250000e+08
+amr.n_cell           =  192  192  192
+
+castro.lo_bc       =  2   2   2
+castro.hi_bc       =  2   2   2
+
+castro.do_hydro = 1
+castro.do_react = 0
+castro.ppm_type = 0
+castro.use_flattening = 0
+
+# PoissonGrav, not MonopoleGrav, and for this star that is not a refinement.
+#
+# The SCF builds the equilibrium by solving Poisson to l_max = 16. Castro's
+# MonopoleGrav keeps only l = 0. On the spherical star of the companion paper
+# the two agreed, and that agreement was recorded -- but this star has
+# R_pol/R_eq = 0.38, so its quadrupole is enormous and the two cannot agree.
+# The model then arrives balanced against one gravity and evolved under
+# another, and it rings.
+#
+# The evidence that this is what was happening: two runs with different
+# surface treatments traced almost identical density curves, oscillating
+# +-20% about 3.0e9 and always returning -- 2.933e9 at t = 0.19, 3.68e9 at
+# 1.18, 2.99e9 at 1.79, 3.18e9 at 2.09. Not a collapse and not an
+# instability, but a star pulsating at about 2-4 t_dyn because it was not in
+# equilibrium under the gravity actually applied to it. A surface moving that
+# hard is what pushed edge cells through the density floor, at the equator in
+# one run and off the pole in another.
+#
+# max_multipole_order was set to 8 here and every run that carried it died
+# with "State has NaNs in the density component" before taking a single step,
+# including a field-free control with div B = 0 -- while every MonopoleGrav
+# run took hundreds of steps. The multipole boundary condition assumes the
+# mass is compactly supported well inside the domain, and this problem's
+# ambient of 2.0e4 g/cm^3 fills the box out to the boundary, so that
+# assumption fails. Left at the default until it is tested on its own.
+castro.do_grav = 1
+gravity.gravity_type = PoissonGrav
+gravity.drdxfac = 2
+
+castro.cfl            = 0.5
+castro.init_shrink    = 0.01
+castro.change_max     = 1.1
+castro.sum_interval   = 1
+castro.v              = 1
+amr.v                 = 1
+
+# single level: Castro's constrained-transport MHD does not do AMR
+amr.max_level       = 0
+amr.blocking_factor = 8
+# 24, not 32, so the box count divides the rank count exactly. 192^3 at 24
+# gives 8^3 = 512 boxes, which over the 256 ranks of two 128-core paralela
+# nodes is exactly 2 each. At 32 it was 6^3 = 216 boxes over 192 ranks, so
+# 24 ranks carried two while 168 carried one and waited -- about 56% balance,
+# uncomfortably close to the 50% CPU efficiency below which CENAPAD may kill
+# a job. The cost is ghost-cell overhead rising from 1.95x to 2.37x, which
+# perfect balance more than repays.
+amr.max_grid_size   = 24
+amr.plot_file       = plt
+amr.check_file      = chk
+amr.check_int       = 500
+amr.plot_int        = 50
+amr.derive_plot_vars = density x_velocity y_velocity z_velocity eden Temp pressure B_x B_y B_z Div_B emag_density etor_density
+
+# The floor sits two decades below the ambient, and ONLY the floor was moved.
+#
+# Two runs died at t = 2.59 and 2.66 s on "Invalid density" at a surface cell,
+# the second time at 9933 against a floor of 1.0e4 -- 0.7% below it. With
+# limit_fluxes_on_small_dens already pinning the density to the floor, the
+# material simply wants to be at about 9.9e3 there and an ambient of 2.0e4
+# left it only a factor of 2 to work in. Dropping the floor to 1.0e2 gives it
+# 200x.
+#
+# The ambient stays at its default 2.0e4, and that is the correction to an
+# attempt that lowered it to 1.0e2 alongside the floor. The model cuts the
+# star at surface_density_frac = 1e-6 of rho_c, which is 3.0e3, so an ambient
+# ABOVE that value means max(rho_model, ambient) ends the star on a plateau
+# with nothing discontinuous about it. An ambient BELOW it manufactures a
+# factor-30 cliff at the surface instead, and that run died at t = 0.0686 s
+# -- forty times sooner -- with NEGATIVE densities of -172 and -1623 at
+# (varpi, z) = (5.1e7, -1.6e8), which is |z|/R_pol = 1.06, just off the pole.
+# A rarefaction crossing zero, not a floor problem.
+#
+# The cost of keeping the ambient here is 0.059 Msun of spurious mass over
+# the box, which is the gap between the 2.064 Msun Castro reports and the
+# 2.005 Msun model. That is bookkeeping and can be subtracted; a density
+# cliff cannot be subtracted.
+castro.small_dens = 1.0e2
+# Raised from 1.0e3: helmholtz is table-based and its table bottoms out
+# near 1e3 K, so a floor at 1e5 keeps every cell well inside it.
+castro.small_temp = 1.0e5
+
+# Robustness at the stellar surface, added after the first run aborted there.
+# limit_fluxes_on_small_dens makes the hydro limit its own fluxes so a cell
+# cannot be drained below small_dens in the first place, which is the failure
+# that happened rather than a general instability -- mass was conserved to
+# 6e-5 and the central density was flat at the time. max_subcycles is raised
+# from its default of 10 to give the retry mechanism more room before it
+# gives up on a single bad cell.
+castro.limit_fluxes_on_small_dens = 1
+castro.max_subcycles = 32
+
+# The sponge window stays where it was, for now. It is worth flagging that at
+# an upper density of 1.0e5 it damps the star's outer envelope and not only
+# the ambient, and L_z fell 4.2% in 2.6 s -- for a star held up BY rotation
+# that is a systematic worth chasing. But it is chased on its own, after the
+# surface is stable: three parameters were changed at once here and the run
+# got worse, which is how the density cliff went unnoticed for a submission.
+castro.do_sponge = 1
+castro.sponge_upper_density = 1.0e5
+castro.sponge_lower_density = 1.0e4
+castro.sponge_timescale     = 1.0e-4
+
+# Accommodation phase. The damping now targets the MODEL's velocity field
+# rather than zero (see problem_source.H): damping to zero would spin this
+# star down and it would collapse for want of the rotational support that
+# holds it up, which would be a numerical artefact indistinguishable from the
+# physical result being looked for. What gets absorbed is the sampling
+# transient, which at 192^3 is small -- the reconstructed field retains 98.6%
+# of max|B_phi|, against 82% at 64^3.
+castro.add_ext_src = 1
+problem.damping_timescale_in_tdyn = 0.2
+problem.damping_end_time_in_tdyn = 2.0
+problem.damping_ramp_in_tdyn = 0.5
+
+problem.model_name = "rotating_mixed.txt"
+
+# NOT inert here, unlike under ztwd. See the header.
+problem.initial_temperature = 1.0e7
+problem.surface_density_frac = 1.0e-6
