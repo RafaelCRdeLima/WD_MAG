@@ -40,5 +40,39 @@ echo "mpicxx: $(command -v mpicxx || echo MISSING)"
 cd "$(dirname "${BASH_SOURCE[0]}")/../../Castro/Exec/science/wd_scf_stability" 2>/dev/null \
   || cd "${1:?pass the problem directory}"
 
-make -j8 COMP=gnu USE_MPI=TRUE 2>&1 | tail -25
+# Optional first argument: an EOS_DIR to build instead of the one in the
+# GNUmakefile. The executable is renamed to carry it, because Castro names the
+# binary by dimension and compiler only -- no EOS -- so two builds collide.
+#
+#     ./build.sh                # ztwd, the default, -> Castro3d.gnu.MPI.ex
+#     ./build.sh helmholtz      #      -> Castro3d.gnu.MPI.helm.ex
+#
+# The ztwd binary is moved aside first and put back afterwards, because
+# `make realclean` deletes *.ex and rebuilding it costs another ten minutes.
+EOS_ARG="${1:-}"
+SAVED=""
+if [ -n "$EOS_ARG" ] && [ -f Castro3d.gnu.MPI.ex ]; then
+    SAVED="ztwd_saved.bin"          # not *.ex, so realclean leaves it alone
+    mv Castro3d.gnu.MPI.ex "$SAVED"
+    echo "set aside: Castro3d.gnu.MPI.ex -> $SAVED"
+fi
+
+make realclean >/dev/null 2>&1 || true
+make -j8 COMP=gnu USE_MPI=TRUE ${EOS_ARG:+EOS_DIR="$EOS_ARG"} 2>&1 | tail -25
+
+if [ -n "$EOS_ARG" ]; then
+    [ -f Castro3d.gnu.MPI.ex ] || { echo "BUILD FAILED -- $SAVED left in place"; exit 1; }
+    # Verify the EOS actually went in. Passing EOS_DIR that the makefile
+    # ignores would produce a binary that silently runs the wrong physics,
+    # which is the one failure this whole exercise cannot afford.
+    if [ "$EOS_ARG" = "helmholtz" ]; then
+        n=$(strings Castro3d.gnu.MPI.ex | grep -ci helm_table || true)
+        echo "helm_table strings in the new binary: $n"
+        [ "$n" -gt 0 ] || { echo "EOS_DIR was IGNORED -- this is a ztwd binary"; exit 1; }
+        mv Castro3d.gnu.MPI.ex Castro3d.gnu.MPI.helm.ex
+        echo "built: Castro3d.gnu.MPI.helm.ex"
+    fi
+    [ -n "$SAVED" ] && mv "$SAVED" Castro3d.gnu.MPI.ex && echo "restored: Castro3d.gnu.MPI.ex"
+fi
+ls -la Castro3d.gnu.MPI*.ex
 ls -la ./*.ex
