@@ -2575,3 +2575,70 @@ custa segundos; uma janela de fila custa horas.
 3. **A ruptura m=1 sobrevive?** Taxa de crescimento e decaimento de E_mag em
    0–12 s. Lembrar que o `cfl` aqui é 0.3 desde t=0 contra 0.5 no rot256, então
    diferença na taxa acusa o CFL antes da EOS.
+
+## 10.1 O primeiro dado do HZ, e o controle que ele exige
+
+O 256³ rodou 261 passos até t = 0.362 s, sem abort, `dt` estável em 1.6×10⁻³.
+Custo medido: **38 s/passo contra 2.6 s do ztwd — 15× mais caro**, com `dt` 1.8×
+menor, sem nenhum aviso de convergência da EOS. Custo intrínseco à tabela, não
+configuração. Por isso a campanha migrou para 192³, onde além de 3.2× mais
+barato **existe o controle ztwd completo na mesma malha**.
+
+### O que os plotfiles mostram
+
+`fextrema` e `fextract` em `plt00261`:
+
+| região | ρ | T |
+|---|---|---|
+| núcleo | 1.85×10⁹ | 2.25×10⁷ K |
+| casca em ~0.3 R_eq | 2.4–2.8×10⁸ | **3.37×10⁹ K** |
+| ambiente | 2×10⁴ | 8.6×10⁶ K |
+
+**As três células mais quentes do domínio inteiro estão dentro da estrela**, não
+na fronteira. E o `initial_temperature` funcionou: `plt00000` dá 10⁷ K uniforme
+nos dois extremos.
+
+Densidade central caiu de 2.985×10⁹ para 1.849×10⁹, −38%, muito além da
+pulsação conhecida de ±14%.
+
+### O erro que quase cometi
+
+Escrevi que o aquecimento era "oito vezes mais energia do que o campo tinha para
+dar". Essa conta espalhava o calor por ~30% da massa. **O calor não está
+espalhado — está numa casca.** Se ela for ~5% da massa, aquecê-la a 3.4×10⁹ K
+custa 2×10⁴⁹ erg, dentro dos 6.06×10⁴⁹ do campo.
+
+Então a leitura "é energia do campo" voltou a ser viável, e eu quase a descartei
+por uma média mal tomada.
+
+### As duas hipóteses, e por que nenhum run sozinho decide
+
+**(a) É o campo.** O SCF equilibrou a estrela contra pressão de gás, gravidade e
+rotação; o campo é imposto **por cima**, então o estado inicial está fora de
+equilíbrio magnetohidrostático e assenta violentamente. Sob ztwd essa
+dissipação sumia — temperatura inerte. Sob Helmholtz fica.
+
+**(b) É numérico.** `dual_energy_eta2 = 1e-4` faz o Castro redefinir `UEINT`
+como E − K em praticamente toda célula. Invisível sob ztwd, onde `UEINT` não
+entrava na pressão; sob Helmholtz **é** a temperatura. Conferindo as magnitudes
+na casca, porém, a subtração dá 1×10²⁶ de um total de 1.6×10²⁶ — comparáveis,
+não catastroficamente próximos.
+
+### O controle, e por que ele é limpo
+
+`problem.field_scale = 0`. Sem campo, a estrela **está** em equilíbrio: pressão
+de gás, gravidade e rotação é exatamente o que o SCF balanceou.
+
+- fica quieta em ~10⁷ K → o aquecimento com campo é do campo, e é medida
+- aquece igual → é numérico, e a campanha HZ respondeu à própria pergunta
+  negativamente
+
+`inputs.hz192ctl` e `job_hz192ctl.pbs` criados, diferindo do `hz192` em **uma
+linha**. É o que dá valor a um controle.
+
+### Se for (a), o resultado é melhor do que o que fui buscar
+
+Diria que a EOS barotrópica escondia não a dissipação suave do campo, mas o
+assentamento violento de uma condição inicial fora de equilíbrio magnetostático
+— e isso é ressalva sobre a **construção do modelo**, que a literatura de
+equilíbrio compartilha, não sobre a física da estrela.
