@@ -21,8 +21,23 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-LIVE="$REPO_ROOT/castro/Exec/science/wd_scf_stability"
 MIRROR="$REPO_ROOT/castro_problems/wd_scf_stability"
+
+# The live tree is NOT always inside the repository.
+#
+# On the workstation it is: castro/ sits in the repo, gitignored. On lovelace
+# it does not -- the repo is ~/WD_MAG and Castro is a separate ~/wd-mag/Castro,
+# with different capitalisation on both halves. The old code assumed the first
+# layout, so on lovelace every `restore` copied into a phantom
+# ~/WD_MAG/castro/Exec/... that `mkdir -p` obligingly created, printed
+# "restored:" for each file, and left the real build directory untouched.
+#
+# That cost three queue windows: the run kept dying on a missing inputs file
+# while sync insisted it had delivered it.
+#
+# Override with CASTRO_LIVE when the tree is elsewhere:
+#   CASTRO_LIVE=~/wd-mag/Castro/Exec/science/wd_scf_stability $0 restore
+LIVE="${CASTRO_LIVE:-$REPO_ROOT/castro/Exec/science/wd_scf_stability}"
 
 # Sources are listed explicitly; inputs files are NOT, and are globbed below.
 #
@@ -70,6 +85,9 @@ usage() {
 
 [ $# -eq 1 ] || usage
 
+echo "mirror: $MIRROR"
+echo "live:   $LIVE"
+
 case "$1" in
     save)
         [ -d "$LIVE" ] || { echo "error: $LIVE does not exist -- nothing to save" >&2; exit 1; }
@@ -87,7 +105,13 @@ case "$1" in
     restore)
         [ -d "$MIRROR" ] || { echo "error: $MIRROR does not exist -- nothing to restore" >&2; exit 1; }
         collect_inputs "$MIRROR"
-        mkdir -p "$LIVE"
+        # Deliberately NOT mkdir -p: a missing live directory means the path is
+        # wrong, and creating it is how the phantom-directory bug stayed hidden.
+        [ -d "$LIVE" ] || {
+            echo "error: live dir does not exist: $LIVE" >&2
+            echo "  set CASTRO_LIVE to the real Castro problem directory" >&2
+            exit 1
+        }
         for f in "${SOURCE_FILES[@]}"; do
             if [ -f "$MIRROR/$f" ]; then
                 cp "$MIRROR/$f" "$LIVE/$f"
