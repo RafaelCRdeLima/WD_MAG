@@ -144,6 +144,30 @@ earlier. Always bound the search to the current window:
     mpirun ...
     tail -n "+$((MARK+1))" run.log | grep -a "Abort"
 
+**A sync or copy step that reports success and delivers nothing.** We lost
+three queue windows to this. A script copied files into
+`$REPO_ROOT/castro/Exec/...`, printing "restored:" for each one, while the
+build happened in a Castro tree that lived somewhere else entirely -- different
+path, different capitalisation. Its own `mkdir -p` created the phantom
+destination, so nothing ever errored. Each run then died on a missing input
+while the sync insisted it had delivered it, and I diagnosed the transfer three
+times before questioning the destination.
+
+Two rules come out of it. **A tool that writes files prints where it is writing,
+before it writes.** And **a restore never creates its destination**: if the
+target directory is absent, the path is wrong, and `mkdir -p` converts a loud
+failure into a silent one.
+
+The tell was available from the first run: the sync listed 27 files and none of
+them was the input the campaign was actively using. An unexpected absence in a
+success message is a signal.
+
+**Verify at the destination, never at the source.** "The file exists here" is
+not evidence that it exists there, and on a chain of laptop -> frontend ->
+cluster -> mirror -> live directory there are four places for it to stop. Put a
+gate before anything expensive: list the file, grep the parameter, and refuse to
+continue if either fails. A gate costs seconds; a queue window costs hours.
+
 **Analysis tools failing with `GLIBCXX_3.4.xx not found`.** The module is not
 loaded in that shell. Every new SSH session needs the `module load` again, and
 `nohup sh -c '...'` inherits the parent's environment, so load it first.

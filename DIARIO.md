@@ -2508,3 +2508,70 @@ seria um resultado por si, e negativo para a motivação do run.
    artigo sobre a rotação, que está limpa.
 2. **MInIT**, com a hipótese específica da §6.30.
 3. Caixa toroidal longa e 128³, ambos no cluster.
+
+---
+
+## 10. A campanha HZ no ar, e três janelas perdidas num bug de destino
+
+### O que finalmente subiu
+
+`995991`, com todos os portões passando pela primeira vez: `inputs.hz256`
+presente, `initial_temperature` no `_prob_params` **e** referenciado no
+`problem_initialize_state_data.H`, binário com `helm_table` = 6, `dir_hz256`
+limpo de links pendurados.
+
+### O bug que custou três janelas
+
+`scripts/sync_wd_scf_stability.sh` tinha
+
+    LIVE="$REPO_ROOT/castro/Exec/science/wd_scf_stability"
+
+Correto na estação, onde `castro/` fica dentro do repositório. **Errado no
+lovelace em dobro:** o repositório é `~/WD_MAG` e o Castro é um `~/wd-mag/Castro`
+separado, com capitalização diferente nas duas metades.
+
+Então todo `restore` no cluster copiava para um `~/WD_MAG/castro/Exec/...`
+fantasma — que o próprio `mkdir -p` do script criava — imprimia `restored:` para
+cada arquivo, e deixava o diretório de build intocado. O run morria por falta do
+input enquanto a sincronia jurava tê-lo entregue.
+
+**Diagnostiquei a transferência três vezes antes de questionar o destino.**
+
+### O sinal que estava disponível desde o primeiro minuto
+
+O `restore` inicial listou 27 arquivos e **nenhum** era `inputs.rot256` ou
+`inputs.rot192`, que estavam em uso naquele momento. Se eu tivesse perguntado
+por que, teria achado a lista fixa; seguindo a lista, teria achado o diretório.
+
+*Ausência inesperada dentro de uma mensagem de sucesso é sinal.*
+
+### O que foi corrigido
+
+- `LIVE` sobrescrevível por `CASTRO_LIVE`, e ambos os caminhos impressos antes
+  de copiar qualquer coisa.
+- O `restore` **não cria** o diretório de destino: ausência significa caminho
+  errado, e `mkdir -p` transforma falha ruidosa em silenciosa.
+- A lista fixa de inputs virou glob (`921a781`) — ela também estava
+  desatualizada e omitia seis arquivos.
+- `build.sh` aceita o EOS como argumento e **verifica** que ele entrou, com
+  `strings | grep helm_table`, recusando se der zero.
+- `job_hz256.pbs` procura a tabela em três caminhos e avisa se não achar, em vez
+  de um `ln -sf` chutado atrás de um `|| true`.
+
+### A regra que sai disso, registrada no ONBOARDING
+
+**Verificar no destino, nunca na origem.** "O arquivo existe aqui" não é
+evidência de que existe lá, e numa cadeia laptop → frontend → cluster → espelho
+→ diretório vivo há quatro lugares para ele parar. Portão antes de qualquer
+coisa cara: listar o arquivo, testar o parâmetro, recusar se falhar. Um portão
+custa segundos; uma janela de fila custa horas.
+
+### O que observar quando a janela rodar
+
+1. **T sobe para ~5×10⁸ K?** Se ficar em 10⁷, a energia dissipada sai pela
+   malha e a EOS barotrópica não escondia nada — resultado por si, e negativo
+   para a motivação.
+2. **A estrela expande?** R_vol e ρ_c contra o `dir_rot256` no mesmo t.
+3. **A ruptura m=1 sobrevive?** Taxa de crescimento e decaimento de E_mag em
+   0–12 s. Lembrar que o `cfl` aqui é 0.3 desde t=0 contra 0.5 no rot256, então
+   diferença na taxa acusa o CFL antes da EOS.
