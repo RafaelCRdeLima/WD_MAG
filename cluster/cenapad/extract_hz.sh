@@ -178,6 +178,28 @@ to_csv () {  # stdin: fixed-width table with # comments -> stdout: CSV
            NF   { s=""; for (i=1;i<=NF;i++) s = s (i>1 ? "," : "") $i; print s }'
 }
 
+# A sweep is worth exactly as many rows as it read plotfiles. Anything less
+# means it was cut short, and a short CSV is the dangerous failure here: it
+# still parses, still plots, and quietly describes a window that is not the
+# one the run covers.
+#
+# This exists because it happened. The first extraction was interrupted during
+# the hz192ctl sweep and the CSVs came home at ZERO bytes -- awk block-buffers
+# at 4 kB, so a file that is being written looks identical to a file that
+# failed. They were packed and shipped anyway, and the emptiness was only
+# noticed on the far side of two scp hops.
+check_rows () {  # file, expected
+    local f="$1" want="$2" got
+    got=$(grep -vc '^#' "$f" 2>/dev/null || echo 0)
+    if [ "$got" -eq "$want" ]; then
+        echo "  -> $f ($got rows)"
+    else
+        echo "  -> $f (GOT $got ROWS, EXPECTED $want) -- INCOMPLETE"
+        INCOMPLETE=$((INCOMPLETE + 1))
+    fi
+}
+INCOMPLETE=0
+
 for tag in hz192 hz192ctl; do
     d="$EXEC/dir_$tag"
     [ -d "$d" ] || { echo "skip $tag: no $d"; continue; }
@@ -188,7 +210,7 @@ for tag in hz192 hz192ctl; do
     ( cd "$d" && "$FTHERMAL" plt????? ) \
         | sed "1i # fthermal over dir_$tag, $n plotfiles. Campaign HZ thermal readout." \
         | to_csv > "$OUT/thermal_$tag.csv"
-    echo "  -> $OUT/thermal_$tag.csv ($(grep -vc '^#' "$OUT/thermal_$tag.csv") rows)"
+    check_rows "$OUT/thermal_$tag.csv" "$n"
 done
 
 # The field only where there is one. In the control it is identically zero by
@@ -197,15 +219,32 @@ done
 # needed here and not only in the with-field run's own history.
 d="$EXEC/dir_hz192"
 if [ -d "$d" ] && [ "$(ls -d "$d"/plt????? 2>/dev/null | wc -l)" -gt 0 ] && [ -n "$FBTBP" ]; then
+    nf=$(ls -d "$d"/plt????? 2>/dev/null | wc -l)
+    echo "sweeping hz192 field: $nf plotfiles"
     ( cd "$d" && "$FBTBP" plt????? ) \
         | sed '1i # fbtbp over dir_hz192. E_mag, mass, radii and rotation.' \
         | to_csv > "$OUT/field_hz192.csv"
-    echo "  -> $OUT/field_hz192.csv ($(grep -vc '^#' "$OUT/field_hz192.csv") rows)"
+    check_rows "$OUT/field_hz192.csv" "$nf"
 fi
 
 # ----------------------------------------------------------------------------
-# 5. Package. Small enough to go over both hops in seconds.
+# 5. Package -- but only if there is nothing incomplete to package.
+#
+# Shipping a truncated CSV is worse than shipping nothing: it arrives looking
+# like a result. Refusing here costs a re-run of a sweep that takes minutes;
+# not refusing cost two scp hops and a conclusion drawn from a file that had
+# no rows in it.
 # ----------------------------------------------------------------------------
+if [ "$INCOMPLETE" -gt 0 ]; then
+    echo
+    echo "REFUSING TO PACKAGE: $INCOMPLETE sweep(s) came out short."
+    echo "The CSVs are in $OUT and can be inspected, but hz_results.tgz was NOT"
+    echo "written, so a partial extraction cannot be mistaken for a finished one."
+    echo "Re-run this script; the header patching and the builds are idempotent."
+    ls -la "$OUT"
+    exit 1
+fi
+
 tar czf "$EXEC/hz_results.tgz" -C "$(dirname "$OUT")" "$(basename "$OUT")"
 echo
 echo "done: $EXEC/hz_results.tgz  ($(du -h "$EXEC/hz_results.tgz" | cut -f1))"
