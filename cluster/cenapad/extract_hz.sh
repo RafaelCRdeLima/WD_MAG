@@ -91,9 +91,15 @@ mkdir -p "$OUT"
         if [ ! -d "$d" ]; then echo "  no such directory"; continue; fi
         log="$d/run_$tag.log"
         if [ -f "$log" ]; then
-            echo "  steps:    $(grep -ac '^STEP' "$log" 2>/dev/null || echo 0)"
+            # No "|| echo 0" on a grep -c: it already prints 0, and it exits 1
+            # when it finds nothing, so the fallback fired ON TOP of the count
+            # and the line came out as "aborts:   0" followed by a stray
+            # "0 (cumulative over all windows)". Cosmetic, but this block is
+            # read to decide whether a run is trustworthy and it should not
+            # look like it is reporting two different numbers.
+            echo "  steps:    $(grep -ac '^STEP' "$log" 2>/dev/null)"
             echo "  last:     $(grep -a '^STEP' "$log" 2>/dev/null | tail -1)"
-            echo "  aborts:   $(grep -ac 'amrex::Abort' "$log" 2>/dev/null || echo 0) (cumulative over all windows)"
+            echo "  aborts:   $(grep -ac 'amrex::Abort' "$log" 2>/dev/null) (cumulative over all windows)"
             echo "  last abort: $(grep -a 'amrex::Abort' "$log" 2>/dev/null | tail -1)"
         else
             echo "  no $log"
@@ -156,8 +162,20 @@ done
 #    plot_*.py reads them with that assumption.
 # ----------------------------------------------------------------------------
 to_csv () {  # stdin: fixed-width table with # comments -> stdout: CSV
-    awk '/^#/ { print; next }
-         NF   { s=""; for (i=1;i<=NF;i++) s = s (i>1 ? "," : "") $i; print s }'
+    # AMReX prints its own banner to STDOUT, not stderr:
+    #
+    #     Initializing AMReX (525c31011b65)...
+    #     AMReX (525c31011b65) initialized
+    #     AMReX (525c31011b65) finalized
+    #
+    # Those are not comments, so they came through as three data rows and a
+    # sweep of ten plotfiles reported thirteen. It survived local testing only
+    # because the test pipeline had a `grep -v "AMReX ("` on it that this
+    # script did not, which is the whole reason a diagnostic has to be run
+    # through the SAME path it will be used through.
+    grep -v -e '^Initializing AMReX' -e '^AMReX (' \
+    | awk '/^#/ { print; next }
+           NF   { s=""; for (i=1;i<=NF;i++) s = s (i>1 ? "," : "") $i; print s }'
 }
 
 for tag in hz192 hz192ctl; do
