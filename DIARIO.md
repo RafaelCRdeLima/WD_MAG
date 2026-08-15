@@ -2846,3 +2846,53 @@ ser o que a §9 listou em segundo lugar: **MInIT**, com a hipótese específica 
 O painel do controle é desenhado como faixa larga e o do campo como linha fina
 por cima, porque o resultado **é** a coincidência: duas linhas de mesmo peso
 pintariam uma sobre a outra e a figura pareceria uma medida só.
+
+## 12. "Puramente toroidal" não era, e o que de fato semeia o m=1
+
+Jorge Rueda perguntou, sobre o email aos colaboradores, **qual** campo não
+sobrevive — toroidal, poloidal ou ambos — e observou que campo aleatório não
+freia estrela. A pergunta obrigou a conferir a condição inicial em vez de
+repeti-la de memória, e ela estava descrita errado.
+
+### A correção
+
+O email dizia "the initial field is purely toroidal". O modelo dos dois runs de
+produção é `rotating_mixed.txt` — o nome já avisa — e o manifesto traz **dipolo
+poloidal deliberado de B_pole = 1.0×10⁹ G**, `Bt_over_Bp_amplitude = 4234` e
+E_tor/E_pol = 2.18×10⁷. O valor está registrado na §4: a calibração corrigida
+"em B_pole = 10⁹ reproduz E_tor/E_pol = 2.18×10⁷, o valor documentado do modelo
+analítico". Estava escrito; eu não conferi antes de escrever o email.
+
+### O achado, que é maior que a correção
+
+Na malha o poloidal em t = 0 é E_pol/E_tor = **1.9×10⁻⁶** no 256³ e 3.2×10⁻⁶ no
+192³, contra os 4.6×10⁻⁸ que o modelo pretende. **Cerca de 40× mais poloidal do
+que se pediu**, e a diferença é discretização.
+
+Então o m=1 não cresce sobre a semente física: cresce sobre ruído de malha que a
+excede em quase duas ordens. Isso responde uma pergunta que um referee faz —
+o que semeia a instabilidade — e a resposta honesta é defensável, enquanto
+"puramente toroidal, logo cresceu do nada" não seria. Também sugere que a taxa
+de crescimento medida herda algo do nível de ruído, o que é consistente com ela
+não convergir entre malhas (§3.2: sobe 47% de 192³ para 256³).
+
+Não conflita com a axissimetria a 10⁻¹⁶: um dipolo é axissimétrico. As duas
+medidas são de coisas diferentes e ambas valem.
+
+### O que não muda
+
+Bt/Bp = 4234 em amplitude está três ordens e meia dos valores *comparáveis* que
+Braithwaite & Spruit exigem para estabilidade. Para efeito da pergunta de
+estabilidade a configuração está no ramo toroidal, mesmo sem ser estritamente
+pura — e dizer assim é mais preciso **e** mais forte que a versão errada.
+
+### O resto do email confere
+
+Conferido contra os CSVs: Ω_c/Ω_s = 3.406 em t = 60 e 3.648 em t = 78 (dito
+3.41 e 3.65); E_tor/E_pol mínimo 4.0 em t = 13.50 e 89.0 em t = 78; R_p/R_e de
+0.431 a 0.564; pico de campo 8.293×10¹³ G em t = 3.62. Um item errado em cinco,
+e era o único que nenhum CSV carregava — estava no manifesto do modelo.
+
+**A regra:** número que vem de CSV foi conferido ao ser produzido; número que
+vem da *construção do modelo* não passou por diagnóstico nenhum. É onde olhar
+primeiro quando o texto e os dados divergem.
