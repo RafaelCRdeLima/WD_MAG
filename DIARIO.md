@@ -2727,3 +2727,20 @@ Lado a lado, na mesma malha, diferindo em uma linha:
 
 A coluna que separa as duas leituras de um artefato de superfície é
 `rho_at_Tmax`: dentro da estrela é fenômeno, na superfície é a parede.
+
+### A regra do §10, e eu caí nela na mesma sessão
+
+Mandei `git pull` no lovelace e o arquivo não estava lá. O repositório da
+estação rodava **71 commits à frente** do GitHub — a campanha HZ inteira, os
+relatórios II e III e a varredura toroidal nunca tinham sido empurrados, que é
+por que 14 de agosto subiu por `.tgz` e não por `pull`.
+
+Confirmei que `extract_hz.sh` existia na estação e concluí que existia onde o
+lovelace podia alcançá-lo. **Verificar no destino, nunca na origem** — e desta
+vez o destino não era um diretório, era o `origin/master`. A cadeia ganhou um
+quinto lugar onde um arquivo pode parar, e ele não estava na lista que o §10
+escreveu.
+
+Portão barato para a próxima: `git rev-list --left-right --count
+origin/master...HEAD` antes de mandar qualquer máquina puxar. Empurrado agora,
+`f6f5066..3fef662`, e os 71 commits deixaram de existir em uma cópia só.
