@@ -2744,3 +2744,105 @@ escreveu.
 Portão barato para a próxima: `git rev-list --left-right --count
 origin/master...HEAD` antes de mandar qualquer máquina puxar. Empurrado agora,
 `f6f5066..3fef662`, e os 71 commits deixaram de existir em uma cópia só.
+
+## 11. O controle respondeu, e a resposta é não
+
+O `hz192ctl` chegou aos 12 s em quatro janelas. O `hz192` parou em t = 1.266 s
+sem abort — a cadeia não conseguiu ressubmeter (`qsub: would exceed queue
+generic's per-user limit`) enquanto as janelas do controle ocupavam a cota.
+Sobreposição de 1.27 s entre os dois, que é mais do que basta.
+
+### Os dois runs são o mesmo run
+
+| t (s) | ρ_max campo | ρ_max ctl | E_ion campo | E_ion ctl | ctl/campo |
+|---|---|---|---|---|---|
+| 0.000 | 3.000e9 | 3.000e9 | 1.244e48 | 1.244e48 | — |
+| 0.225 | 2.474e9 | 2.277e9 | 2.031e50 | 2.050e50 | +0.96% |
+| 0.565 | 5.248e8 | 5.376e8 | 5.106e50 | 5.157e50 | +1.01% |
+| 0.894 | 1.023e8 | 1.042e8 | 4.249e50 | 4.314e50 | +1.55% |
+| 1.266 | 2.124e7 | 2.183e7 | 2.747e50 | 2.819e50 | +2.60% |
+
+Concordam em 1–2% em cada saída, e **onde diferem o controle é o mais quente**.
+O `field_scale = 0` não muda nada exceto para o lado errado: o campo, se faz
+algo, é sustentar um pouco de pressão que atrasa o colapso.
+
+**Hipótese (b). A campanha HZ respondeu à própria pergunta negativamente.**
+
+### E a energia já dizia isso sozinha
+
+ΔE_ion no pico = **5.09×10⁵⁰ erg** com campo, 5.15×10⁵⁰ sem. O campo inteiro
+tem **6.06×10⁴⁹**. São **8.4×** mais energia do que existe para pagar, e E_ion
+é piso: a 4×10⁹ K o termo de radiação já é comparável ao iônico.
+
+O `fbtbp` mede o que o campo de fato entregou no intervalo: E_mag cai de
+6.05×10⁴⁹ para 1.35×10⁴⁹, **4.7×10⁴⁹ erg liberados** — e o controle, sem nada
+disso, aquece igual. As duas metades do argumento são independentes e cada uma
+basta.
+
+### O "oito vezes" da §10.1 estava certo, e eu o retratei
+
+Escrevi na §10.1 que aquele número vinha de espalhar uma casca por ~30% da
+massa, e que a 5% da massa a conta fechava. **Não é uma casca.**
+`f(T > 2×10⁹ K)` chega a **0.948**: noventa e cinco por cento da massa. A
+leitura de casca veio de um instante só, t = 0.36 s no 256³, antes da frente
+ter atravessado a estrela.
+
+Errei nos dois sentidos sobre a mesma quantidade — primeiro por média sobre
+massa demais, depois por retratação baseada num único instante. O que decidiu
+não foi nenhuma das duas intuições: foi integrar o volume e olhar a fração de
+massa em função do tempo.
+
+### A estrela é destruída, e é o resultado principal
+
+ρ_max do controle: 3.0×10⁹ → 1.07×10⁶ em 12 s, **fator 2800**. A massa acima
+de 10⁵ g/cm³ cai de 2.007 para **0.392 M⊙**. Uma estrela sem campo, que o SCF
+equilibrou contra pressão de gás, gravidade e rotação, se desfaz em segundos ao
+ser entregue ao helmholtz.
+
+Isso não é assentamento. A §10.1 leu o 256³ (−38% em ρ_c até t = 0.362 s) como
+assentamento violento; era o mesmo processo visto cedo demais para ver aonde ia.
+
+### Onde começa, e o que isso aponta
+
+Em t = 0.043 s a célula mais quente **dentro** da estrela está em ρ = 1.0×10⁵,
+colada no corte de densidade, e o ambiente está a 5.1×10⁸ K — mais quente que
+qualquer ponto do interior (3.3×10⁸). Só em t = 0.22 s o máximo migra para
+ρ ~ 4×10⁸. Começa na superfície e entra.
+
+O cabeçalho do `inputs.hz192` levantou essa ressalva e a dispensou com uma
+conta que não era a certa. Mostrou que a pressão **iônica** é desprezível a
+10⁷ K (P_ion/P_deg = 1.3×10⁻³) e concluiu "equilíbrio a 0.1%". Mas a pergunta
+é se a pressão **eletrônica degenerada** do helmholtz iguala a do ztwd na mesma
+ρ — correções de Coulomb, degenerescência parcial, a tabela contra a expressão
+fechada de Chandrasekhar. Se diferirem em 1%, a estrela está fora de equilíbrio
+em 1% em todo ponto; na superfície, onde a altura de escala é mínima, 1% é uma
+perturbação violenta. É exatamente onde o calor aparece primeiro.
+
+### O que decide isso, e é barato
+
+**Não é um run.** É comparar P_helmholtz(ρ, 10⁷ K) contra P_ztwd(ρ) ao longo do
+perfil do modelo. Aritmética, na estação, sem fila. Se a diferença for
+percentual, a campanha HZ inteira estava construída sobre um handoff que não
+fecha, e o conserto é reequilibrar o perfil **sob** o helmholtz antes de
+evoluir — não escolher uma temperatura inicial mais baixa.
+
+### O que isso custa e o que não custa
+
+Não custa nada aos resultados publicáveis. A ressalva que a campanha HZ foi
+buscar — os 6.06×10⁴⁹ erg sem destino sob EOS barotrópica — **continua de pé,
+não respondida**. O que se aprendeu é que este caminho não a responde, e por
+quê.
+
+Os relatórios I e II não mudam. A rotação segue limpa. O prioritário volta a
+ser o que a §9 listou em segundo lugar: **MInIT**, com a hipótese específica da
+§6.30.
+
+### Produtos
+
+- `investigations/thermal_hz192.csv`, `thermal_hz192ctl.csv`, `field_hz192.csv`
+- `investigations/plot_hz_control.py` → `hz_control.pdf`/`png`, quatro painéis
+- `tools/fthermal.cpp`, `cluster/cenapad/extract_hz.sh`
+
+O painel do controle é desenhado como faixa larga e o do campo como linha fina
+por cima, porque o resultado **é** a coincidência: duas linhas de mesmo peso
+pintariam uma sobre a outra e a figura pareceria uma medida só.
