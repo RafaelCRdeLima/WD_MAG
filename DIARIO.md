@@ -2642,3 +2642,88 @@ Diria que a EOS barotrópica escondia não a dissipação suave do campo, mas o
 assentamento violento de uma condição inicial fora de equilíbrio magnetostático
 — e isso é ressalva sobre a **construção do modelo**, que a literatura de
 equilíbrio compartilha, não sobre a física da estrela.
+
+## 10.2 Os runs acabaram, e o diagnóstico que faltava para lê-los
+
+Rafael avisou em 15 de agosto que `dir_hz192` e `dir_hz192ctl` terminaram no
+lovelace. Os dados seguem lá — os `.tgz` no home da estação são as cargas de
+**subida** de 14 de agosto, inputs e script PBS, não resultado.
+
+### O que não existia
+
+Nada media temperatura. O `fbtbp.cpp` dá massa, raios, campo e rotação; o log
+dá `MAXIMUM DENSITY` e massa. Sob ztwd isso estava certo — a temperatura era
+inerte e a coluna seria ruído. Sob helmholtz **é** a medida, e a comparação
+com o controle dependia de um número que nenhuma ferramenta produzia.
+
+`tools/fthermal.cpp`, escrito no molde do `fbtbp.cpp`: ρ_max, T_core, T_médio
+por massa, T_max, T_max do ambiente, e — a parte que decide — **onde** a célula
+mais quente está (ρ ali, ϖ, z, r em unidades do R_eq inicial) e **quanta massa**
+passa de 10⁸, 5×10⁸, 10⁹ e 2×10⁹ K.
+
+### Por que as frações de massa, e não só T_max
+
+É o erro da §10.1 posto em código. Escrevi que o aquecimento era "oito vezes
+mais energia do que o campo tinha para dar" espalhando o calor por ~30% da
+massa; ele estava numa casca, e a 5% da massa a mesma temperatura custa 2×10⁴⁹
+erg, dentro dos 6.06×10⁴⁹ do campo. **Uma média sobre a massa errada erra no
+sentido de descartar o resultado.**
+
+Daí também a coluna `E_ion` = ∫(3/2)ρkT/(A m_u)dV, com A = 4 do `mu2.net`.
+É a integral de volume, não uma média vezes uma massa chutada, então
+E_ion(t) − E_ion(0) contra 6.06×10⁴⁹ erg é uma conta que não se deixa enganar
+assim. Íons apenas: os elétrons degenerados carregam muito mais energia e quase
+nada dela é térmica, e é a parte térmica que o campo pode ter pago.
+
+E T_max sozinha não distingue uma casca aquecida de **uma** célula ruim na
+superfície. Por isso a posição viaja junto com o máximo — o que obrigou a
+juntar as duplas (T, posição) por `Gather` em vez de um `ReduceRealMax`, que
+devolveria a temperatura de um rank e a posição de outro.
+
+### Verificado antes de subir
+
+Compilado contra o AMReX local e rodado sobre um plotfile sintético de valores
+conhecidos — esfera de ρ = 10⁹ com uma casca a 3×10⁹ K. **As quinze colunas
+batem com o valor analítico**, inclusive a posição da célula quente. É a regra
+do §10 aplicada antes do fato em vez de depois: portão antes de qualquer coisa
+cara, e uma janela de fila é cara.
+
+### A extração, e por que ela roda lá
+
+`cluster/cenapad/extract_hz.sh`. Um plotfile de 192³ tem centenas de MB e cada
+run escreveu da ordem de cem; trazer isso pelos dois saltos que os sistemas de
+arquivos separados do frontend e do lovelace impõem não é transferência, é uma
+tarde. Toda campanha anterior reduziu no cluster e moveu o CSV — o
+`bt_bp_192.csv` tem 14 kB e respondeu o que os 70 plotfiles foram escritos para
+responder.
+
+Sai `thermal_hz192.csv`, `thermal_hz192ctl.csv`, `field_hz192.csv` e um
+`status.txt`, algumas centenas de kB no total. Roda como `bash` ou como `qsub`
+— as diretivas PBS são comentários para o shell — na `testes`, que cabe em
+4 ncpus e 1 h e serve porque a varredura é limitada por I/O.
+
+Três coisas que ele faz **antes** de gastar a hora: confere que cada caminho
+existe no destino, imprime como cada run de fato terminou, e corrige os
+cabeçalhos `inf` que os derives corrompidos `emag_density`/`etor_density`
+deixam em `Level_*/Cell_H` — `inputs.hz192` ainda os escreve, e sem o patch
+toda ferramenta de plotfile do AMReX aborta no parse antes de ler um dado.
+
+### "Os runs acabaram" tem mais de um significado
+
+A cadeia para ao atingir `stop_time`, ao esgotar `CHAIN_MAX`, numa janela que
+não deu passos, ou num abort — e só o primeiro é um run terminado. O
+`status.txt` lê os `.out` e diz qual. Isso vem primeiro no script de propósito:
+um run truncado tem de ser conhecido **antes** de uma hora gasta reduzindo-o.
+
+### O que os dois CSVs decidem
+
+Lado a lado, na mesma malha, diferindo em uma linha:
+
+- **controle quieto perto de 10⁷ K** → o aquecimento do `dir_hz192` é do campo,
+  e é medida. A hipótese (a) da §10.1.
+- **controle aquece igual** → é numérico, e a campanha HZ respondeu à própria
+  pergunta negativamente. Hipótese (b), e o campo volta a resultado secundário
+  com o artigo construído sobre a rotação, que está limpa.
+
+A coluna que separa as duas leituras de um artefato de superfície é
+`rho_at_Tmax`: dentro da estrela é fenômeno, na superfície é a parede.
