@@ -1,0 +1,12 @@
+# index=058 rho_c=5.000000e+09 omega_frac=0.5000 k_frac=0.4500 M=1.612545 T_over_W=0.009749 shedding=0.067808 W=4.344494e+51
+# gates: M > 1.44, beta_min >= 1, 0.1 < E_t/E_p < 10, T/|W| < 0.14, shedding < 0.9
+m,zeta,M_msun,T_over_W,shedding,Etor_over_W,beta_min_tor_only,Bt_over_Bp,Etor_over_Epol,B_pole_G,beta_ambient,verdict
+0.000000e+00,5.000000e-01,1.612545e+00,9.749495e-03,6.780756e-02,6.810394e-02,1.052078e-02,nan,nan,nan,nan,toroidal alone fails
+0.000000e+00,1.500000e+00,1.612545e+00,9.749495e-03,6.780756e-02,6.810394e-02,7.184511e-02,nan,nan,nan,nan,toroidal alone fails
+0.000000e+00,3.000000e+00,1.612545e+00,9.749495e-03,6.780756e-02,6.810394e-02,5.797368e-02,nan,nan,nan,nan,toroidal alone fails
+-1.000000e+00,5.000000e-01,1.612545e+00,9.749495e-03,6.780756e-02,6.810394e-02,1.275739e-02,nan,nan,nan,nan,toroidal alone fails
+-1.000000e+00,1.500000e+00,1.612545e+00,9.749495e-03,6.780756e-02,6.810394e-02,9.514088e-02,nan,nan,nan,nan,toroidal alone fails
+-1.000000e+00,3.000000e+00,1.612545e+00,9.749495e-03,6.780756e-02,6.810394e-02,8.289839e-02,nan,nan,nan,nan,toroidal alone fails
+-2.000000e+00,5.000000e-01,1.612545e+00,9.749495e-03,6.780756e-02,6.810394e-02,1.529181e-02,nan,nan,nan,nan,toroidal alone fails
+-2.000000e+00,1.500000e+00,1.612545e+00,9.749495e-03,6.780756e-02,6.810394e-02,1.185620e-01,nan,nan,nan,nan,toroidal alone fails
+-2.000000e+00,3.000000e+00,1.612545e+00,9.749495e-03,6.780756e-02,6.810394e-02,1.050900e-01,nan,nan,nan,nan,toroidal alone fails

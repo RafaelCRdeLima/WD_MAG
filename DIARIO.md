@@ -3323,3 +3323,89 @@ campo não passa.** É a mesma frase por dois caminhos independentes.
 - `investigations/twisted_torus_sweep.py`, `merge_tt_sweep.py`,
   `twisted_torus_beta.py`
 - `cluster/scicom/{env.sh,job_tt_sweep.sh,job_tt_hidens.sh}`
+
+## 20. Campo **e** rotação: a configuração existe, e a exclusão da §19 era sobre a fonte da massa
+
+Rafael pediu para tentar no sci-com uma configuração com campo e rotação que
+permita super-Chandrasekhar. `investigations/twisted_torus_rotating.py`, 75
+pontos (ρ_c, omega_frac, K_frac), job único, 20m11.
+
+Quatro portões simultâneos, e o quarto é o que a §19 não precisava:
+
+    M > 1.44        beta_min >= 1        0.1 < E_tor/E_pol < 10
+    T/|W| < 0.14 (barra secular) e sem perda de massa
+
+O quarto é o que torna a resposta honesta: estrela sustentada por rotação que
+ela não consegue manter não é resultado.
+
+### A resposta é sim
+
+540 configurações, 158 seguram o campo, **40 passam os quatro portões**.
+
+| | melhor por massa | melhor por comparabilidade |
+|---|---|---|
+| M | **1.9623 M⊙** (1.36 M_Ch) | 1.9264 M⊙ |
+| ρ_c | 1.0×10⁹ | 1.0×10⁹ |
+| omega_frac, T/\|W\| | 1.50, 0.1054 | 1.50, 0.1025 |
+| E_tor/\|W\| | 0.00628 | 0.00133 |
+| E_tor/E_pol | 7.49 | **1.54** |
+| B_t/B_p | 1.22 | — |
+| m, ζ | 0.0, 1.5 | 0.0, 0.5 |
+
+A segunda coluna é a que um referee quer: E_tor/E_pol = 1.54 é o toro torcido
+no sentido estrito de Braithwaite & Spruit, energias comparáveis a menos de um
+fator 1.5, numa estrela 34% acima de Chandrasekhar.
+
+**Então a §19 não excluía o toro torcido. Excluía o campo como *fonte* da
+massa.** Geometria estável e massa acima do limite não são incompatíveis — elas
+só não podem vir do mesmo agente.
+
+### O controle fechou, e a minha preocupação estava errada
+
+Em omega_frac = 0 a massa máxima que segura o campo dá **1.4096 M⊙**,
+exatamente o número da §19. A montagem reproduz a varredura anterior.
+
+E eu havia registrado o risco de a rotação *piorar* β — apoio centrífugo reduz
+a pressão de gás que segura o campo. **Não acontece:** o teto de E_tor/|W| sobe
+de 0.00548 a 0.00628 conforme omega_frac vai de 0 a 1.5, cerca de 15% a favor.
+
+| omega_frac | teto de E_tor/\|W\| | M máx. |
+|---|---|---|
+| 0.00 | 0.00548 | 1.4096 |
+| 0.50 | 0.00555 | 1.4425 |
+| 1.00 | 0.00579 | 1.5659 |
+| 1.50 | 0.00628 | 1.9623 |
+
+O teto do campo mal se move enquanto a massa quase dobra. É a mesma frase da
+§14 por um terceiro caminho: **a rotação passa de Chandrasekhar, o campo não.**
+
+### Ressalvas, e a primeira é séria
+
+- **15 dos 75 pontos não convergiram, e são exatamente os 15 de
+  omega_frac = 2.0** (índices 20–24, 45–49, 70–74). O degrau mais alto de
+  rotação está ausente da grade, então **1.9623 M⊙ é piso, não máximo**. O
+  `terms/rotation.py` já documenta terminação numérica prematura ao impor Ω_c
+  em vez de razão axial; é o suspeito.
+- O teto de 0.00548 em omega_frac = 0 contra os 0.0101 da §19 **não é
+  discrepância**: esta grade amostra (m, ζ) mais grosso — sem m = −1.5 e sem
+  ζ = 1.0, que era o melhor par lá. Física igual, resolução de grade diferente.
+- β_min ≥ 1 continua sendo consistência da construção, não estabilidade
+  dinâmica. Quem decide isso é uma evolução 3D.
+
+### O que falta para o Castro evoluir isso, agora quantificado
+
+O bloqueio da §6.8 não mudou de natureza, mas agora tem número para um alvo
+específico:
+
+| | |
+|---|---|
+| dipolo exterior da melhor config. | 7.215×10¹¹ G |
+| ambiente atual (2×10⁴) aguenta | 3.372×10¹⁰ G → β = 2.2×10⁻³ |
+| **ambiente para β = 1** | **8.66×10⁵ g/cm³**, fator 43 acima do atual |
+
+Então a configuração é **construível mas ainda não evoluível na caixa que
+temos**. As duas saídas da §6.8 continuam sendo as mesmas — fronteira de vácuo,
+ou ambiente muito mais denso numa caixa menor — e a segunda agora tem alvo:
+8.7×10⁵ g/cm³.
+
+É a próxima decisão, e é onde os 14 dias do `ep-short` (§16) passam a valer.
