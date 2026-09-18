@@ -3409,3 +3409,73 @@ ou ambiente muito mais denso numa caixa menor — e a segunda agora tem alvo:
 8.7×10⁵ g/cm³.
 
 É a próxima decisão, e é onde os 14 dias do `ep-short` (§16) passam a valer.
+
+## 21. O ambiente denso não fecha, e o espaço de modelos está esgotado
+
+Recomendei ambiente de 8.7×10⁵ g/cm³ para dar β = 1 no dipolo exterior, Rafael
+aprovou, e fui dimensionar a caixa. **O número não fecha e o erro é meu:**
+calculei a densidade que dá β = 1 e nunca conferi o que ela faz com a massa do
+domínio.
+
+| ambiente na caixa do `rot192` ((1.8×10⁹)³) | massa |
+|---|---|
+| 2×10⁴ (atual) | 0.059 M⊙, 3% da estrela |
+| **8.66×10⁵ (o que recomendei)** | **2.539 M⊙, mais que a estrela** |
+
+Para segurar o ambiente denso em 2% de 2 M⊙ a meia-largura teria de ser
+2.26×10⁸ cm = **0.58 R_eq**: a estrela não caberia. É o modo de falha da §12
+outra vez — número da construção do modelo que não passou por diagnóstico.
+
+### A saída óbvia também está fechada
+
+Se o ambiente não pode subir, o dipolo exterior tem de descer: de 6.2×10¹¹ G
+para os 3.4×10¹⁰ que o ambiente atual aguenta, fator **18.5**. O confinamento de
+Fujisawa existe justamente para isso e a §6.6 mediu B_int/B_ext até 973.
+
+Medido nas 40 configurações que passam os quatro portões:
+
+| m | n | B_pole mínimo |
+|---|---|---|
+| 0.0 | 22 | 6.72×10¹¹ G |
+| −1.0 | 18 | 6.23×10¹¹ G |
+
+**Oito por cento.** E m = −2.0 não aparece entre as aprovadas. O motivo é
+estrutural: confinar sobe o campo *interior* de pico, que é o que fixa β_min,
+então a amplitude não pode subir junto. Baixar o poloidal também não salva — no
+limite da faixa comparável (E_t/E_p = 10) o dipolo fica em ~6.3×10¹¹.
+
+### O que isso é, de fato
+
+Não é um ajuste que faltou. **Energia poloidal comparável numa anã branca
+implica dipolo exterior da ordem de 10¹¹–10¹² G, e nenhuma atmosfera que caiba
+no domínio segura isso.** É a razão pela qual a literatura tem equilíbrios e não
+tem dinâmica, e vale como afirmação do artigo.
+
+### A opção que sobra do lado do setup
+
+Ambiente **estratificado** seguindo a queda do dipolo, em vez de constante — a
+zona ruim é só uma casca junto à estrela, porque B cai como r⁻³:
+
+| ambiente | massa | vs estrela |
+|---|---|---|
+| 2×10⁴ constante | 0.059 M⊙ | 3% |
+| ρ ∝ r⁻⁶ com piso 2×10⁴ | 0.224 M⊙ | 11% |
+| ρ ∝ r⁻³ com piso 2×10⁴ | 0.410 M⊙ | 21% |
+
+O r⁻⁶ (que é B²) é o barato, e ainda assim 11% da massa estelar **não é
+preenchimento numérico: é um envelope**, que entra no solver de gravidade e
+pode frear a estrela. Melhor que 2.5 M⊙, longe de limpo.
+
+### Onde isso deixa o par 3D
+
+O run da configuração da literatura não está bloqueado — o `rotating_mixed`
+tem B_pole = 10⁹ G por construção e já rodou 82 s. **Só a configuração nova
+está bloqueada**, e é justamente ela que o artigo precisa.
+
+Três caminhos, nenhum barato: ambiente estratificado (§acima), tratamento de
+vácuo na fronteira (a outra saída da §6.8), ou aceitar que o run morre em
+t ≈ 0.2 s como a ML morreu com β_amb = 2.7×10⁻³ praticamente igual ao nosso
+2.9×10⁻³ — o que dá o transiente inicial e nada mais.
+
+O Castro está compilado e verificado no sci-com (§16), então o bloqueio é de
+física do setup, não de infraestrutura.
