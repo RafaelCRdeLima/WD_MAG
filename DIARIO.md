@@ -2896,3 +2896,430 @@ e era o único que nenhum CSV carregava — estava no manifesto do modelo.
 **A regra:** número que vem de CSV foi conferido ao ser produzido; número que
 vem da *construção do modelo* não passou por diagnóstico nenhum. É onde olhar
 primeiro quando o texto e os dados divergem.
+
+## 13. "Sabemos que estrelas têm campo toroidal" — a objeção do Jorge, e a manchete que ela conserta
+
+Rafael trouxe a segunda objeção do Jorge Rueda: sabemos que estrelas têm campo
+toroidal, então talvez tenhamos construído uma configuração inicial ruim.
+
+### O que ela acerta, e é a manchete, não o resultado
+
+A formulação da §9 — "uma evolução 3D destrói esse campo em poucos tempos de
+Alfvén" — deixa ler que campo toroidal não sobrevive em anã branca. Não é o que
+medimos e não é defensável: campos de WD são observados até ~10⁹ G, e Pakmor &
+Pelisoli mostram dínamo de grande escala **produzindo** campo azimutal ordenado.
+
+### A distinção que a manchete apagava
+
+Braithwaite & Spruit não dizem que toroidal é instável; dizem que **puramente**
+toroidal e **puramente** poloidal são ambos instáveis, e que o estável é o toro
+torcido, com energias comparáveis. O que evoluímos está a três ordens e meia
+disso: E_tor/E_pol = 2.18×10⁷ no modelo analítico, 3–5×10⁵ na malha em t = 0.
+
+Então a resposta honesta ao Jorge é **sim, a configuração é ruim** — no sentido
+preciso de que o kink de Tayler é o que se espera dela analiticamente. Estamos
+confirmando uma previsão, não descobrindo que estrelas não podem ter toroidal.
+
+### A virada, e ela já estava registrada na §6.6
+
+"Configuração ruim" soa como escolha nossa. Não é, em dois sentidos.
+
+1. É o que a literatura de equilíbrio constrói. Os quatro artigos de
+   `references/` usam sequências ou puramente toroidais ou puramente poloidais;
+   o toro torcido não aparece ali.
+2. **Nesta estrela o ramo estável não é construível.** A §6.6 fechou a conta:
+   com o toroidal de 3.2×10¹³ G, β ≥ 1 na superfície força domínio toroidal de
+   pelo menos 38:1. As três exigências — energias comparáveis, β > 1, MRI
+   resolvível — puxam em direções incompatíveis.
+
+Isso converte a objeção no claim mais forte que temos. Não "toroidal não
+sobrevive", e sim: **o regime em que esses modelos de massa super-Chandrasekhar
+precisam operar é o regime dinamicamente instável, e a alternativa estável está
+excluída nesta estrela pela própria condição de superfície.**
+
+### A versão mais afiada da objeção, que o Jorge não fez
+
+Um referee pode dizer que a instabilidade é semeada numericamente: a §12 mostra
+que o poloidal na malha excede o pretendido em ~40× e que o m=1 cresce sobre
+ruído de discretização, e a taxa de crescimento não converge (+47% de 192³ para
+256³).
+
+A defesa é a separação da §3.3: o kink de Tayler é **ideal**. A semente fixa o
+instante de partida, não se o modo existe. Crescimento, caráter m=1 e transporte
+de momento angular são robustos; a *taxa*, o decaimento e o resíduo são
+dominados por resolução e vão ao papel como tal. Reportar a instabilidade como
+real e a taxa como não convergida é a única leitura que sobrevive ao referee.
+
+### O que muda
+
+Nada nos dados. Muda o enquadramento: o artigo não afirma nada sobre campo
+toroidal em estrelas reais, afirma sobre a **classe de equilíbrios usada para
+sustentar massa acima de Chandrasekhar**. E a §6.6, que eu tratava como um
+beco sem saída da campanha CT, passa a ser peça central do argumento — é ela
+que fecha a saída "então usem o toro torcido".
+
+## 14. Como se constrói o toro torcido — e a qualificação que a §13 precisa
+
+Rafael perguntou como criar uma super-Chandrasekhar com toroidal *e* poloidal.
+A resposta obrigou a conferir de onde vem a massa nos nossos modelos, e o
+número não estava em lugar nenhum do diário.
+
+### O que segura a massa no modelo de produção não é o campo
+
+Do manifesto do `rotating_mixed.txt`, com E_tor/E_pol = 2.18×10⁷ da §4:
+
+| | |
+|---|---|
+| T/\|W\| | 0.0993 |
+| E_tor/\|W\| | **1.14×10⁻²** |
+| E_pol/\|W\| | 5.2×10⁻¹⁰ |
+
+O campo carrega **1% do virial**; a rotação carrega 10%. Os 2.005 M⊙ são
+rotacionais — a §1 sempre disse "só existe por causa da rotação diferencial", e
+eu nunca tinha posto o número do campo ao lado para ver o quanto isso é
+literal. **O campo é passageiro, não suporte.**
+
+Então "anã branca super-Chandrasekhar magnética" e "a estrela que simulamos"
+são objetos diferentes, e a pergunta do toro torcido tem resposta diferente em
+cada um.
+
+### A rota magnética existe, e está nas nossas próprias varreduras
+
+`investigations/barotropic_ceiling.csv`: a rho_c = 10⁹ sem campo a estrela tem
+**1.3464 M⊙**. `confinement_cost.csv` e `mixed_2msun.csv`: com toroidal a
+E_tor/\|W\| = 0.2026 e B_φ = 4.28×10¹³ G, **2.0072 M⊙**. Aí sim o campo é o
+suporte — 0.66 M⊙ vêm dele.
+
+E a divisão comparável aparece nessa estrela, na linha k₀ = 10⁻¹² do
+`confinement_cost.csv`:
+
+| | |
+|---|---|
+| B_pol pico | 1.63×10¹³ G (0.37 B_c) |
+| B_φ pico | 1.58×10¹³ G (0.36 B_c) |
+| Bt/Bp | **0.97** |
+| E_tor/E_pol | **8.8** |
+
+Isso é o ramo do toro torcido, com as duas componentes abaixo de B_c, numa
+estrela cuja massa o campo de fato sustenta.
+
+### A qualificação que a §13 precisa
+
+A §13 promoveu a §6.6 — "β ≥ 1 força domínio toroidal de pelo menos 38:1, o
+toro torcido não é construível nesta estrela" — a peça central do argumento.
+A linha acima não a derruba, mas a **condiciona**, e de três formas:
+
+1. A §6.6 fixa B_φ = 3.2×10¹³ G, o valor do modelo **rotacional**, onde o campo
+   nem é o suporte. Na estrela magneticamente suportada o toroidal necessário é
+   outro e a fronteira se move.
+2. A §6.6 carrega junto a exigência de MRI resolvível, que a §6.8 depois provou
+   inatingível a qualquer custo acessível. Sem ela o espaço admissível é maior.
+3. **O `confinement_cost.csv` nunca testou β** — as colunas são B/B_c e o
+   veredito é sobre B_c, não sobre pressão. A linha k₀ = 10⁻¹² é candidata, não
+   contraexemplo.
+
+Conferir β ao longo daquele perfil é aritmética, sem fila, como a checagem de
+EOS da §11. **Enquanto não for feito, a §13 afirma mais do que foi provado**, e
+o enunciado seguro é "não é construível nesta estrela *rotacional*, com este
+toroidal, sob as três exigências simultâneas".
+
+### O bloqueio de verdade é o solver, e ele está declarado no código
+
+`scf/scf.py` recusa explicitamente:
+
+> poloidal e toroidal autoconsistente sao mutuamente exclusivos — use
+> `toroidal.impose_toroidal()` depois da convergencia para o twisted torus
+
+E os dois modelos mistos que existem carregam a marca disso:
+`mixed_2msun.csv` tem `certified: False` em todo k₀ acima de 10⁻¹³, e o
+`ml_field.txt.manifest.json` traz `is_equilibrium: 0.0` com a nota
+*"poloidal imposed on a converged toroidal+rotation solve; relax before drawing
+conclusions"*.
+
+**A campanha TT morreu em t = 0.06 s por isso.** Campo imposto não é
+equilíbrio, e o Castro cobra a diferença no primeiro passo. Toda a nossa
+experiência de "toro torcido não funciona" é experiência de campo imposto.
+
+### O que falta implementar, e é uma coisa só
+
+Pôr as **duas** funções arbitrárias do fluxo dentro do laço SCF, como Ciolfi &
+Rezzolla 2013 (β(ψ) e F(ψ)) e Fujisawa+2012 (κ(Ψ) e µ(Ψ)) fazem:
+
+- `confined_flux()` do `export_ct_model.py` já resolve a µ(Ψ) ∝ (Ψ+ε)^m não
+  constante — a metade poloidal está pronta, só está fora do laço;
+- falta κ(Ψ) com corte em Ψ̄ no lugar do `ToroidalSC`, cujo B_φ ∝ ρ não conhece
+  a última linha fechada e por isso vaza para o vácuo;
+- e levantar a exclusão mútua do `scf.py`, iterando os dois termos juntos.
+
+Só depois disso a frase "o toro torcido não é construível nesta estrela" vira
+resultado. Hoje ela é a observação de que **nunca tentamos construí-lo** — só
+impô-lo.
+
+## 15. O portão de β: o candidato da §14 não se sustenta, e falha melhor do que eu esperava
+
+A §14 marcou a linha k₀ = 10⁻¹² do `confinement_cost.csv` como **candidata, não
+contraexemplo**, porque aquele script reporta B/B_c e nunca mediu β. Escrevi
+`investigations/twisted_torus_beta.py` com a mesma definição que o
+`export_ct_model.py` usa — β_min sobre ρ > 10⁶ g/cm³ — para os números serem
+comparáveis à tabela da §6.6.
+
+### O resultado
+
+Estrela de 2.0072 M⊙ sustentada pelo toroidal (E_tor/|W| = 0.2026, contra
+1.3464 M⊙ sem campo):
+
+| k₀ | Bt/Bp | E_t/E_p | β_min | f(massa com β<1) | β no ambiente |
+|---|---|---|---|---|---|
+| 10⁻¹³ | 9.67 | 884 | 6.049×10⁻³ | 0.086 | 3.3×10⁻¹ |
+| 10⁻¹² | **0.97** | **8.8** | 6.046×10⁻³ | 0.087 | 3.3×10⁻³ |
+| 3×10⁻¹² | 0.32 | 0.98 | 6.025×10⁻³ | 0.372 | 3.6×10⁻⁴ |
+| 10⁻¹¹ | 0.10 | 0.09 | 5.789×10⁻³ | 1.000 | 3.3×10⁻⁵ |
+
+**Nenhuma linha segura o campo.** A divisão comparável tem β_min = 6×10⁻³ — a
+pressão magnética é 165 vezes a do gás onde o mínimo cai.
+
+### O que o número diz, e é mais geral do que a pergunta que fiz
+
+β_min é o **mesmo** nas quatro linhas, de 6.049×10⁻³ a 5.789×10⁻³ sobre três
+décadas de amplitude poloidal, sempre em ρ = 1.02×10⁶ e r/R_eq = 0.707.
+
+**Então β_min não é fixado pelo poloidal. É fixado pelo toroidal confinado**,
+que é o mesmo em toda linha porque E_tor/|W| = 0.203 é o que segura os 2 M⊙.
+
+Isso generaliza a §6.6 em vez de contradizê-la, e por um caminho melhor. A §6.6
+provou uma impossibilidade sob três exigências simultâneas, na estrela
+*rotacional*, com B_φ fixo. O que este portão mostra é mais simples e mais
+duro: **qualquer toro torcido precisa que β(ψ) se anule nas linhas que chegam
+ao vácuo, logo o toroidal vive só na região fechada — 37% do volume — e
+espremer ali a energia que sustenta a massa já quebra β numa casca a ρ ~ 10⁶,
+antes de o poloidal entrar na conta.**
+
+O poloidal ainda faz estrago próprio, só não é ele que fixa o mínimo: a fração
+de massa com β < 1 vai de 8.6% a 100% conforme k₀ sobe.
+
+### E o ambiente do Castro confirma a morte da TT/ML pela terceira vez
+
+Um ambiente de 2×10⁴ g/cm³ aguenta no máximo 3.37×10¹⁰ G a β = 1. A linha da
+divisão comparável tem dipolo exterior de 5.9×10¹¹ G — **17.5× demais**, β_amb
+= 3.3×10⁻³. Mesmo se a estrela segurasse o campo, esta caixa não evolui o
+modelo. São dois bloqueios independentes, e o da §6.8 (fronteira de vácuo ou
+ambiente mais denso) só resolve o segundo.
+
+### O que continua em aberto, e agora é busca, não afirmação
+
+Três botões ficaram fixos e nenhum foi varrido:
+
+- **ζ = 1** na forma β(u) ∝ w^ζ/ϖ, herdado do `barotropic_ceiling` onde era o
+  mais favorável **para a massa**, não para β;
+- **o poloidal** é o dipolo de vácuo de f(u) = k₀ constante, não a forma
+  confinada de Fujisawa que a §6.6 usou;
+- **E_tor/|W| = 0.203**, isto é, M = 2 M⊙ exatos. A curva de troca entre
+  *quanto acima de Chandrasekhar* e *β_min* nunca foi levantada, e é ela que
+  responde a pergunta do Rafael em vez de fechá-la.
+
+Enunciado seguro hoje: **em M = 2 M⊙ com ρ_c = 10⁹ a divisão comparável não se
+sustenta, e o obstáculo é o confinamento do toroidal, não a geometria mista.**
+
+## 16. O sci-com entrou na conta
+
+Segunda máquina, e ela muda a operação mais do que a física.
+
+| | lovelace (CENAPAD) | sci-com (UFES) |
+|---|---|---|
+| escalonador | PBS | **SLURM** |
+| janela | 3 h, encadeada | **14 dias** em `ep-short` |
+| nós grandes | — | Epyc 9755 128c, 9965 192c/1.5 TB |
+| acesso | porta 31459, 2FA | chave ssh direta |
+
+**Os 14 dias apagam a causa de morte da §11.** O `hz192` parou em t = 1.266 s
+porque a cadeia não conseguiu ressubmeter contra o limite por usuário da fila.
+Aqui o run não precisa de cadeia, e o §10 inteiro — o bug do diretório
+fantasma, a lista de inputs, o retry no `qsub` — existe para consertar
+encadeamento que aqui não é necessário.
+
+### Estabelecido e verificado no destino
+
+- `ssh scicom` por chave, `rafael.lima`, home de 73 TB.
+- Toolchain: gcc 11.4, openmpi 5.0.3, hdf5 1.14.3, cmake 3.27 — serve para o
+  AMReX/Castro quando chegar a hora.
+- **O python do sistema é 3.6.8 e não serve.** Spack tem `python@3.11.7`;
+  `cluster/scicom/env.sh` carrega ele e o venv de `~/WD_MAG/.venv`
+  (numpy 2.4.6, scipy 1.17.1).
+- Código em `~/WD_MAG` por `rsync`, sem git: a chave do scicom não está
+  registrada no GitHub, e eu não vou mexer na conta do Rafael para isso.
+
+### Dois erros meus no caminho, ambos da mesma família
+
+1. O primeiro `rsync` passou `scf/ dashboard/ investigations/` como três
+   origens e o destino recebeu os três **achatados num diretório só**, mais o
+   `.venv` inteiro: 10746 arquivos onde deviam ser 82. Faltava `--relative` e
+   faltavam os `--exclude`.
+2. Conferi contando arquivos no destino — e foi só por isso que eu vi. **A
+   regra do §10 pegou o meu próprio erro na primeira vez que usei a máquina**,
+   que é o melhor argumento possível para ela.
+
+## 17. Os botões de forma estão esgotados, e isso reposiciona a varredura
+
+A tarefa de prova do array (índice 10 = ρ_c = 10⁹, K_frac = 1, que reproduz
+M = 2.0072 de propósito para ser conferível) rodou em 2m42 no sci-com e deu 25
+linhas — **todas no ramo "toroidal sozinho falha"**.
+
+### O alcance dos dois botões, medido
+
+| | β_min |
+|---|---|
+| pior (m = 0, ζ = 3) | 3.86×10⁻³ |
+| melhor (m = −1.5, ζ = 0.5) | 1.17×10⁻² |
+
+Um **fator 3 sobre a grade inteira**, contra os ~85 que faltam para β_min = 1.
+As direções fazem sentido e são fracas: m mais negativo abre a região fechada
+de 37.2% para 45.3% do volume, ζ menor achata o perfil do toroidal. Mais volume
+e perfil mais chato baixam o pico do campo — e não é nem perto do suficiente.
+
+**Então a forma não é o botão. A massa é.**
+
+### O erro de projeto que isso pegou, antes do array
+
+Minha grade original começava em K_frac = 0.20. Como E_tor ∝ K_tor², β_min = 1
+exige E_tor cair ~85×, logo K_frac ~ 0.1 — **abaixo do meu mínimo**. A varredura
+teria devolvido "tudo falha" em 30 tarefas, que é menos informativo do que
+cercar a fronteira.
+
+Grade refeita para K_frac ∈ {0.05 … 1.20}, dez valores, 50 tarefas. Cercar por
+baixo, não aproximar de 2 M⊙ por cima.
+
+### A previsão, registrada antes do resultado
+
+Pela mesma escala: com a melhor forma, β_min = 1 cai perto de
+E_tor/|W| ≈ 2.4×10⁻³, isto é K_frac ≈ 0.11. E a estrela sem campo a ρ_c = 10⁹
+tem **1.3464 M⊙** — abaixo de Chandrasekhar, porque sem campo nem rotação não
+se passa de 1.44 com μ_e = 2.
+
+Então espero que a fronteira caia **abaixo de 1.44 M⊙**: um toro torcido que a
+estrela de fato segura não chega a ser super-Chandrasekhar. Se for isso, a
+resposta à pergunta do Rafael não é uma receita, é uma exclusão — e ela vale
+para a classe inteira, não só para o nosso modelo.
+
+Se eu estiver errado e existir ponto com β_min ≥ 1 e Bt/Bp ~ 1 acima de 1.44,
+é o modelo do próximo run, e o `ep-short` de 14 dias evolui ele sem cadeia.
+
+## 18. O job errado na máquina certa
+
+A varredura do §17 foi para o sci-com como array de 50 tarefas e voltou três
+vezes com o mesmo resultado: a maioria morta. O diagnóstico levou três
+hipóteses erradas minhas antes de um número.
+
+### As três hipóteses, e por que cada uma caiu
+
+1. **OOM por oversubscription de BLAS.** `ReqMem=120G` sem `--mem`, dezenas de
+   tarefas no mesmo nó, cada uma abrindo pool de 16 threads. Plausível, e
+   consertei — `--mem=4G`, `OMP_NUM_THREADS=1`, `--array=...%12`. Não mudou
+   nada.
+2. **Nó doente.** As falhas se espalhavam por `nodenv3`, `4` e `7`, e os três
+   estão `IDLE`/`MIXED` sem evento registrado.
+3. **Preempção pelo `gpu-nv`**, que compartilha os mesmos nós. `PreemptMode=OFF`
+   em todo o cluster.
+
+**O número que encerrou a questão:** pico de RSS medido de dentro do Python,
+**0.10 GB**. Não era memória, e eu tinha "consertado" memória duas vezes.
+
+### O que de fato aconteceu
+
+`sacct` com `Start,End`: as seis primeiras falhas terminaram **todas às
+18:22:25**, e a onda seguinte morreu com 1 s de vida. Não é por job, é
+cancelamento em massa num instante. O estado do step é `CANCELLED`, não
+`OUT_OF_MEMORY`. Meu único `scancel` foi no array anterior, antes de este
+existir. **Veio de fora e não consigo atribuir** — vale perguntar em
+scicom@ufes.br antes de submeter array grande de novo.
+
+### A lição, e ela é minha
+
+Cada tarefa leva 20–100 s e 0.1 GB. **Isso nunca foi trabalho de cluster.**
+Rodou na estação em oito processos paralelos, sem fila, sem rsync, sem
+diagnóstico de escalonador — e teria rodado da primeira vez se eu tivesse
+dimensionado antes de submeter.
+
+O sci-com continua valendo, pelo que a §16 diz: os 14 dias do `ep-short` para
+o Castro 3D. Usar fila para um script de dois minutos foi trocar minutos de
+CPU por uma hora de depuração de infraestrutura.
+
+**A regra, ao lado da do §10:** medir o trabalho antes de escolher a máquina.
+Um job que cabe na estação não melhora por ir para a fila; ele só ganha mais
+lugares onde parar.
+
+## 19. O teto medido: existe toro torcido, e ele não é super-Chandrasekhar
+
+A varredura do §17 rodou no sci-com como job único (§18), 50 pontos em 9m41, e
+mais 24 pontos acima da grade para fechar a extrapolação. 1850 configurações.
+
+### O teto, e ele não se move
+
+Das 1250 linhas da grade, 341 seguram o campo com β_min ≥ 1, e **234 estão na
+faixa de energias comparáveis** (0.1 < E_tor/E_pol < 10) — o ramo estável de
+Braithwaite & Spruit. Então a configuração existe. O que ela não faz é massa.
+
+| ρ_c | M máx. com β_min ≥ 1 | ganho do campo |
+|---|---|---|
+| 5×10⁸ | 1.3227 | +0.0134 M⊙ |
+| 10⁹ | 1.3632 | +0.0149 |
+| 2×10⁹ | 1.3926 | +0.0162 |
+| 3×10⁹ | 1.4056 | +0.0167 |
+| 5×10⁹ | 1.4186 | +0.0173 |
+
+**E_tor/|W| no teto = 0.0098–0.0101 sobre uma década inteira de ρ_c.** Um por
+cento do virial, e o número não se move. A literatura de equilíbrio precisa de
+**0.203 — vinte vezes o teto.**
+
+Em massa: um toroidal confinado que a estrela de fato segura vale **+0.017 M⊙**,
+cerca de 1%. Não os 50% que os modelos super-Chandrasekhar reivindicam.
+
+### A extrapolação que eu não deixei passar
+
+A fronteira sobe com ρ_c e a grade parava em 5×10⁹, enquanto a neutronização
+(μ_e = 2) só entra em **1.940×10¹⁰**. Se algum ponto denso cruzasse 1.44, a
+afirmação caía. Medido:
+
+| ρ_c | M máx. | margem para 1.44 |
+|---|---|---|
+| 8×10⁹ | 1.4277 | +0.0123 |
+| 1.2×10¹⁰ | 1.4338 | +0.0062 |
+| 1.6×10¹⁰ | 1.4374 | +0.0026 |
+| 1.8×10¹⁰ | 1.4387 | **+0.0013** |
+
+A margem cai pela metade a cada passo: **a fronteira converge para M_Ch por
+baixo e não a cruza**, e a sequência termina na neutronização logo acima. Na
+faixa comparável o máximo é **1.4245 M⊙**.
+
+Não é "fica bem abaixo de Chandrasekhar" — é mais forte e mais estranho: ela
+*satura exatamente em* Chandrasekhar. O campo que a estrela aguenta não compra
+massa nenhuma além do que a degenerescência já dava.
+
+### O que isso responde, e o que não
+
+**Responde a pergunta do Rafael**, e com um "sim, mas": dá para construir a anã
+branca com toroidal e poloidal comparáveis, no ramo estável. Ela não é
+super-Chandrasekhar. As duas coisas que a literatura quer juntas — geometria
+estável e massa acima do limite — são **excludentes nesta EOS**, e a exclusão
+agora é medida em 1850 configurações, não argumentada.
+
+E fecha o par com a §14: a nossa estrela de 2.005 M⊙ é rotacional
+(T/|W| = 0.099 contra E_tor/|W| = 0.011). **A rotação passa de Chandrasekhar; o
+campo não passa.** É a mesma frase por dois caminhos independentes.
+
+### Ressalvas honestas
+
+- 129×129, EOS `ztwd` barotrópica, **sem rotação**. O teto é sobre o campo
+  sozinho; nada aqui diz o que campo + rotação juntos fazem, e é a pergunta
+  seguinte óbvia.
+- A margem de +0.0013 no ponto mais denso é 0.09%, abaixo do que esta malha
+  resolve com confiança. O que a malha sustenta é a **tendência** — margem
+  caindo pela metade sobre um fator 36 em densidade —, não o último dígito.
+- β_min ≥ 1 é critério de consistência da construção (o campo não pode dominar
+  a pressão que o equilíbrio usou), não prova de estabilidade dinâmica.
+
+### Produtos
+
+- `investigations/tt_sweep.csv` (1250 linhas) e `tt_sweep_hi_*.csv` (600)
+- `investigations/twisted_torus_sweep.py`, `merge_tt_sweep.py`,
+  `twisted_torus_beta.py`
+- `cluster/scicom/{env.sh,job_tt_sweep.sh,job_tt_hidens.sh}`
