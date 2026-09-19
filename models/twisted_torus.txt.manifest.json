@@ -1,0 +1,43 @@
+{
+  "checks": {
+    "amplitude_retained_64cubed": 0.9527151395087415,
+    "curl_err_poloidal": 7.798674512202316e-16,
+    "curl_err_toroidal": 0.0030575598896075877,
+    "relative_divB_64cubed": 2.192383303816603e-16
+  },
+  "file": "twisted_torus.txt",
+  "format": "axisym-vector-potential-v2",
+  "git_commit": "f4cfb5e",
+  "has_velocity": true,
+  "n_varpi": 385,
+  "n_z": 769,
+  "params": {
+    "A_cm": 245627372.18701363,
+    "A_over_Req": 1.0,
+    "B_pole_G": 721508478609.4601,
+    "B_total_max_over_Bc": 0.274079839733455,
+    "Bphi_max_G": 11688546243951.932,
+    "Bt_over_Bp_amplitude": 2.4229815917811885,
+    "E_pol_over_W": 0.0008390310256583409,
+    "E_tor_over_Emag": 0.8822136820516716,
+    "K_tor": 0.00035695000000000003,
+    "M_msun": 1.9623225260119812,
+    "Omega_c": 5.209189967454034,
+    "R_eq_cm": 467727104.1315038,
+    "R_pol_cm": 194699244.66168925,
+    "T_over_W": 0.10543074678461381,
+    "k0": 1.5277298150009652e-13,
+    "m_tor": 1.0,
+    "mu_e": 2.0,
+    "omega_frac": 1.5,
+    "rho_c": 1000000000.0,
+    "shedding": 0.47497642503565535,
+    "v_phi_max_cms": 639750434.301521
+  },
+  "units": "cgs: varpi,z in cm; density in g/cm^3; A_phi,A_z in G*cm",
+  "varpi_max_cm": 1590022634.4,
+  "z_range_cm": [
+    -1590022634.4,
+    1590022634.4
+  ]
+}

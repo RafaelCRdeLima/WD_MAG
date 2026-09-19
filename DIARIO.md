@@ -3479,3 +3479,80 @@ t ≈ 0.2 s como a ML morreu com β_amb = 2.7×10⁻³ praticamente igual ao nos
 
 O Castro está compilado e verificado no sci-com (§16), então o bloqueio é de
 física do setup, não de infraestrutura.
+
+## 22. O handoff de EOS não fecha — a §11 respondida, quatro semanas depois
+
+A §11 encerrou a campanha HZ negativamente e apontou o suspeito: a estrela é
+equilibrada contra P_ztwd(ρ) e evoluída contra P_helmholtz(ρ, T). Registrei que
+decidir isso "é aritmética, na estação, sem fila" e nunca fiz. Feito agora.
+
+`castro_problems/eos_profile/` constrói o **mesmo** Microphysics duas vezes,
+`EOS_DIR=ztwd` e `EOS_DIR=helmholtz`, e passa o mesmo perfil de densidade pelos
+dois. Não é reimplementação: é a EOS que os runs usaram.
+
+### A resposta é sim, e o perfil da diferença importa
+
+P_helmholtz **excede** P_ztwd em todo ponto, a T = 10⁷ K com a composição do
+`mu2.net`:
+
+| ρ | diferença | íons | resto |
+|---|---|---|---|
+| 2×10⁴ (ambiente) | **+9.53%** | 9.18% | +0.35% |
+| 10⁵ | +2.69% | 3.22% | −0.53% |
+| 10⁶ | +0.80% | 0.81% | −0.01% |
+| 10⁹ | +0.31% | 0.04% | **+0.27%** |
+| 3×10⁹ (núcleo) | +0.29% | 0.03% | **+0.26%** |
+
+São dois efeitos distintos, e a §11 só tinha considerado um:
+
+- **Na superfície e no ambiente é pressão iônica**, que a ztwd não tem. O
+  cabeçalho do `inputs.hz192` mostrou que P_ion/P_deg = 1.3×10⁻³ na média e
+  concluiu "equilíbrio a 0.1%" — mas a razão relevante não é contra a pressão
+  *degenerada média*, é contra a pressão *local*, e a 2×10⁴ g/cm³ ela é 9%.
+- **No interior é o resíduo de 0.26%** de elétrons a temperatura finita e
+  correções de Coulomb. Esta era a pergunta exata da §11 — "a pressão
+  eletrônica degenerada do helmholtz iguala a do ztwd na mesma ρ?" — e a
+  resposta é não, por um quarto de por cento em todo ponto.
+
+### O que isso explica, e fecha a campanha HZ inteira
+
+A estrela chega **sobrepressurizada** em 0.26% no núcleo e até 9.5% na
+superfície, desde t = 0. Sobrepressão em anã branca não colapsa: **expande**. E
+a §11 mediu exatamente isso — ρ_max de 3.0×10⁹ para 1.07×10⁶, fator 2800, a
+massa acima de 10⁵ caindo de 2.007 para 0.392 M⊙. A estrela **se desfaz**, não
+implode, e é o que uma EOS que entrega mais pressão do que a construção
+supunha faz.
+
+Explica também por que o calor aparece primeiro na superfície e entra (§11,
+t = 0.043 s, célula mais quente do interior colada no corte de densidade,
+ambiente a 5.1×10⁸ K): é onde o descasamento é 30× maior.
+
+E explica por que o controle sem campo aqueceu igual. **Nunca foi o campo. Era
+o handoff.**
+
+### O conserto, que a §11 já tinha nomeado
+
+Reequilibrar o perfil **sob** o helmholtz antes de evoluir, não escolher uma
+temperatura inicial mais baixa. Baixar T reduz a parte iônica mas não toca os
+0.26% eletrônicos, que são o piso.
+
+### E uma contaminação séria achada no caminho
+
+O build da helmholtz abortou com "Error reading free energy from
+helm_table.dat". A tabela em `microphysics/EOS/helmholtz/` tem 59.924 linhas e
+7.7 MB; o leitor espera 108.741 linhas só no primeiro bloco. **`git status`
+dizia `M`**: a tabela do clone estava modificada localmente. A do repositório
+tem 434.964 linhas (= 108.741 × 4, os quatro blocos) e 60 MB.
+
+A intrusa é **a tabela do FLASH**, a mesma que está em
+`flash_crosscheck/run_*/`. Alguém a copiou por cima da do Microphysics em algum
+momento do cross-check. Preservada em
+`flash_crosscheck/helm_table.flash_format.dat.bak` e a original restaurada.
+
+Nenhum run desta estação usou helmholtz — a campanha HZ rodou no lovelace, com
+outro clone — então nada publicado depende disso. Mas era uma mina, e o portão
+que a pegou foi `git status` numa árvore que eu supunha limpa.
+
+**A regra:** antes de confiar num clone de terceiros, `git status`. Arquivo de
+dados grande não aparece em revisão de código e não avisa quando está errado —
+só quando o leitor recusa, e nem sempre recusa.

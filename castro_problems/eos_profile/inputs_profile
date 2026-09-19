@@ -1,0 +1,3 @@
+unit_test.small_temp = 1e3
+unit_test.small_dens = 1e-3
+eos_profile.infile = profile.in
