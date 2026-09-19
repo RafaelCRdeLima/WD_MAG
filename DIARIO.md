@@ -3556,3 +3556,66 @@ que a pegou foi `git status` numa árvore que eu supunha limpa.
 **A regra:** antes de confiar num clone de terceiros, `git status`. Arquivo de
 dados grande não aparece em revisão de código e não avisa quando está errado —
 só quando o leitor recusa, e nem sempre recusa.
+
+## 23. O máximo real são 2.29 M⊙, e a limitação do solver está fora da física
+
+A §20 registrou 1.9623 M⊙ como **piso** porque os 15 pontos de
+`omega_frac = 2.0` não convergiram. Correto na conclusão, errado no motivo.
+
+### O que a varredura fina mostrou
+
+| omega_frac | M | R_pol/R_eq | T/\|W\| | shedding |
+|---|---|---|---|---|
+| 1.50 | 1.9623 | 0.416 | 0.1054 | 0.475 |
+| 1.60 | 2.1330 | 0.364 | 0.1246 | 0.483 |
+| 1.70 | 2.3471 | 0.323 | **0.1450** | 0.480 |
+| 1.80 | 2.6023 | 0.294 | **0.1657** | 0.473 |
+| 1.90 | não converge | | | |
+
+Duas leituras, e a segunda é a que importa:
+
+1. **O shedding fica plano em ~0.48 e nunca se aproxima de 1.** A falha em 1.90
+   é terminação numérica, exatamente a limitação que o `terms/rotation.py`
+   documenta ao impor Ω_c em vez de razão axial. Real, e registrada lá.
+2. **Mas ela está fora da região permitida.** T/|W| cruza o limiar de barra
+   secular (0.14) entre 1.60 e 1.70 — bem antes de o solver ter problema.
+
+**Então a reparametrização de Hachisu não é trabalho necessário.** A limitação
+numérica existe, é conhecida, e nenhum resultado publicável a alcança. Registro
+isso explicitamente para ninguém gastar tempo nela.
+
+O erro real da §20 foi a grade: `omega_frac` amostrado em {0, 0.5, 1.0, 1.5,
+2.0} pulou a região 1.5–1.7 inteira, onde está o máximo.
+
+### O máximo, por bissecção até T/|W| = 0.14
+
+| | |
+|---|---|
+| omega_frac | 1.6754 |
+| T/\|W\| | 0.1399 |
+| **M** | **2.2904 M⊙ = 1.59 M_Ch** |
+| β_min | 1.0000 (poloidal de pico 4.061×10¹² G) |
+| E_tor/E_pol | 9.98 |
+| E_tor/\|W\| | 0.00662 |
+| B_pole | 7.757×10¹¹ G |
+
+Os quatro portões passam. **17% acima do número da §20**, e mais pesada que os
+2.005 M⊙ do modelo de produção.
+
+### As duas coisas que isso não muda
+
+**O teto do campo.** E_tor/|W| = 0.00662, o mesmo ~1% de sempre. A massa extra
+é inteiramente rotacional — é a terceira confirmação independente da frase da
+§14: a rotação passa de Chandrasekhar, o campo não.
+
+**O bloqueio do ambiente.** B_pole = 7.757×10¹¹ G, ainda pior que os 6.23×10¹¹
+da melhor configuração anterior. A §21 continua de pé e o par 3D continua
+dependendo de trabalho de fronteira.
+
+### A ressalva que vai junto
+
+E_tor/E_pol = 9.98 está **na borda** da faixa comparável, não no meio dela. No
+máximo de massa a configuração é marginalmente um toro torcido; para sentar
+fundo no ramo de Braithwaite (E_t/E_p ~ 1–2) a massa cai. Existe uma curva de
+troca entre *quão pesada* e *quão comparável*, e o artigo deve mostrá-la em vez
+de citar um ponto só.
