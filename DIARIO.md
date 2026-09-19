@@ -3619,3 +3619,58 @@ máximo de massa a configuração é marginalmente um toro torcido; para sentar
 fundo no ramo de Braithwaite (E_t/E_p ~ 1–2) a massa cai. Existe uma curva de
 troca entre *quão pesada* e *quão comparável*, e o artigo deve mostrá-la em vez
 de citar um ponto só.
+
+## 24. A sonda fechou: previsão confirmada, e pela mesma morte da ML
+
+O par de sondas terminou. A §21 previu que o toro torcido morreria por volta de
+t ≈ 0.2 s, pelo mesmo β_ambiente ~3×10⁻³ com que a campanha ML morreu em
+t = 0.221 s.
+
+| | controle (dipolo 10⁹ G) | toro torcido (7.2×10¹¹ G) |
+|---|---|---|
+| estado | **COMPLETED** | **FAILED**, `Error: too many subcycles` |
+| alcance | t = 2.0 s, o alvo | **t = 0.2046 s** |
+| parede | 1h29 | 5h20 |
+| custo | 0.44 min por 0.01 s | **15.6 min por 0.01 s** |
+
+**A mesma mensagem de aborto da ML** (§6.7: `too many subcycles`, passo 712,
+DT = 5.18×10⁻⁵), no mesmo regime de tempo, pelo mesmo caminho: colapso de `dt`.
+
+### A sequência, que é o diagnóstico
+
+| plotfile | t | dt |
+|---|---|---|
+| plt00060 | 0.0494 | **1.83×10⁻³ ← pico** |
+| plt00100 | 0.0958 | 9.60×10⁻⁴ |
+| plt00160 | 0.1457 | 5.37×10⁻⁴ |
+| plt00240 | 0.1860 | 4.23×10⁻⁴ |
+| plt00280 | 0.2046 | 3.82×10⁻⁴ |
+
+Sobe na rampa até t ≈ 0.049 s e cai por fator 4.8 até o aborto — em patamares,
+não suave. É a assinatura que o §6.7 mandou vigiar depois que a taxa de retry
+constante escondeu um run morrendo.
+
+### O que a sonda comprou, e o que ela não diz
+
+**Comprou** a confirmação de que a previsão da §21 estava certa, por 90 minutos
+de fila em vez de semanas de trabalho de fronteira feitas no escuro. E um
+baseline: a configuração da literatura rodando 2.0 s limpos nesta caixa exata,
+que serve de referência quando o par de verdade rodar.
+
+**Não diz nada sobre estabilidade.** O par é assimétrico por construção — o
+controle não é limitado pelo ambiente e o toro torcido é — e isso estava
+registrado no cabeçalho do `inputs.tt192` antes de rodar. A diferença entre os
+dois é o ambiente, não física. Nenhuma das duas configurações chegou perto de
+mostrar seu destino: t_Alfvén é da ordem de 1.7 s e a ruptura m=1 do controle
+leva ~12 s.
+
+### O que fica decidido
+
+O trabalho de fronteira é inevitável, e agora com número em cima: o toro
+torcido é **35× mais caro por unidade de tempo físico** nesta caixa, e mesmo
+assim morre em 0.2 s. Não existe versão barata deste run.
+
+As duas saídas da §6.8 continuam sendo as mesmas — ambiente estratificado
+(§21, 0.22 M⊙ e a ressalva do envelope) ou fronteira de vácuo. E o máximo de
+massa da §23 piorou o problema: B_pole = 7.76×10¹¹ G contra os 7.22×10¹¹ da
+configuração que acabou de morrer.
