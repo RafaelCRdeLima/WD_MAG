@@ -3674,3 +3674,59 @@ As duas saídas da §6.8 continuam sendo as mesmas — ambiente estratificado
 (§21, 0.22 M⊙ e a ressalva do envelope) ou fronteira de vácuo. E o máximo de
 massa da §23 piorou o problema: B_pole = 7.76×10¹¹ G contra os 7.22×10¹¹ da
 configuração que acabou de morrer.
+
+## 25. A checagem de convergência que faltava: as manchetes não se movem
+
+Tudo até aqui rodou em 129×129 e nenhuma varredura tinha sido repetida em
+outra malha. É a primeira coisa que um referee pede, e este projeto tem
+histórico: a §3.2 lista o que não converge nos runs 3D — taxa de crescimento
+m=1 subindo 47% de 192³ para 256³, resíduo de E_mag mudando por fator 25.
+
+### Medido antes de submeter, e custou menos do que eu estimei
+
+| N | tempo por ponto | M |
+|---|---|---|
+| 129 | 22.3 s | 1.348266 |
+| 193 | 30.8 s | 1.348306 |
+| 257 | 40.5 s | 1.348319 |
+
+**1.8× de 129 para 257, não 4×** — o solve não é dominado pela parte O(N²).
+Por isso deu para refazer a varredura inteira em vez de um subconjunto.
+
+### O resultado, sobre as 1200 configurações em comum
+
+| | 129×129 | 257×257 | variação |
+|---|---|---|---|
+| teto de E_tor/\|W\| | 0.01007 | 0.01007 | **+0.01%** |
+| M_max que segura o campo | 1.4186 | 1.4186 | +0.005% |
+| configurações que seguram | 341 | 341 | — |
+| **linhas que trocam de lado no portão β ≥ 1** | — | — | **0 de 1200** |
+
+A fronteira por ρ_c move 0.005% em todos os cinco pontos, e as margens para
+1.44 M⊙ ficam iguais. **A §19 está convergida.**
+
+### Onde a convergência falha, e por que não importa
+
+Do teste de um ponto nas três malhas, β_min por forma do poloidal:
+
+| m | variação em β_min | em E_tor/E_pol |
+|---|---|---|
+| 0.0 | +0.03% | +0.19% |
+| −1.0 | +0.03% | +1.00% |
+| −1.5 | +0.35% | +4.59% |
+| **−2.0** | **−2.39%** | **+12.89%** |
+
+O canto **m ≤ −1.5 não está convergido**, e piora com o refinamento em vez de
+melhorar — é onde o confinamento de Fujisawa concentra o campo junto ao eixo e
+o pico fica sub-resolvido. **Nenhuma manchete mora ali:** as 40 configurações
+que passam os quatro portões (§20) usam só m = 0 e m = −1, e o máximo de massa
+da §23 usa poloidal não confinado. Mas a limitação vai declarada.
+
+### O erro que isto custou, e é meu
+
+O job perdeu a segunda metade porque promovi `max_mass_frontier.py` do
+scratchpad com `REPO` fixo em `/home/rafael/wd-magnetizada`, que não existe no
+sci-com. Morreu em `No module named 'diagnostics'` **depois** de os vinte
+minutos da varredura já terem sido gastos. Regra da §10 pela enésima vez, desta
+vez plantada por mim. Agora `REPO` vem de `__file__` e funciona nas duas
+máquinas.
