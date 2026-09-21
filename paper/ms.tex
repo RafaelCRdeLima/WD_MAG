@@ -185,9 +185,21 @@ below $5\times10^{-2}$.
 
 We first ask, with rotation switched off, how much confined toroidal field a
 white dwarf of given central density can carry while satisfying $\bmin \ge 1$.
-Table~\ref{tab:ceiling} gives the answer.
+Figure~\ref{fig:ceiling} gives the answer.
 
-%% TODO(RL): table environment; content from tt_sweep.csv.
+\begin{figure}
+\includegraphics[width=\columnwidth]{figures/fig_ceiling.pdf}
+\caption{The minimum plasma $\beta$ over the stellar interior against the
+energy the confined toroidal field is asked to carry, for five central
+densities between $5\times10^{8}$ and $5\times10^{9}$~g~cm$^{-3}$. Each curve
+is the envelope over the poloidal shape parameters, that is the best $\beta$
+the star achieves at that field strength. The five curves are
+indistinguishable: the ceiling is a property of the confinement rather than of
+the star. The star holds its field only above the dashed line, which places
+the ceiling at $\Etor/|W| = 0.010$, a factor of twenty below the value the
+super-Chandrasekhar equilibrium models require.
+\label{fig:ceiling}}
+\end{figure}
 
 The mass that such a field buys is $+0.013$ to $+0.017\,\Msun$, between one
 and two per cent, and the maximum $\Etor/|W|$ the star holds is
@@ -217,6 +229,17 @@ configuration holding its own confined toroidal field is $1.4387\,\Msun$, and
 the margin to $\Mch$ halves at each density step: $+0.0123$, $+0.0062$,
 $+0.0026$, $+0.0013\,\Msun$.
 
+\begin{figure}
+\includegraphics[width=\columnwidth]{figures/fig_frontier.pdf}
+\caption{The heaviest configuration that holds its own confined toroidal field
+(solid) against central density, with the field-free sequence (dashed) for
+scale. The separation between the curves is what the field buys, between
+$0.013$ and $0.017\,\Msun$. The upper curve approaches the Chandrasekhar mass
+without reaching it, and the sequence terminates at the neutronization
+threshold (shaded) rather than at a field limit.
+\label{fig:frontier}}
+\end{figure}
+
 The frontier therefore converges to the Chandrasekhar mass from below and does
 not cross it. This is a stronger statement than ``well below'': a magnetically
 supported twisted torus saturates \emph{at} the limit that degeneracy alone
@@ -234,10 +257,23 @@ $40$ of $540$ configurations satisfy all four criteria simultaneously.
 
 Mass and comparability are not independent: both rise with rotation, so the
 $\Etor/\Epol$ criterion binds before the secular bar mode does. The object is
-therefore a curve rather than a point, and Table~\ref{tab:tradeoff} gives it.
+therefore a curve rather than a point, and Figure~\ref{fig:tradeoff} and Table~\ref{tab:tradeoff} give it.
 A single quoted maximum would be fragile --- the heaviest configuration sits at
 $\Etor/\Epol \simeq 10$, and whether it falls inside the band depends on where
 the edge is drawn, which is a convention rather than a physical boundary.
+
+\begin{figure}
+\includegraphics[width=\columnwidth]{figures/fig_tradeoff.pdf}
+\caption{Mass against the ratio of toroidal to poloidal energy along the
+rotating sequence, with $\bmin = 1$ imposed at every point. Both quantities
+rise together with rotation, so criterion (iii) binds before the secular bar
+mode does; the open symbol is the configuration that falls outside the
+comparable band. Shading marks the band. The heaviest configuration satisfying
+every criterion is $2.13\,\Msun$, and a configuration sitting well inside the
+band rather than at its edge still carries $1.65\,\Msun$, $14\%$ above the
+Chandrasekhar limit.
+\label{fig:tradeoff}}
+\end{figure}
 
 \begin{deluxetable}{cccccc}
 \tablecaption{Mass against comparability at $257^2$, with $\bmin = 1$ imposed.
