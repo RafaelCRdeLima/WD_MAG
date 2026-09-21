@@ -14,6 +14,12 @@ what the paper quotes.
   fig_frontier.pdf  the mass frontier converging to M_Ch from below.
   fig_tradeoff.pdf  mass against comparability, which replaces the single
                     quoted maximum (DIARIO 26).
+  fig_decay.pdf     the m=1 destruction of the ordered field, BOTH meshes on
+                    one axis. The residue differs by a factor of 25 between
+                    them and the figure shows that rather than hiding it: the
+                    destruction is the result, its late-time level is not.
+  fig_probe.pdf     the time step of the probe pair, which is how the
+                    comparable-energy configuration dies in the box we have.
 
 Run:  scf/.venv/bin/python3 investigations/plot_paper_figures.py
 """
@@ -222,6 +228,104 @@ def fig_tradeoff():
     print("  fig_tradeoff.pdf")
 
 
+def fig_decay(_=None):
+    """The ordered field is destroyed, on both meshes, and then stops decaying.
+
+    Plotting 192^3 and 256^3 together is deliberate. The destruction is robust:
+    both lose most of the magnetic energy over the same few Alfven times. What
+    is not robust is where the field settles -- the minima differ by a factor
+    of 25 between the meshes -- and the figure shows that rather than leaving
+    it to the text, so that no reader takes the residue for a measurement.
+
+    The 192^3 data live in two files, 0-12 s and 12-60 s, and are concatenated
+    here; the 256^3 run reaches 78 s in one.
+    """
+    def read(name):
+        n_hdr = sum(1 for l in open(HERE / name) if l.startswith("#"))
+        return np.genfromtxt(HERE / name, delimiter=",", names=True,
+                             skip_header=n_hdr)
+
+    a1, a2 = read("bt_bp_192.csv"), read("bt_bp_192_late.csv")
+    t_a = np.concatenate([a1["t"], a2["t"][1:]])
+    e_a = np.concatenate([(a1["E_tor"] + a1["E_pol"]),
+                          (a2["E_tor"] + a2["E_pol"])[1:]])
+    b = read("bt_bp_256_long.csv")
+    t_b, e_b = b["t"], b["E_tor"] + b["E_pol"]
+
+    fig, ax = plt.subplots(figsize=(COL_IN, COL_IN * 0.72))
+    style(ax)
+    ax.plot(t_a, e_a, color=C_A, linewidth=1.0)
+    ax.plot(t_b, e_b, color=C_B, linewidth=1.0)
+    ax.text(58.5, e_a[-1] * 1.9, r"$192^3$", color=C_A, fontsize=6.8,
+            ha="right", va="bottom")
+    ax.text(76.5, e_b[-1] * 1.9, r"$256^3$", color=C_B, fontsize=6.8,
+            ha="right", va="bottom")
+
+    # os dois minimos, que e' onde as malhas discordam
+    ia, ib = int(np.argmin(e_a)), int(np.argmin(e_b))
+    for i, t, e, c in ((ia, t_a, e_a, C_A), (ib, t_b, e_b, C_B)):
+        ax.plot([t[i]], [e[i]], "o", color=c, markersize=4.0,
+                markeredgewidth=0.8, markeredgecolor="white", zorder=4)
+
+    ax.annotate("", xy=(12.0, 1.25e50), xytext=(0.5, 1.25e50),
+                arrowprops=dict(arrowstyle="<->", color=C_MUTED,
+                                linewidth=0.7, shrinkA=0, shrinkB=0))
+    ax.text(6.2, 1.45e50, r"$m=1$ disruption", fontsize=6.2, color=C_MUTED,
+            ha="center", va="bottom")
+    ax.text(78.0, 5.2e45,
+            "minima differ by a factor of 25:\nthe destruction converges, "
+            "the residue does not",
+            fontsize=6.0, color=C_MUTED, ha="right", va="bottom",
+            linespacing=1.3)
+
+    ax.set_yscale("log")
+    ax.set_xlabel(r"$t$ (s)")
+    ax.set_ylabel(r"$E_{\rm mag}$ (erg)")
+    ax.set_xlim(0, 80); ax.set_ylim(3.5e45, 3.4e50)
+    fig.savefig(OUT / "fig_decay.pdf")
+    plt.close(fig)
+    print("  fig_decay.pdf")
+
+
+def fig_probe():
+    """The time step of the probe pair.
+
+    The control, carrying the literature's weak exterior dipole, holds a step
+    of a few times 1e-3 s and reaches the target. The comparable-energy
+    configuration peaks at t = 0.05 s and then loses the step in plateaus until
+    the subcycle limit ends the run at t = 0.205 s. Nothing about stability is
+    visible here and none is claimed: the pair is asymmetric by construction,
+    and what the figure shows is the ambient constraint of Section 5.2.
+    """
+    rows = [l.split(",") for l in open(HERE / "probe_times.csv")
+            if not l.startswith(("#", "run"))]
+    fig, ax = plt.subplots(figsize=(COL_IN, COL_IN * 0.72))
+    style(ax)
+    for run, c, lab in (("tt192ctl", C_A, "literature geometry"),
+                        ("tt192", C_B, "comparable energies")):
+        t = np.array([float(r[2]) for r in rows if r[0] == run])
+        t = np.sort(t)
+        dt = np.diff(t) / 20.0
+        ax.plot(t[1:], dt, color=c, linewidth=1.1, marker="o",
+                markersize=2.4, markeredgewidth=0, label=lab)
+
+    ax.plot([0.2046], [3.82e-4], "x", color=C_B, markersize=6,
+            markeredgewidth=1.3, zorder=4)
+    ax.annotate("abort: too many subcycles", xy=(0.2046, 3.82e-4),
+                xytext=(0.30, 1.55e-4), fontsize=6.0, color=C_B,
+                ha="left", va="center",
+                arrowprops=dict(arrowstyle="-", color=C_B, linewidth=0.6,
+                                shrinkA=1, shrinkB=3))
+    ax.legend(loc="upper left", handlelength=1.4)
+    ax.set_xscale("log"); ax.set_yscale("log")
+    ax.set_xlabel(r"$t$ (s)")
+    ax.set_ylabel(r"$\Delta t$ (s)")
+    ax.set_xlim(1e-3, 4.0)
+    fig.savefig(OUT / "fig_probe.pdf")
+    plt.close(fig)
+    print("  fig_probe.pdf")
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     rows = load(HERE / "res257" / "tt_sweep_*.csv")
@@ -230,6 +334,8 @@ def main():
     fig_ceiling(rows)
     fig_frontier(rows, hi)
     fig_tradeoff()
+    fig_decay()
+    fig_probe()
 
 
 if __name__ == "__main__":

@@ -324,10 +324,23 @@ while the mass-shedding parameter stays near $0.48$ throughout.
 Evolving the specified configuration --- $2.005\,\Msun$, interior toroidal
 field of $3.2\times10^{13}$~G beside a $10^{9}$~G exterior dipole, so
 $B_t/B_p \simeq 4\times10^{3}$ --- in three-dimensional ideal MHD, an $m=1$
-instability grows in a few Alfv\'en times and the ordered field is destroyed:
+instability grows in a few Alfv\'en times and the ordered field is destroyed
+(Figure~\ref{fig:decay}):
 the magnetic energy falls from $6.05\times10^{49}$ to
 $1.35\times10^{49}$~erg over the first twelve seconds. The star itself and the
 differential rotation that supports it survive that episode.
+
+\begin{figure}
+\includegraphics[width=\columnwidth]{figures/fig_decay.pdf}
+\caption{Magnetic energy of the star against time on both meshes. The ordered
+field is destroyed over the first several seconds and the decay is robust: the
+two meshes agree on it. Where they do not agree is the level the field settles
+to, the minima differing by a factor of $25$, after which the energy rises
+again on both. We show both meshes rather than one so that the residue is not
+mistaken for a measurement; growth rates and residues are reported as
+resolution-limited throughout (Section~\ref{sec:limitations}).
+\label{fig:decay}}
+\end{figure}
 
 This is the behaviour linear theory predicts for a near-pure toroidal field,
 and it is worth being precise about what it does and does not show. It does
@@ -342,8 +355,22 @@ We constructed the twisted-torus counterpart on the identical star --- same
 central density, same rotation law, same self-consistent toroidal field, the
 poloidal amplitude being the only difference --- and attempted to evolve both.
 The control, carrying the literature's weak exterior dipole, ran cleanly to
-the target time. The twisted torus aborted at $t = 0.205$~s after a monotonic
-collapse of the time step, at $35$ times the cost per unit physical time.
+the target time. The twisted torus aborted at $t = 0.205$~s after a collapse of the time step
+(Figure~\ref{fig:probe}), at $35$ times the cost per unit physical time.
+
+\begin{figure}
+\includegraphics[width=\columnwidth]{figures/fig_probe.pdf}
+\caption{Time step against elapsed physical time for the two configurations,
+which differ only in poloidal amplitude on an otherwise identical star. Both
+ramp identically from the initial reduction. The literature geometry then
+holds a step of a few times $10^{-3}$~s and reaches the target time; the
+comparable-energy configuration peaks at $t \simeq 0.05$~s and loses the step
+in plateaus until the subcycle limit ends the run at $t = 0.205$~s. The pair
+is asymmetric by construction --- only one of the two is ambient-limited ---
+so the figure shows the constraint of Section~\ref{sec:3d}, not a difference
+in stability.
+\label{fig:probe}}
+\end{figure}
 
 The cause is not numerical fragility but a physical constraint on the setup.
 Comparable poloidal energy requires an exterior dipole near $7\times10^{11}$~G.
