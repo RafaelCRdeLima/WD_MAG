@@ -3730,3 +3730,56 @@ sci-com. Morreu em `No module named 'diagnostics'` **depois** de os vinte
 minutos da varredura já terem sido gastos. Regra da §10 pela enésima vez, desta
 vez plantada por mim. Agora `REPO` vem de `__file__` e funciona nas duas
 máquinas.
+
+## 26. A checagem de resolução cobrou um número, e era o certo
+
+A §25 fechou dizendo que as manchetes não se movem. Faltava a bissecção do
+máximo de massa em 257×257, que terminou depois e ficou dois dias parada.
+
+### O que ela mudou
+
+| | 129×129 | 257×257 |
+|---|---|---|
+| M | 2.2904 | 2.2902 (−0.01%) |
+| T/\|W\| | 0.1399 | 0.1399 |
+| β_min | 1.0000 | 1.0000 |
+| **E_tor/E_pol** | **9.98** | **10.69** |
+
+A massa está convergida. **E_tor/E_pol cruzou 10**, e o portão da
+comparabilidade passou a reprovar a configuração de massa máxima.
+
+Era o único número que estava numa borda, e foi exatamente ele que se moveu. O
+teto de E_tor/|W|, a fronteira em Chandrasekhar e as 341 configurações que
+seguram o campo não mudaram nada (§25).
+
+### A correção, e ela é melhor que o número antigo
+
+O problema não era a massa — era citar **um ponto** que encostava num limite
+que é convenção, não física. A §23 já tinha registrado essa fragilidade como
+ressalva; agora ela virou fato medido.
+
+Curva massa × comparabilidade em 257, com β_min = 1 imposto:
+
+| Ω_c/Ω_K | M | T/\|W\| | E_tor/E_pol | portões |
+|---|---|---|---|---|
+| 1.200 | 1.6484 | 0.0606 | **4.17** | todos |
+| 1.350 | 1.7758 | 0.0806 | 5.65 | todos |
+| 1.500 | 1.9623 | 0.1054 | 7.50 | todos |
+| **1.600** | **2.1329** | 0.1246 | 9.62 | todos |
+| 1.675 | 2.2903 | 0.1399 | 10.69 | reprova (iii) |
+
+Massa e comparabilidade sobem juntas com a rotação, então **o portão da
+comparabilidade morde antes do modo barra secular** — o limite não é T/|W| =
+0.14 como a §23 supôs, é E_tor/E_pol = 10.
+
+**O máximo honesto são 2.13 M⊙**, e o número que vale mais para o artigo é o
+outro: a **4.17** de razão de energias, fundo no ramo de Braithwaite e longe
+de qualquer borda convencional, a estrela ainda tem **1.6484 M⊙, 14% acima de
+Chandrasekhar**. Esse não depende de onde alguém desenha a faixa.
+
+E o teto do campo segue plano em toda a curva: E_tor/|W| de 0.00594 a 0.00662.
+
+### No artigo
+
+Abstract, §4 e conclusões corrigidos de 2.29 para 2.13, com a curva entrando
+como tabela no lugar do ponto único. Compila em 5 páginas.

@@ -39,9 +39,10 @@ $\Etor/|W| \simeq 0.203$, twenty times more. A field the star can hold is
 worth $+0.017\,\Msun$, about one per cent, and the mass frontier converges to
 $\Mch$ from below without crossing it, terminating at neutronization. Adding
 differential rotation removes the mass restriction but not the field ceiling:
-configurations reaching $2.29\,\Msun$ with comparable poloidal and toroidal
-energies exist, but their mass is rotational and their field still carries
-only $\sim 1\%$ of the virial. Three-dimensional ideal-MHD evolution of the
+configurations above the Chandrasekhar mass with comparable poloidal and
+toroidal energies exist, reaching $2.13\,\Msun$ at the edge of the comparable
+band and $1.65\,\Msun$ well inside it, but their mass is rotational and their
+field still carries only $\sim 1\%$ of the virial. Three-dimensional ideal-MHD evolution of the
 configuration the literature specifies confirms that it is destroyed by an
 $m=1$ instability within a few Alfv\'en times. We further show that the stable
 mixed configuration cannot be evolved in a domain-filling code at accessible
@@ -229,11 +230,36 @@ configuration is $1.4245\,\Msun$.
 
 The exclusion of Section~\ref{sec:ceiling} is about the \emph{source} of the
 mass, not about twisted tori. Repeating the survey with differential rotation,
-$40$ of $540$ configurations satisfy all four criteria simultaneously. The
-heaviest reaches $2.29\,\Msun$, $1.59\,\Mch$, at $T/|W| = 0.1399$ --- on the
-secular bar threshold --- with $\bmin = 1.00$ and $\Etor/\Epol = 9.98$.
-Configurations sitting deeper in the Braithwaite branch exist at lower mass:
-$\Etor/\Epol = 1.54$ at $1.93\,\Msun$.
+$40$ of $540$ configurations satisfy all four criteria simultaneously.
+
+Mass and comparability are not independent: both rise with rotation, so the
+$\Etor/\Epol$ criterion binds before the secular bar mode does. The object is
+therefore a curve rather than a point, and Table~\ref{tab:tradeoff} gives it.
+A single quoted maximum would be fragile --- the heaviest configuration sits at
+$\Etor/\Epol \simeq 10$, and whether it falls inside the band depends on where
+the edge is drawn, which is a convention rather than a physical boundary.
+
+\begin{deluxetable}{cccccc}
+\tablecaption{Mass against comparability at $257^2$, with $\bmin = 1$ imposed.
+\label{tab:tradeoff}}
+\tablehead{
+\colhead{$\Omega_c/\Omega_K$} & \colhead{$M$ ($\Msun$)} &
+\colhead{$T/|W|$} & \colhead{$\Etor/\Epol$} &
+\colhead{$\Etor/|W|$} & \colhead{criteria}}
+\startdata
+1.200 & 1.6484 & 0.0606 &  4.17 & 0.00594 & all \\
+1.350 & 1.7758 & 0.0806 &  5.65 & 0.00609 & all \\
+1.500 & 1.9623 & 0.1054 &  7.50 & 0.00628 & all \\
+1.600 & 2.1329 & 0.1246 &  9.62 & 0.00645 & all \\
+1.675 & 2.2903 & 0.1399 & 10.69 & 0.00662 & fails (iii) \\
+\enddata
+\end{deluxetable}
+
+The heaviest configuration satisfying all four criteria is $2.13\,\Msun$,
+$1.48\,\Mch$, with $\Etor/\Epol = 9.62$. Sitting comfortably inside the
+Braithwaite branch rather than at its edge costs mass but does not cost the
+result: at $\Etor/\Epol = 4.17$ the star is still $1.65\,\Msun$, $14\%$
+above the Chandrasekhar limit.
 
 Two features of this result deserve emphasis.
 
@@ -368,7 +394,8 @@ the same quantities move by $0.03\%$ and $1\%$ respectively.
       permits converges to $\Mch$ from below and does not cross it, ending at
       neutronization.
 \item With differential rotation, twisted-torus configurations above the
-      Chandrasekhar mass do exist, reaching $2.29\,\Msun$, but their support
+      Chandrasekhar mass do exist, reaching $2.13\,\Msun$ at the edge of the
+      comparable band and $1.65\,\Msun$ well inside it, but their support
       is rotational and the field still carries about one per cent of the
       virial.
 \item The configuration the literature specifies is destroyed by an $m=1$
