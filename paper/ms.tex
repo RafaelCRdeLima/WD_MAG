@@ -567,7 +567,10 @@ Department of Physics at UFES, supported by FAPES, CAPES, and CNPq.
 \software{CASTRO \citep{almgren2010}, AMReX \citep{zhang2019},
           NumPy \citep{harris2020}, SciPy \citep{virtanen2020}}
 
-\bibliography{refs}
+%% A ordem importa e estava invertida. aasjournal.bst vai junto no
+%% projeto porque o AASTeX 7 nao esta' no TeX Live de toda instalacao,
+%% e sem o .bst o bibtex falha e as citacoes saem como ???.
 \bibliographystyle{aasjournal}
+\bibliography{refs}
 
 \end{document}
