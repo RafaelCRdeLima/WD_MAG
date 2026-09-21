@@ -1,0 +1,43 @@
+{
+  "checks": {
+    "amplitude_retained_64cubed": 0.8337664231316232,
+    "curl_err_poloidal": 6.241666415865535e-16,
+    "curl_err_toroidal": 0.008484098486846454,
+    "relative_divB_64cubed": 7.651774765861261e-17
+  },
+  "file": "nonrotating_mixed.txt",
+  "format": "axisym-vector-potential-v2",
+  "git_commit": "b50ec64",
+  "has_velocity": true,
+  "n_varpi": 385,
+  "n_z": 769,
+  "params": {
+    "A_cm": 0.0,
+    "A_over_Req": 1.0,
+    "B_pole_G": 1000000000.0000004,
+    "B_total_max_over_Bc": 0.6715586336735868,
+    "Bphi_max_G": 29642595078746.32,
+    "Bt_over_Bp_amplitude": 1351.0681448514927,
+    "E_pol_over_W": 3.351123398214454e-09,
+    "E_tor_over_Emag": 0.9999996770301937,
+    "K_tor": 0.0005,
+    "M_msun": 1.4066565526937442,
+    "Omega_c": 0.0,
+    "R_eq_cm": 189705077.17168355,
+    "R_pol_cm": 190609321.72964957,
+    "T_over_W": 0.0,
+    "k0": 6.249845785089253e-16,
+    "m_tor": 1.0,
+    "mu_e": 2.0,
+    "omega_frac": 0.0,
+    "rho_c": 3000000000.0,
+    "shedding": 0.0,
+    "v_phi_max_cms": 0.0
+  },
+  "units": "cgs: varpi,z in cm; density in g/cm^3; A_phi,A_z in G*cm",
+  "varpi_max_cm": 1590022634.4,
+  "z_range_cm": [
+    -1590022634.4,
+    1590022634.4
+  ]
+}

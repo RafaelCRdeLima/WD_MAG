@@ -1,0 +1,226 @@
+"""The NON-ROTATING counterpart of rotating_mixed.txt, for Laura's question.
+
+Laura Becerra asked (17 Aug 2026) whether the simulations had been run without
+rotation, and whether the field then evolves toward a stable configuration.
+The question is the right control and the reason is in the literature she
+points at: several papers argue that a barotropic star admits no stable
+magnetic equilibrium at all, and rotation can stabilize what a barotrope
+cannot. If the ordered, axisymmetric configuration our rotating run settles
+into by t = 78 s (E_tor/E_pol = 89, E_mag/|W| = 2.8e-4) survives WITHOUT
+rotation, that is a claim against that literature. If it does not, everything
+is consistent and the rotation is doing the stabilizing.
+
+Identical to export_rotating_model.py in every other respect -- same rho_c,
+same K_tor, same surface dipole target, same composition -- so the pair
+differs in one parameter. Omega_c = 0, hence no centrifugal term, no velocity
+field, and a lighter star: the 2.005 Msun of the production model is
+rotational, so this one lands near the field-supported mass alone. That is
+expected and is not what the run is asking about.
+
+Run:  scf/.venv/bin/python3 investigations/export_nonrotating_model.py
+"""
+
+import sys
+import warnings
+from pathlib import Path
+
+import numpy as np
+
+HERE = Path(__file__).resolve().parent
+REPO = HERE.parent
+for _p in (REPO / "scf", REPO / "dashboard"):
+    sys.path.insert(0, str(_p))
+warnings.filterwarnings("ignore")
+
+import diagnostics as diag                            # noqa: E402
+import scf as scf_mod                                 # noqa: E402
+import units                                          # noqa: E402
+from axisym_model_writer import (to_meridional, vector_potential,  # noqa: E402
+                                 verify_curl_on_cartesian,
+                                 verify_meridional_curl, write_model)
+from gradshafranov import solve_gradshafranov         # noqa: E402
+from seed import r_guess                              # noqa: E402
+from sweep_worker import _solve_toroidal_certified    # noqa: E402
+from terms.rotation import Rotation                   # noqa: E402
+from terms.toroidal_sc import ToroidalSC              # noqa: E402
+
+RHO_C, MU_E = 3.0e9, 2.0
+LMAX = 16
+N_MER = 385
+HALF_CM = 9.0e8
+CORNER = 1.7320508
+
+# Rotation: the heaviest point of investigations/rotating_barotropic_scan.py
+# that stayed well below mass shedding. Omega_c is quoted against the
+# Keplerian frequency of the non-rotating star at the same central density.
+OMEGA_FRAC, A_FRAC = 0.0, 1.0
+
+# Field: the collaboration's specification -- a toroidal-dominated interior
+# with a weak exterior dipole. k0 is calibrated to the surface dipole, which
+# is the observable, and K_TOR is set from a sweep: at 5e-4 the star reaches
+# 2.005 Msun with max|B| = 0.73 B_c, while 1e-3 reaches 2.269 Msun but at
+# 1.24 B_c, outside the range where a zero-temperature unquantised equation
+# of state is valid.
+#
+# Note what this specification implies. A 1e9 G dipole beside a 3e13 G
+# toroidal field is B_t/B_p ~ 4e3: the field is toroidal to within a part in
+# a thousand, and a purely toroidal field is Tayler-unstable -- it is the
+# configuration that collapsed in about 3.5 dynamical times in the companion
+# paper. What is different here, and the reason the run is worth its time, is
+# that this star rotates, and the collapsing one did not.
+K0_REF = 1.0e-13
+B_POLE_TARGET = 1.0e9
+K_TOR, M_TOR = 5.0e-4, 1.0
+
+DIV_GATE = 1.0e-12
+CURL_GATE = 5.0e-2
+SHED_GATE = 0.95
+OUTDIR = REPO / "models"
+
+
+def build(rho, r, th, k0, varpi):
+    u = solve_gradshafranov(-4.0 * np.pi * varpi ** 2 * rho * k0, r, th,
+                            lmax=LMAX)
+    Bphi = ToroidalSC(K=K_TOR, m=M_TOR).B_phi(rho, varpi)
+    Br, Bth = diag.poloidal_field(u, r, th)
+    return u, Bphi, Br, Bth
+
+
+def main():
+    OUTDIR.mkdir(exist_ok=True)
+
+    # the non-rotating star at the same rho_c, only to set Omega_K
+    ref, r0, th0, _ = _solve_toroidal_certified(
+        rho_c=RHO_C, R_guess=r_guess(RHO_C), K_tor=0.0, m_tor_sc=M_TOR,
+        rotation=None, mu_e=MU_E, Nr_base=129, Ntheta=129, lmax=LMAX,
+        tol=1e-8, max_iter=400)
+    if ref is None:
+        raise SystemExit("the non-rotating reference did not converge")
+    M_ref = scf_mod.total_mass(ref["rho"], r0, th0)
+    R_ref = diag.equatorial_polar_radii(ref["H"], r0, th0)[0]
+    om_kep = float(np.sqrt(units.G_CONST * M_ref / R_ref ** 3))
+    print(f"reference: M = {units.g_to_msun(M_ref):.4f} Msun, "
+          f"R_eq = {R_ref:.4e} cm, Omega_K = {om_kep:.4e} rad/s")
+
+    rot = (Rotation(OMEGA_FRAC * om_kep, A_FRAC * R_ref)
+           if OMEGA_FRAC > 0 else None)
+    res, r, th, ov = _solve_toroidal_certified(
+        rho_c=RHO_C, R_guess=r_guess(RHO_C), K_tor=K_TOR, m_tor_sc=M_TOR,
+        rotation=rot, mu_e=MU_E, Nr_base=129, Ntheta=129, lmax=LMAX,
+        tol=1e-8, max_iter=400)
+    if res is None:
+        raise SystemExit("the rotating solve did not converge")
+
+    rho, Phi, H = res["rho"], res["Phi"], res["H"]
+    M = units.g_to_msun(scf_mod.total_mass(rho, r, th))
+    W = abs(diag.gravitational_energy(rho, Phi, r, th))
+    T = rot.energy(rho, r, th)["T"] if rot is not None else 0.0
+    varpi = r[:, None] * np.sin(th)[None, :]
+    R_eq, R_pol = diag.equatorial_polar_radii(H, r, th)
+
+    jeq = len(th) // 2
+    kk = np.flatnonzero(rho[:, jeq] > 0)
+    om_eq = (float(np.atleast_1d(rot.Omega(np.array([R_eq])))[0])
+             if rot is not None else 0.0)
+    grav_eq = abs(float(np.gradient(Phi[:, jeq], r)[kk[-1]]))
+    shed = om_eq ** 2 * R_eq / max(grav_eq, 1e-30)
+    print(f"rotating:  M = {M:.4f} Msun, R_eq = {R_eq:.4e}, "
+          f"R_pol = {R_pol:.4e} cm")
+    print(f"           T/|W| = {T / W:.4f}, shedding {shed:.3f} "
+          f"(gate {SHED_GATE})")
+    if shed >= SHED_GATE:
+        raise SystemExit("the configuration is shedding mass")
+
+    # calibrate k0 for the target surface dipole: B_pole is linear in k0
+    _, _, Br0, Bth0 = build(rho, r, th, K0_REF, varpi)
+    bp_ref = diag.surface_dipolarity(np.hypot(Br0, Bth0), H, r, th)["B_pole"]
+    k0 = K0_REF * (B_POLE_TARGET / bp_ref)
+    print(f"calibration: B_pole = {bp_ref:.4e} G at k0 = {K0_REF:.3e}"
+          f"  ->  k0 = {k0:.4e} for {B_POLE_TARGET:.1e} G\n")
+
+    u, Bphi, Br, Bth = build(rho, r, th, k0, varpi)
+    E_pol, E_tor, E_mag = diag.magnetic_energies(Br, Bth, Bphi, r, th)
+    bp = diag.surface_dipolarity(np.hypot(Br, Bth), H, r, th)["B_pole"]
+    amp = np.abs(Bphi).max() / max(np.hypot(Br, Bth).max(), 1e-300)
+
+    rmax = 1.02 * CORNER * HALF_CM
+    vp = np.linspace(0.0, rmax, N_MER)
+    zz = np.linspace(-rmax, rmax, 2 * N_MER - 1)
+    rho_m, u_m, bphi_m = to_meridional(r, th, (rho, u, Bphi), vp, zz)
+    A_phi, A_z = vector_potential(vp, u_m, bphi_m)
+
+    # v_phi = Omega(varpi) varpi depends on varpi alone, so it is evaluated
+    # directly on the meridional grid rather than interpolated.
+    #
+    # It is TAPERED to zero across the density transition, not cut at the
+    # stellar surface. Cutting it was the first version, and the first run
+    # died of it: a hard cut puts the full 7.5e8 cm/s into one cell beside a
+    # static ambient, and Castro aborted at t = 2.59 s with
+    # "Invalid density = 871 at index 75, 77, 84" -- a cell at
+    # (varpi/R_eq)^2 + (z/R_pol)^2 = 1.02, which is to say exactly on the
+    # stellar surface. Mass was conserved to 6e-5 and the central density was
+    # unchanged, so the star was healthy; what failed was the shear layer the
+    # export had manufactured.
+    #
+    # The taper is a smoothstep in log10(rho) between the sponge's own
+    # bracketing densities, so the rotation dies out over the same two
+    # decades the sponge acts on, and both the value and its first derivative
+    # vanish at each end.
+    RHO_SPIN_LO, RHO_SPIN_HI = 1.0e4, 1.0e6
+    t = np.clip((np.log10(np.maximum(rho_m, RHO_SPIN_LO))
+                 - np.log10(RHO_SPIN_LO))
+                / (np.log10(RHO_SPIN_HI) - np.log10(RHO_SPIN_LO)), 0.0, 1.0)
+    v_phi = (np.atleast_1d(rot.Omega(vp))[:, None] * vp[:, None]
+             * np.ones((1, len(zz)))) if rot is not None else \
+            np.zeros((len(vp), len(zz)))
+    v_phi = v_phi * (t * t * (3.0 - 2.0 * t))
+
+    err_pol, err_tor = verify_meridional_curl(vp, zz, A_phi, A_z, u_m, bphi_m)
+    rel_div, b_max, dx = verify_curl_on_cartesian(
+        vp, zz, A_phi, A_z, half=HALF_CM, n_cart=64)
+
+    b_tot_max = float(np.sqrt(Br**2 + Bth**2 + Bphi**2).max())
+    print(f"field: B_pole = {bp:.4e} G, E_pol/|W| = {E_pol / W:.3e}, "
+          f"E_tor/E_mag = {E_tor / E_mag:.6f}")
+    print(f"       max|B_phi| = {np.abs(Bphi).max():.4e} G, "
+          f"max|B|/B_c = {b_tot_max / 4.414e13:.3f}")
+    print(f"       B_t/B_p = {amp:.4g} (amplitude)")
+    print(f"       curl A vs B: poloidal {err_pol:.3e}, toroidal "
+          f"{err_tor:.3e}   (gate {CURL_GATE:.0e})")
+    print(f"       div B on 64^3: {rel_div:.3e}   (gate {DIV_GATE:.0e}), "
+          f"amplitude retained "
+          f"{100 * b_max / np.abs(Bphi).max():.1f}%")
+    print(f"       max v_phi = {v_phi.max():.4e} cm/s")
+
+    retained = b_max / np.abs(Bphi).max()
+    if retained > 1.02:
+        raise SystemExit(f"reconstruction gained amplitude "
+                         f"({100 * retained:.1f}%) -- model grid too small")
+    if not (rel_div < DIV_GATE):
+        raise SystemExit("divergence gate failed")
+    if not (err_pol < CURL_GATE and err_tor < CURL_GATE):
+        raise SystemExit("curl gate failed")
+
+    params = dict(rho_c=RHO_C, mu_e=MU_E, K_tor=K_TOR, m_tor=M_TOR, k0=k0,
+                  M_msun=M, R_eq_cm=R_eq, R_pol_cm=R_pol, B_pole_G=bp,
+                  E_pol_over_W=E_pol / W, E_tor_over_Emag=E_tor / E_mag,
+                  Bphi_max_G=float(np.abs(Bphi).max()),
+                  B_total_max_over_Bc=b_tot_max / 4.414e13,
+                  Bt_over_Bp_amplitude=amp, omega_frac=OMEGA_FRAC,
+                  A_over_Req=A_FRAC,
+                  Omega_c=(rot.Omega_c if rot else 0.0),
+                  A_cm=(rot.A if rot else 0.0),
+                  T_over_W=T / W, shedding=shed,
+                  v_phi_max_cms=float(v_phi.max()))
+    checks = dict(curl_err_poloidal=err_pol, curl_err_toroidal=err_tor,
+                  relative_divB_64cubed=rel_div,
+                  amplitude_retained_64cubed=retained)
+    man = write_model(vp, zz, rho_m, A_phi, A_z,
+                      OUTDIR / "nonrotating_mixed.txt", params, checks,
+                      v_phi=v_phi)
+    print(f"\nwrote models/{man['file']} ({man['n_varpi']}x{man['n_z']}), "
+          f"format {man['format']}")
+
+
+if __name__ == "__main__":
+    main()
