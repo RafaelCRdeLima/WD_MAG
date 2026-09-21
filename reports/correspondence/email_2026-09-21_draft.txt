@@ -1,0 +1,78 @@
+Subject: Re: magnetized massive WDs ...
+
+Dear all,
+
+I have had little time to push this forward over the past few weeks, so please
+read what follows as a status rather than a conclusion. I am sharing the draft
+mainly so that we are all looking at the same numbers:
+
+https://www.overleaf.com/project/6ab17e0a8e21e300c2744db3
+
+Please edit it directly and leave comments. Laura, Banibrata, Jorge and Zenia
+are on the author list, alphabetically by surname after mine -- tell me if you
+would rather it were otherwise. Laura, your affiliation is a placeholder in the
+file; please fill it in.
+
+Laura, your question is being answered right now. The non-rotating run is in
+the queue as I write: the same star, the same K_tor, the same 1e9 G surface
+dipole, with Omega_c = 0, evolved to the same 60 s as the rotating case. I
+agree with your reading of why it matters -- rotation can stabilise what a
+barotrope cannot, and if the ordered configuration we end up with survives
+without it, that is a claim against the literature you mention rather than a
+detail. I will send the answer when it finishes. Two things the equilibrium
+already shows: without rotation the star weighs 1.407 Msun rather than 2.005,
+so the extra mass in our production model is rotational, and it comes out
+marginally prolate, R_pol/R_eq = 1.005, which is what Banibrata predicted.
+
+Banibrata, your 0.01 turns out to be our number as well, arrived at from a
+different direction. We ran a survey of some 1800 equilibria asking a purely
+structural question: how much confined toroidal field can the star carry before
+the magnetic pressure exceeds the gas pressure somewhere inside, so that the
+field-free equation of state used to build the configuration stops describing
+it? The answer is E_tor/|W| <= 0.0101, and it barely moves over a decade in
+central density. It is converged: repeating the survey at 257^2 against 129^2
+moves it by 0.01%.
+
+Our production run then does what your bound would predict. It starts at
+E_mag/|W| = 0.0114, marginally above, and the field decays until the ratio is
+two orders of magnitude below, where it stops:
+
+    t = 0 s     E_mag/|W| = 1.14e-2     E_tor/E_pol = 5e5
+    t = 5 s                 3.9e-3                    7.0
+    t = 12 s                1.4e-3                    4.2
+    t = 45 s                1.2e-4                     77
+    t = 78 s                2.8e-4                     89
+
+So the run is better described as the star shedding field until it reaches a
+configuration it can hold, rather than as the field being destroyed. I had put
+it the wrong way round in August and the draft has been corrected accordingly.
+
+Whether the two numbers coincide for a reason, we do not know. A virial
+argument suggests they might: |W| is of order the volume integral of the
+pressure, so E_mag/|W| is of order the volume average of 1/beta, and a global
+energy bound and a local pressure floor would then be the same statement.
+
+The other thing in the draft is the consequence of the ceiling for mass. A
+field the star can hold is worth about +0.017 Msun, and the frontier it permits
+converges to the Chandrasekhar mass from below without crossing it, ending at
+neutronization. Adding differential rotation lifts the mass but not the
+ceiling: we find configurations above 2 Msun with comparable poloidal and
+toroidal energies, but their support is rotational and the field still carries
+about one per cent of the virial.
+
+Jorge, the correction I owe you from August is in the draft: the initial field
+is not purely toroidal, there is a deliberate poloidal dipole, and on the grid
+the poloidal component is some forty times larger than the model intends
+because of discretisation. That matters for what seeds the m=1 mode, and it is
+stated rather than buried.
+
+One caveat I want to flag rather than have a referee find it. Our stability
+criterion borrows Braithwaite's result, which is established for stably
+stratified stars, and ours is barotropic. Laura's question is exactly the right
+test of whether that borrowing is safe.
+
+Again, this is not the final word, and several sections are still marked as
+incomplete in the file. It should be enough to put us on the same page.
+
+Best regards,
+Rafael
