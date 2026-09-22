@@ -1,156 +1,163 @@
-Subject: Re: magnetized massive WDs -- answers, and where we actually disagree
+Subject: Re: magnetized massive WDs -- congratulations, and some answers
 
 Dear Bani, dear Zenia,
 
-Thank you both, these are the right questions. Let me answer them in order, and
-let me start by correcting an impression the draft evidently gave, because the
-rest depends on it.
+First, congratulations on the ApJL acceptance, and thank you for sending the
+paper. I have read it.
 
-=== The field does not vanish in a few seconds ===
+Before I answer anything, let me say plainly where I stand: I am not satisfied
+with our results, and we are still exploring. I am fairly sure I have not yet
+included all the ingredients that matter -- our equation of state is
+barotropic, there is no explicit resistivity, the MRI is unresolved, and the
+one configuration that would test the most interesting case is precisely the
+one we have not managed to evolve. So please read what follows as the current
+state of a calculation rather than as a verdict on anything. Several of your
+questions land on exactly the places where I am least comfortable, which is
+why they are useful.
 
-Bani, you read it as "the magnetic field sustains only a few seconds". That is
-my fault for the wording in an earlier message, and the draft has since been
-corrected. What the simulation shows is this: an m=1 instability grows in a few
-Alfven times and removes about 98% of the magnetic ENERGY, but the field stays
+=== First, a correction, because the rest depends on it ===
+
+Bani, you read the draft as saying "the magnetic field sustains only a few
+seconds". That is my fault: I put it badly in an August message and the draft
+has since been corrected.
+
+What the simulation shows is that an m=1 instability grows in a few Alfven
+times and removes about 98% of the magnetic ENERGY, while the field stays
 ordered and stays axisymmetric. E_tor/E_pol falls from 5e5 to 4.2 during the
-disruption and then climbs back to 89 by t = 78 s -- the star ends up MORE
+disruption and then climbs back to 89 by t = 78 s: the star ends up more
 toroidally dominated than it was at saturation. What is lost is amplitude,
-about a factor of six in B, not order and not geometry.
+roughly a factor of six in B, not order and not geometry.
 
-So the statement is not "super-Chandrasekhar WDs are not magnetically
-supported". It is narrower and, I think, more useful:
+So I would not put it as "super-Chandrasekhar WDs are not magnetically
+supported". The narrower statement we can actually defend is:
 
-  A white dwarf can hold at most E_tor/|W| ~ 0.0101 in a confined toroidal
-  field before the magnetic pressure exceeds the gas pressure somewhere
-  inside, at which point the field-free equation of state used to build the
-  configuration no longer describes it. That field is worth about
-  +0.017 Msun.
+  a white dwarf holds at most E_tor/|W| ~ 0.0101 in a confined toroidal field
+  before the magnetic pressure exceeds the gas pressure somewhere inside, at
+  which point the field-free equation of state used to build the configuration
+  stops describing it. Such a field is worth about +0.017 Msun.
 
-Bani, this is your own number. You wrote that 0.01 "seems to be the bound for
-magnetic stability for barotropic stars". We arrived at 0.0101 from a purely
-structural condition with no stability input at all, and the run then starts at
+Bani, that is your own number coming back. You wrote that 0.01 "seems to be the
+bound for magnetic stability for barotropic stars". We reached 0.0101 from a
+purely structural condition with no stability input, and the run then starts at
 E_mag/|W| = 0.0114, marginally above, and settles two orders of magnitude
-below. Whether the two coincide for a reason is open; a virial argument
-suggests they might, since E_mag/|W| is of order the volume average of 1/beta.
+below. Whether the two coincide for a reason I genuinely do not know. A virial
+argument suggests they might, since E_mag/|W| is of order the volume average of
+1/beta, but I have not made that argument properly.
 
 === How generic, and at what resolution ===
 
-Two meshes, 192^3 and 256^3. The disruption itself converges: both lose most of
-the energy over the same few Alfven times. What does NOT converge is the level
-the field settles to -- the minima differ by a factor of 25 -- so we report
-growth rates and residues as resolution-limited, and say so in the draft.
+Two meshes, 192^3 and 256^3. The disruption converges: both lose most of the
+energy over the same few Alfven times. What does not converge is the level the
+field settles to, the minima differing by a factor of 25 between meshes, so we
+report growth rates and residues as resolution-limited and say so in the draft.
 
-The equilibrium survey is separate and better converged: repeating all 1200
+The equilibrium survey is separate and better behaved: repeating all 1200
 configurations at 257^2 against 129^2 moves the ceiling by 0.01% and moves no
 configuration across the beta = 1 boundary.
 
-=== 1:1 toroidal to poloidal: the honest state of it ===
+=== 1:1 toroidal to poloidal -- the honest state of it ===
 
-Bani, this is the most important of your questions and I want to be plain about
-where we are.
+Bani, this is the question I most want answered too, and here is exactly where
+we are.
 
-We CAN construct those configurations. In a survey of 540 rotating equilibria,
-40 satisfy simultaneously: M > M_Ch, the star holds its own field, comparable
-poloidal and toroidal energies, and T/|W| below the secular bar threshold. The
-heaviest is 2.13 Msun. So mixed configurations above the Chandrasekhar mass
-exist, and your intuition that balancing the two geometries should help is
-correct as far as the equilibrium goes.
+We can construct those configurations. Of 540 rotating equilibria, 40 satisfy
+simultaneously: M above the Chandrasekhar mass, the star holds its own field,
+comparable poloidal and toroidal energies, and T/|W| below the secular bar
+threshold. The heaviest is 2.13 Msun. So your intuition that balancing the two
+geometries should help is right as far as the equilibrium goes.
 
-We have NOT evolved them, and the reason is specific rather than a matter of
+We have not evolved them, and the reason is specific rather than a matter of
 effort. Comparable poloidal energy requires an exterior dipole near 7e11 G. The
-ambient medium that fills our computational box holds at most 3.4e10 G before
-the field dominates its pressure, and raising the ambient to what is needed
-would put more mass in the box than there is in the star. We tried the run
-anyway: it aborts at t = 0.205 s from time-step collapse, at 35 times the cost
-per unit physical time of the weak-dipole case. A vacuum or stratified exterior
-treatment is required and we do not have one yet.
+ambient medium filling our computational box holds at most 3.4e10 G before the
+field dominates its pressure, and raising the ambient to what would be needed
+puts more mass in the box than there is in the star. We ran it anyway: it
+aborts at t = 0.205 s from time-step collapse, at 35 times the cost per unit
+physical time of the weak-dipole case. A vacuum or stratified exterior
+treatment is needed and we do not have one yet.
 
-So: the mixed configuration is constructible, not yet evolvable by us. I would
-rather say that than imply we have tested it.
+I would rather tell you that than imply we have tested the case.
 
 === What drives the decay ===
 
 Zenia, this is the sharpest question and the answer is a caveat rather than a
-mechanism. Our runs are IDEAL MHD with no explicit resistivity, so neither Hall
-nor Ohmic decay is in them. What happens is in two stages: the m=1 Tayler kink
-is an ideal instability and it cascades the ordered field to the grid scale,
-and what dissipates it there is numerical resistivity. The disruption is
-physical; the dissipation that follows is not controlled. We estimated what it
-would take to have a controlled eta with Rm ~ 10 and it is about 2000^3, so
-this is a limitation we state rather than one we can remove.
+mechanism. Our runs are ideal MHD with no explicit resistivity, so neither Hall
+nor Ohmic decay is present. What happens has two stages: the m=1 Tayler kink is
+an ideal instability and cascades the ordered field to the grid scale, and what
+dissipates it there is numerical resistivity. The disruption is physical; the
+dissipation that follows is not controlled. We estimated what a controlled eta
+with Rm ~ 10 would cost and it is about 2000^3, so this is a limitation we
+state rather than one we can remove.
 
-This matters for your question 3. In a barotropic star there is no threshold
-field for the Tayler instability -- any purely toroidal field is unstable. In a
-stably stratified star there IS one, buoyancy stabilises weak fields, and that
-is precisely the regime your dormant 1e12 G fields live in. Our star is
-barotropic by construction, so we cannot tell you where your dormant field
-becomes unstable. We can only say that by the time the field is doing the
-supporting, it is well above anything a barotrope tolerates.
+This bears directly on your third question. In a barotropic star there is no
+threshold field for the Tayler instability: any purely toroidal field is
+unstable. In a stably stratified star there is one, buoyancy stabilises weak
+fields, and that is precisely the regime your dormant 1e12 G fields occupy. Our
+star is barotropic by construction, so we cannot tell you where your dormant
+field becomes unstable. This is one of the ingredients I believe we are
+missing.
 
 === Does the star explode ===
 
-Zenia, in our runs, no. Mass is conserved to 0.05% and the star survives the
-episode intact; the differential rotation that supports it is never erased.
-But that is because in OUR configuration the mass is rotational -- the field
-carries about 1% of the virial, so losing it costs the star very little.
+Zenia, in our runs it does not. Mass is conserved to 0.05%, the star survives
+the episode, and the differential rotation supporting it is never erased. But
+that is because in our configuration the mass is rotational: the field carries
+about 1% of the virial, so losing it costs the star very little.
 
-In a star where the field genuinely supplies the support, losing it should
-indeed be dramatic, and your suggestion about overluminous SN Ia is the right
-thing to ask. The difficulty our ceiling raises is upstream of it: a field
-large enough to do the supporting is, by our measurement, larger than the star
-can hold in a configuration consistent with the equation of state used to
-construct it. If that holds, the trigger you are looking for may not need the
-instability at all.
-
-I would be glad to be wrong about this, and the test is the mixed-configuration
-evolution above.
+In a star where the field genuinely supplies the support, losing it should be
+dramatic, and your suggestion about overluminous SN Ia is the right question to
+ask. The difficulty our ceiling raises sits upstream of it: a field large
+enough to do the supporting is, by our measurement, larger than the star can
+hold in a configuration consistent with the equation of state used to build it.
+If that survives scrutiny, the trigger you are after might not need the
+instability at all. I would be glad to be wrong, and the test is the
+mixed-configuration evolution above.
 
 === The 70-90% by radius ===
 
-Zenia, we can answer this one with a number. A twisted torus requires the
-toroidal field to vanish on every field line reaching the vacuum, so it lives
-only in the closed-field-line region. Measured on our equilibria:
+Zenia, this one we can answer with a number. A twisted torus needs the toroidal
+field to vanish on every field line reaching the vacuum, so it lives only in
+the closed-field-line region. Measured on our equilibria:
 
-  outer extent            0.99 R_eq  (essentially the surface)
-  fraction of volume      38 - 45%   (depending on current localisation)
-  fraction of mass        30 - 43%
+  outer extent         0.99 R_eq   (essentially the surface)
+  fraction of volume   38 - 45%    (depending on current localisation)
+  fraction of mass     30 - 43%
 
-So in RADIAL extent your 70-90% is comfortably supported, indeed exceeded. In
+In radial extent your 70-90% is comfortably supported, indeed exceeded. In the
 fraction of the star actually carrying the field it is not: the closed region
 is a torus rather than a sphere, and a sphere of 0.8 R would be 51% of the
-volume against our 38-45%. Whichever of the two your phenomenology meant, the
-numbers above are what a higher-dimensional equilibrium gives.
+volume against our 38-45%. Whichever of the two the phenomenology meant, those
+are the numbers a higher-dimensional equilibrium gives.
 
 === The stochastic field and the Compton scale ===
 
-Bani, we cannot speak to this. Our cell is 9.4e6 cm and a Compton wavelength is
-2.4e-10 cm, seventeen orders of magnitude apart, and the runs are ideal MHD
-with no subgrid model. What we can report from the same runs is adjacent to
+Bani, we cannot speak to this at all. Our cell is 9.4e6 cm and the Compton
+wavelength is 2.4e-10 cm, seventeen orders of magnitude apart, and the runs
+carry no subgrid model. What we can report from the same runs is adjacent to
 your point and is a caveat we carry: during the first twelve seconds, 49% of
 sampled instants have a peak field above the Landau critical value, which is
 exactly where a field-independent degenerate equation of state is least
 defensible. The rotation results, measured from 12 s onward, are free of it.
 
-=== Your paper ===
-
-I have read it. Two things worth putting side by side rather than settling by
-correspondence.
+=== Where the two calculations do not yet meet ===
 
 Your B-WDs are explicitly non-rotating and approximately spherical. Our result
-for non-rotating, field-supported configurations is that the mass frontier
-converges to M_Ch from below without crossing it, ending at neutronization: the
-heaviest such star that holds its own field is 1.4387 Msun against M_Ch = 1.44.
-When we add differential rotation the mass goes well past the limit, but then
-the support is rotational. That is where we disagree, and it is a sharp enough
-disagreement to be worth resolving rather than debating.
+for non-rotating field-supported configurations is that the mass frontier
+converges to the Chandrasekhar mass from below without crossing it, ending at
+neutronization: the heaviest such star that holds its own field is 1.4387 Msun
+against 1.44. When we add differential rotation the mass goes well past the
+limit, but then the support is rotational rather than magnetic.
 
-The most useful next step I can see is the one Laura asked for and that is
-running now: the same star without rotation, evolved for 60 s. If the ordered
-configuration survives without rotation, several things I have written above
-need revisiting.
+That is a sharp enough difference to be worth resolving rather than arguing,
+and I do not assume the error is on your side. The most useful next step I can
+see is the one Laura asked for and that is running as I write: the same star
+without rotation, evolved to 60 s. If the ordered configuration survives
+without rotation, several things above need revisiting.
 
-Thanks again, both of you. The draft is on Overleaf and I have left the
-conclusions deliberately empty -- that section should be ours, not mine.
+The draft is on Overleaf and the conclusions are deliberately empty -- that
+section should be ours rather than mine.
+
+Thanks again to you both. These questions have already changed what I think
+needs doing next.
 
 Best regards,
 Rafael
