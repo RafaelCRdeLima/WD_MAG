@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name=rafael-wdmag-norot
 #SBATCH --nodes=1
-#SBATCH --ntasks=64
-#SBATCH --partition=ep-short
-#SBATCH --time=7-00:00:00
+#SBATCH --ntasks=16
+#SBATCH --partition=z3-long
+#SBATCH --time=10-00:00:00
 #SBATCH --output=logs/%x-%j.out
 #SBATCH --error=logs/%x-%j.err
 
@@ -12,9 +12,15 @@
 # Ver o cabecalho de inputs.norot192 para o que se pergunta e o que muda por
 # construcao.
 #
-# ep-short e 7 dias porque este e' o run longo: stop_time = 60 s, o mesmo
-# alcance do rot192. No lovelace isso exigia cadeia de janelas de 3 h e foi o
-# que matou a campanha HZ (DIARIO 11); aqui cabe num job so'.
+# z3-long, nao ep-short. O ep-short tem o node30 drenado desde 16/set e os
+# outros cinco alocados, com fila de varios usuarios a frente e prioridade 1
+# para nos: o job 44958 ficou PENDING um dia inteiro sem sair. O z3-long tem
+# 14 dias de walltime, zero pendentes e nucleos ociosos.
+#
+# 16 ranks porque e' o que cabe de imediato nos nucleos livres. A sonda fez
+# 2.0 s em 1h29 com 16 ranks, entao 60 s devem custar ~45 h -- folgado nos
+# 10 dias pedidos. No lovelace isto exigiria cadeia de janelas de 3 h, que foi
+# o que matou a campanha HZ (DIARIO 11); aqui cabe num job so'.
 
 set -euo pipefail
 TAG="${1:?passe tt192 ou tt192ctl}"

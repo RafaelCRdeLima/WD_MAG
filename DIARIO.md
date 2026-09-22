@@ -3783,3 +3783,63 @@ E o teto do campo segue plano em toda a curva: E_tor/|W| de 0.00594 a 0.00662.
 
 Abstract, §4 e conclusões corrigidos de 2.29 para 2.13, com a curva entrando
 como tabela no lugar do ponto único. Compila em 5 páginas.
+
+## 27. As perguntas do Banibrata e da Zenia, e o que elas expõem
+
+Os dois responderam ao draft com perguntas técnicas. Duas delas acertam pontos
+fracos reais e uma tem resposta em número que não existia até agora.
+
+### O paper deles saiu no arXiv
+
+`arXiv:2609.22437`, aceito no ApJL. **Não é mais material de revisão**, é
+público, e pode ser lido e citado. Detalhe do abstract que importa para a
+comparação: as B-WDs deles são **explicitamente não-rotantes e aproximadamente
+esféricas**. É exatamente o regime onde a nossa §19 diz que a fronteira satura
+em M_Ch — 1.4387 M⊙ contra 1.44 — sem cruzar. A discordância é nítida, o que é
+bom: dá para resolver em vez de debater.
+
+### A pergunta da Zenia sobre o que causa o decaimento é a mais afiada
+
+Eles exploraram decaimento Hall e ôhmico e acharam as escalas longas demais
+para importar. **Nos nossos runs não há resistividade explícita nenhuma**: o
+kink de Tayler é ideal e cascateia o campo ordenado para a escala da malha, e
+quem dissipa ali é resistividade numérica. A ruptura é física; o que vem depois
+não é controlado.
+
+E isso liga a um ponto que eu não tinha articulado: **num barótropo não existe
+campo-limiar para Tayler** — qualquer toroidal puro é instável. Numa estrela
+estavelmente estratificada existe, a flutuabilidade estabiliza campo fraco, e é
+justamente o regime dos campos dormentes de 10¹² G deles. Nossa estrela é
+barotrópica por construção, então **não temos como dizer onde o campo dormente
+deles fica instável**. É a mesma ressalva que a objeção da Laura levanta, por
+outra porta.
+
+### O 70–90% da Zenia, medido
+
+Ela pergunta se nossos resultados 3D sustentam o toroidal ocupando 70–90% da
+estrela em raio, escolha fenomenológica motivada por Braithwaite. Medido nas
+nossas configurações de equilíbrio:
+
+| | |
+|---|---|
+| extensão radial da região fechada | **0.99 R_eq** |
+| fração do volume | 38–45% |
+| fração da massa | 30–43% |
+
+**Em raio, os 70–90% são sustentados e até excedidos.** Em fração da estrela que
+de fato carrega o campo, não: a região fechada é um toro, não uma esfera, e uma
+esfera de 0.8 R daria 51% do volume contra os nossos 38–45%. As duas leituras
+da frase dela dão respostas diferentes, e o número serve para as duas.
+
+### O que eu tive de admitir
+
+O Banibrata perguntou sobre razão toroidal:poloidal ~1:1, que é o nosso §20.
+Temos 40 configurações assim, a mais pesada em 2.13 M⊙ — **e nenhuma evoluída**.
+A §21 explica por quê, e na resposta isso foi dito como está: construível, não
+evoluível por nós. Preferível a deixar implícito que testamos.
+
+### Sobre "o campo dura poucos segundos"
+
+O Banibrata leu o draft assim. É consequência da minha redação de agosto, já
+corrigida na §24 e no texto. A resposta abre por aí, porque todo o resto
+depende de não confundir *perder amplitude* com *ser destruído*.
