@@ -1,0 +1,678 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=2.6cm]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,
+            urlcolor=blue!50!black]{hyperref}
+\usepackage{mdframed}
+\usepackage{enumitem}
+
+\newcommand{\Msun}{M_\odot}
+\newcommand{\Mch}{M_{\rm Ch}}
+\newcommand{\code}[1]{\texttt{\small #1}}
+
+\newmdenv[linecolor=blue!40,backgroundcolor=blue!3,linewidth=0.6pt,
+          skipabove=8pt,skipbelow=8pt]{caixa}
+\newmdenv[linecolor=orange!60,backgroundcolor=orange!4,linewidth=0.6pt,
+          skipabove=8pt,skipbelow=8pt]{alerta}
+
+\newcounter{exerc}[section]
+\newcommand{\ex}[1]{\refstepcounter{exerc}%
+  \medskip\noindent\textbf{Exercício \thesection.\theexerc.}\ #1\medskip}
+
+\title{\bf Anãs brancas magnetizadas super-Chandrasekhar\\
+\large Uma apostila para começar}
+\author{Grupo WD-MAG --- CCT/UDESC Joinville}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+Esta apostila reúne o que é preciso saber para começar a trabalhar no projeto
+\code{wd-magnetizada}. Ela parte de matéria degenerada e chega até as
+simulações 3D de magnetoidrodinâmica que o grupo roda em cluster, passando pela
+construção de equilíbrios e pela teoria de estabilidade de campos estelares.
+Não pressupõe nada além de mecânica, eletromagnetismo e termodinâmica de
+graduação.
+
+O texto é \emph{didático e incompleto de propósito}: cada seção termina
+apontando para onde está o tratamento rigoroso, seja na literatura, seja no
+arquivo \code{docs/teoria.md} do repositório, seja no próprio código. Os
+exercícios não são decorativos --- vários deles reproduzem números que o grupo
+usa no dia a dia, e resolvê-los é a forma mais rápida de saber se você entendeu.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+%============================================================
+\part*{Parte I --- De onde vem o problema}
+\addcontentsline{toc}{part}{Parte I --- De onde vem o problema}
+
+\section{Matéria degenerada e o limite de Chandrasekhar}
+
+\subsection{Por que uma anã branca não colapsa}
+
+Uma anã branca é o que sobra de uma estrela de massa baixa ou intermediária
+depois que a fusão termina. Sem fusão não há pressão térmica sustentada, e a
+estrela deveria colapsar sob a própria gravidade. O que a segura é um efeito
+puramente quântico: o \textbf{princípio de exclusão de Pauli}.
+
+Elétrons são férmions. Comprima o gás e eles não podem ocupar o mesmo estado;
+são forçados a momentos cada vez maiores, e esse momento gera pressão mesmo a
+temperatura zero. É a \emph{pressão de degenerescência}.
+
+Num gás completamente degenerado a $T=0$, todos os estados abaixo do momento de
+Fermi $p_F$ estão ocupados e nenhum acima. Contando estados no espaço de fase,
+\begin{equation}
+n_e = \frac{8\pi}{3h^3}\,p_F^3
+\qquad\Longrightarrow\qquad
+p_F = \hbar\,(3\pi^2 n_e)^{1/3}.
+\end{equation}
+
+\begin{caixa}
+\textbf{O parâmetro que organiza tudo.} Define-se
+\begin{equation}
+x \equiv \frac{p_F}{m_e c},
+\end{equation}
+a razão entre o momento de Fermi e $m_e c$. É o parâmetro de
+relativisticidade: $x \ll 1$ é gás não relativístico, $x \gg 1$ é
+ultrarrelativístico. Toda a equação de estado se escreve em termos dele.
+\end{caixa}
+
+\subsection{A equação de estado de Chandrasekhar}
+
+Integrando a pressão do gás de Fermi sobre a esfera de Fermi, com a relação
+relativística $E^2 = (pc)^2 + (m_ec^2)^2$, obtém-se a forma fechada
+\begin{equation}
+\boxed{\;
+P(x) = A\left[x(2x^2-3)\sqrt{x^2+1} + 3\,\mathrm{arcsinh}\,x\right],
+\qquad
+\rho(x) = B\,x^3 \;}
+\label{eq:eos}
+\end{equation}
+com
+\begin{equation}
+A = \frac{\pi m_e^4 c^5}{3h^3} = 6{,}01\times10^{22}\ \mathrm{dyn\,cm^{-2}},
+\qquad
+B = 9{,}82\times10^5\,\mu_e\ \mathrm{g\,cm^{-3}} .
+\end{equation}
+
+Aqui $\mu_e$ é o número de núcleons por elétron. Para matéria de carbono-oxigênio
+completamente ionizada, $\mu_e = 2$: cada elétron ``carrega'' dois núcleons. É o
+valor usado em todo o projeto.
+
+\begin{caixa}
+\textbf{Onde isso está no código.} \code{scf/eos.py}: a função
+\code{pressure(x)} é a Eq.~\eqref{eq:eos}, \code{density(x, mu\_e)} é
+$\rho(x)$, \code{B\_of\_mu\_e(mu\_e)} devolve $B$. Abra o arquivo --- são
+cem linhas e você reconhece cada fórmula.
+\end{caixa}
+
+\subsection{A entalpia, e por que ela importa}
+
+Para construir equilíbrios vamos precisar da \emph{entalpia específica}
+\begin{equation}
+H \equiv \int \frac{dP}{\rho} .
+\end{equation}
+Para a EOS acima a integral sai analiticamente, o que é a razão técnica de todo
+o método numérico do Capítulo~4 funcionar:
+\begin{equation}
+\boxed{\;H(x) = \frac{8A}{B}\left[\sqrt{1+x^2} - 1\right]\;}
+\label{eq:entalpia}
+\end{equation}
+e a inversa, que é o que de fato se usa,
+\begin{equation}
+x(H) = \sqrt{\left(1 + \frac{HB}{8A}\right)^2 - 1},
+\qquad H<0 \Rightarrow \rho = 0 .
+\label{eq:inversa}
+\end{equation}
+O $-1$ normaliza $H=0$ na superfície, onde $\rho \to 0$. Isso define a
+superfície da estrela sem precisar procurá-la: é o conjunto $H = 0$.
+
+\ex{Verifique que \eqref{eq:inversa} é realmente a inversa de
+\eqref{eq:entalpia}. Depois mostre que para $x \ll 1$ vale
+$\rho \propto H^{3/2}$ e para $x \gg 1$ vale $\rho \propto H^{3}$.}
+
+\subsection{O limite de Chandrasekhar}
+
+O exercício anterior é a chave. Uma relação $\rho \propto H^{n}$ corresponde a
+um politropo de índice $n$. A EOS degenerada \emph{desliza} entre $n=3/2$ no
+regime não relativístico e $n=3$ no ultrarrelativístico.
+
+E $n=3$ é o caso marginal: para um politropo de índice $3$, a massa total
+\textbf{não depende} da densidade central. Comprimir mais não adiciona massa.
+Esse é o limite de Chandrasekhar,
+\begin{equation}
+\boxed{\;\Mch = \frac{5{,}816}{\mu_e^2}\,\Msun \simeq 1{,}44\,\Msun
+\quad (\mu_e = 2).\;}
+\end{equation}
+
+\begin{alerta}
+\textbf{Leitura correta do limite.} $\Mch$ não é uma proibição mágica. É o
+valor assintótico de uma sequência de equilíbrios construída com uma física
+específica: gás de elétrons degenerado, sem rotação, sem campo, sem
+temperatura. Mude a física e o número muda. \emph{Todo o projeto é sobre
+quanto ele muda e a que custo.}
+\end{alerta}
+
+\ex{A $\rho_c = 10^9$ g/cm$^3$ e $\mu_e=2$, uma anã branca sem rotação e sem
+campo pesa $1{,}3464\,\Msun$. A $5\times10^9$ pesa $1{,}4012$. Estime, ajustando
+uma aproximação simples, a que $\rho_c$ ela chegaria a $1{,}44$. Compare com o
+limiar de neutronização, $1{,}94\times10^{10}$ g/cm$^3$. O que você conclui?}
+
+\section{Por que alguém quer passar do limite}
+
+\subsection{A motivação observacional}
+
+Algumas supernovas do tipo Ia são \emph{superluminosas} demais para o cenário
+padrão. Se a luminosidade vem do decaimento de $^{56}$Ni sintetizado na
+explosão, e a explosão consome a anã branca inteira, então uma SN Ia
+excepcionalmente brilhante sugere uma progenitora excepcionalmente massiva.
+O caso clássico é a SN\,2003fg, que pede da ordem de $2\,\Msun$.
+
+Daí a pergunta que organiza toda a literatura que vamos ler: \emph{o que
+poderia sustentar uma anã branca acima de $1{,}44\,\Msun$?}
+
+\subsection{As duas rotas, e a contabilidade do virial}
+
+Há duas candidatas clássicas, e o teorema do virial é a forma limpa de
+comparar as duas. Para uma configuração estacionária e autogravitante,
+\begin{equation}
+\boxed{\;2T + W + 3\int P\,dV + \mathcal{E}_{\rm mag} = 0\;}
+\label{eq:virial}
+\end{equation}
+onde $T$ é a energia cinética de rotação, $W < 0$ a energia gravitacional,
+e $\mathcal{E}_{\rm mag}$ a energia magnética.
+
+A leitura é direta: rotação e campo entram na mesma equação que a pressão, com
+o mesmo sinal, \emph{ambos ajudando a segurar a estrela}. As duas figuras de
+mérito que você vai ver o tempo todo no projeto são as frações
+\begin{equation}
+\frac{T}{|W|}
+\qquad\text{e}\qquad
+\frac{\mathcal{E}_{\rm mag}}{|W|} .
+\end{equation}
+
+\begin{caixa}
+\textbf{Ordens de grandeza do nosso modelo de produção.}
+$T/|W| = 0{,}099$ e $\mathcal{E}_{\rm mag}/|W| = 0{,}011$. Ou seja: a rotação
+carrega dez vezes mais que o campo. Guarde esse par de números --- boa parte
+das conclusões do grupo sai dele.
+\end{caixa}
+
+\ex{Use \eqref{eq:virial} para argumentar, sem fazer contas detalhadas, por
+que uma fração $T/|W|$ da ordem de $0{,}1$ pode alterar a massa
+significativamente. Depois estime quanto campo, em gauss, seria preciso numa
+estrela de $R \sim 10^8$\,cm e $M \sim 2\,\Msun$ para que
+$\mathcal{E}_{\rm mag}/|W| \sim 0{,}1$.}
+
+\subsection{O que limita cada rota}
+
+\textbf{Rotação} é limitada por instabilidades dinâmicas. Quando $T/|W|$ cresce,
+a estrela fica suscetível a modos não axissimétricos: o \emph{modo barra} tem
+limiar secular em $T/|W| \approx 0{,}14$ e dinâmico em $\approx 0{,}27$. Acima
+disso a estrela deforma-se e perde momento angular.
+
+\textbf{Campo} é limitado por duas coisas distintas, e distingui-las é
+provavelmente o conceito mais importante desta apostila:
+\begin{enumerate}[label=(\alph*)]
+\item a estrela precisa \emph{conseguir segurar} o campo --- se a pressão
+      magnética supera a do gás em algum ponto, a EOS usada para construir o
+      equilíbrio deixa de descrever a própria configuração;
+\item a configuração do campo precisa ser \emph{estável} --- e a maioria das
+      geometrias simples não é.
+\end{enumerate}
+O Capítulo~7 trata de (b) e o Capítulo~8 de (a).
+
+%============================================================
+\part*{Parte II --- Construindo a estrela}
+\addcontentsline{toc}{part}{Parte II --- Construindo a estrela}
+
+\section{Equilíbrio hidrostático e a integral de Bernoulli}
+
+Numa estrela estacionária, a soma das forças por unidade de volume se anula:
+\begin{equation}
+-\frac{\nabla P}{\rho} - \nabla\Phi
++ \Omega^2(\varpi)\,\varpi\,\hat{e}_\varpi
++ \frac{(\nabla\times\mathbf{B})\times\mathbf{B}}{4\pi\rho} = 0 ,
+\label{eq:hidro}
+\end{equation}
+com $\Phi$ o potencial gravitacional e $\varpi$ a distância ao eixo.
+
+O truque que torna isso tratável: se cada termo for o gradiente de alguma
+função escalar, a equação vetorial vira uma equação escalar. O primeiro termo é
+$\nabla H$ pela definição de entalpia. O terceiro é $\nabla C_{\rm rot}$ se
+$\Omega$ depende só de $\varpi$. O quarto exige mais cuidado (Capítulo~6).
+Quando todos são gradientes, integra-se:
+\begin{equation}
+\boxed{\;H + \Phi - C_{\rm rot} - M_{\rm pol} = C = \text{const.}\;}
+\label{eq:bernoulli}
+\end{equation}
+Essa é a \textbf{integral de Bernoulli}, e é a equação central do método
+numérico.
+
+\subsection{O termo de rotação}
+
+Para a lei de rotação diferencial chamada \emph{$j$-constante},
+\begin{equation}
+\Omega(\varpi) = \frac{\Omega_c A^2}{A^2 + \varpi^2},
+\end{equation}
+a integral sai em forma fechada:
+\begin{equation}
+C_{\rm rot}(\varpi) = \int_0^\varpi \Omega^2 \varpi'\,d\varpi'
+= \frac{\Omega_c^2 A^2}{2}\,\frac{\varpi^2}{A^2+\varpi^2}.
+\end{equation}
+O parâmetro $A$ controla o quão diferencial é a rotação: $A \to \infty$
+recupera rotação rígida.
+
+\ex{Verifique a integral acima. Depois mostre que $A\to\infty$ dá
+$C_{\rm rot}\to \frac{1}{2}\Omega_c^2\varpi^2$, o potencial centrífugo usual.}
+
+\section{O método SCF de Hachisu}
+
+Como resolver \eqref{eq:bernoulli} se $\Phi$ depende de $\rho$, que depende de
+$H$, que depende de $\Phi$? Iterando. O método \emph{self-consistent field}
+(SCF) de Hachisu (1986) faz:
+
+\begin{enumerate}
+\item Chute um $\rho(r,\theta)$ inicial.
+\item Resolva a equação de Poisson $\nabla^2\Phi = 4\pi G\rho$ para achar
+      $\Phi$.
+\item Calcule os termos explícitos ($C_{\rm rot}$, $M_{\rm pol}$).
+\item Fixe a constante $C$ impondo a densidade central desejada.
+\item Obtenha $H$ de \eqref{eq:bernoulli} e depois $\rho$ de
+      \eqref{eq:inversa}.
+\item Volte a (2) até $\rho$ parar de mudar.
+\end{enumerate}
+
+A equação de Poisson é resolvida por expansão em polinômios de Legendre, que
+transforma a integral tridimensional numa soma de integrais radiais:
+\begin{equation}
+\Phi(r,\theta) = -4\pi G\sum_{l} P_l(\cos\theta)
+\left[\frac{1}{r^{l+1}}\!\int_0^r\! \rho_l r'^{\,l+2}dr'
++ r^l\!\int_r^\infty\! \frac{\rho_l}{r'^{\,l-1}}dr'\right].
+\end{equation}
+
+\begin{caixa}
+\textbf{No código.} \code{scf/poisson.py} implementa exatamente isso, e
+\code{scf/scf.py::hachisu\_scf()} é o laço. Vale ler o laço inteiro de uma
+sentada --- são umas 60 linhas e é a espinha dorsal de tudo.
+\end{caixa}
+
+\ex{Rode o SCF sem rotação e sem campo para $\rho_c = 10^9$ e confira que dá
+$1{,}3464\,\Msun$. Depois varie $\rho_c$ e reproduza a curva $M(\rho_c)$ do
+Exercício 1.2.}
+
+\section{O campo magnético}
+
+\subsection{A função de fluxo}
+
+Um campo axissimétrico se decompõe em parte poloidal (nos planos meridionais) e
+toroidal (azimutal). A condição $\nabla\cdot\mathbf{B}=0$ é resolvida
+automaticamente escrevendo o poloidal em termos de uma \emph{função de fluxo}
+$u(\varpi,z)$:
+\begin{equation}
+\mathbf{B}_{\rm pol} = \frac{\nabla u \times \hat{e}_\phi}{\varpi},
+\qquad
+\mathbf{B}_{\rm tor} = B_\phi\,\hat{e}_\phi .
+\end{equation}
+As linhas de campo poloidal são as curvas $u = $ const. Isso é conveniente e
+vai reaparecer o tempo todo.
+
+\subsection{Grad--Shafranov}
+
+Impondo que a força de Lorentz seja um gradiente --- condição para
+\eqref{eq:bernoulli} existir --- chega-se à equação de Grad--Shafranov:
+\begin{equation}
+\boxed{\;\Delta^{*}u = -4\pi\varpi^2\rho\,\mu(u) - \beta(u)\beta'(u)\;}
+\label{eq:gs}
+\end{equation}
+onde $\Delta^{*}$ é o operador de Grad--Shafranov e
+\begin{equation}
+\Delta^{*} \equiv \frac{\partial^2}{\partial\varpi^2}
+- \frac{1}{\varpi}\frac{\partial}{\partial\varpi}
++ \frac{\partial^2}{\partial z^2}.
+\end{equation}
+
+\begin{alerta}
+\textbf{As duas funções arbitrárias.} $\mu(u)$ e $\beta(u)$ \emph{não} são
+determinadas pela física --- são escolhas. $\beta(u)$ fixa o campo toroidal
+($\varpi B_\phi = \beta(u)$) e $\mu(u)$ a distribuição de corrente poloidal.
+Escolhas diferentes dão estrelas diferentes, todas equilíbrios válidos. Boa
+parte da literatura --- e boa parte do nosso trabalho --- é sobre \emph{quais
+escolhas são fisicamente sensatas}.
+\end{alerta}
+
+A escolha mais simples, $\mu = $ const., produz um dipolo de vácuo no exterior.
+Fujisawa, Yoshida \& Eriguchi (2012) mostraram que uma lei de potência
+negativa,
+\begin{equation}
+\mu(u) \propto (u+\epsilon)^{m}, \qquad m < 0,
+\end{equation}
+concentra a corrente perto do eixo e \emph{amplia a região de linhas fechadas},
+chegando a campos interiores duas ordens acima do de superfície. Como a equação
+passa a ser não linear ($\mu$ depende de $u$), resolve-se iterando.
+
+\ex{Por que $\mu = $ const.\ dá dipolo de vácuo? Dica: pense em que momento de
+multipolo uma distribuição de corrente de um só sinal carrega.}
+
+\subsection{Confinamento do toroidal}
+
+Há uma restrição física importante. O campo toroidal precisa \emph{anular-se em
+toda linha de campo que chega ao vácuo} --- caso contrário ele vazaria para
+fora da estrela, onde não há corrente para sustentá-lo. Isso confina $B_\phi$ à
+\textbf{região de linhas fechadas}.
+
+Essa restrição parece técnica e é decisiva. No nosso trabalho ela ocupa
+$38$--$45\%$ do volume estelar, e espremer nela a energia necessária para
+sustentar massa é exatamente o que quebra o critério (a) da §2.3.
+
+%============================================================
+\part*{Parte III --- Estabilidade}
+\addcontentsline{toc}{part}{Parte III --- Estabilidade}
+
+\section{Por que campo puro é instável}
+
+Esta é a parte da teoria que mais gente ignora e que mais decide resultados.
+
+\subsection{A instabilidade de Tayler}
+
+Um campo \textbf{puramente toroidal} é instável ao \emph{kink} de Tayler, um
+modo $m=1$ análogo à instabilidade de kink em plasmas de laboratório. A força
+motriz é a curvatura das linhas de campo: um tubo de fluxo toroidal pode baixar
+sua energia magnética deslocando-se lateralmente, e nada o impede.
+
+A taxa de crescimento é da ordem da frequência de Alfvén,
+\begin{equation}
+\sigma \sim \Omega_A = \frac{v_A}{R},
+\qquad
+v_A = \frac{B}{\sqrt{4\pi\rho}} ,
+\end{equation}
+ou seja, o campo é destruído em \emph{poucos tempos de Alfvén}. Para os nossos
+parâmetros isso é de ordem de segundos.
+
+\subsection{E poloidal puro também}
+
+Simetricamente, um campo \textbf{puramente poloidal} é instável perto da
+superfície neutra, onde as linhas se fecham (Flowers \& Ruderman 1977; a versão
+moderna está em Braithwaite \& Spruit).
+
+\subsection{O toro torcido}
+
+Se as duas geometrias puras são instáveis, o que sobra? A resposta, antecipada
+por Prendergast (1956) e estabelecida numericamente por Braithwaite \& Spruit
+(2006), é a configuração de \textbf{toro torcido}: poloidal e toroidal com
+energias \emph{comparáveis}, cada um estabilizando a instabilidade do outro.
+
+\begin{caixa}
+\textbf{O critério operacional que usamos.}
+\begin{equation}
+0{,}1 < \frac{E_{\rm tor}}{E_{\rm pol}} < 10 .
+\end{equation}
+Os dois ramos puros ficam de fora, como devem.
+\end{caixa}
+
+\subsection{A ressalva que você precisa carregar desde o primeiro dia}
+
+\begin{alerta}
+O resultado de Braithwaite \& Spruit vale para estrelas \textbf{estavelmente
+estratificadas}. A nossa EOS é \textbf{barotrópica} ($P = P(\rho)$, sem
+gradiente de entropia ou composição), e há literatura argumentando que
+estrelas barotrópicas \emph{não admitem equilíbrio magnético estável nenhum}.
+
+Ou seja: chamar a faixa de energias comparáveis de ``ramo estável'' é uma
+conveniência de linguagem no nosso contexto, não um teorema. Essa distinção
+foi levantada por uma colaboradora do projeto e está hoje entre as limitações
+declaradas do artigo em preparação. Se você quiser um problema aberto com que
+contribuir, é um bom candidato.
+\end{alerta}
+
+\ex{Por que a estratificação estável estabiliza campos fracos? Pense em uma
+parcela de fluido deslocada radialmente numa estrela com gradiente de entropia
+positivo e no trabalho que a flutuabilidade faz contra o deslocamento.}
+
+\section{O parâmetro beta}
+
+O critério (a) da §2.3 se escreve com o \emph{beta do plasma}:
+\begin{equation}
+\boxed{\;\beta \equiv \frac{P_{\rm gas}}{P_{\rm mag}}
+= \frac{8\pi P_{\rm gas}}{B^2}\;}
+\end{equation}
+
+Onde $\beta < 1$, a pressão magnética domina. Como o equilíbrio foi construído
+com uma EOS que não sabe do campo, uma região com $\beta < 1$ é uma região onde
+a construção contradiz a si mesma. Por isso exigimos
+\begin{equation}
+\beta_{\rm min} \ge 1
+\end{equation}
+sobre o interior estelar ($\rho > 10^6$ g/cm$^3$, para não medir a superfície).
+
+\begin{alerta}
+$\beta_{\rm min}\ge1$ é \textbf{consistência da construção, não prova de
+estabilidade}. Quem decide estabilidade é evolução dinâmica. Não confunda os
+dois --- é um erro fácil e caro.
+\end{alerta}
+
+\ex{Para $\rho = 10^9$ g/cm$^3$ e $\mu_e=2$, calcule $P_{\rm gas}$ pela
+Eq.~\eqref{eq:eos} e determine qual campo $B$ dá $\beta=1$. Compare com o campo
+crítico de Landau $B_c = 4{,}414\times10^{13}$\,G.}
+
+%============================================================
+\part*{Parte IV --- Evolução}
+\addcontentsline{toc}{part}{Parte IV --- Evolução}
+
+\section{MHD ideal}
+
+Construir o equilíbrio é metade do trabalho. A outra metade é \emph{deixá-lo
+evoluir} e ver se sobrevive. As equações são as da magnetoidrodinâmica ideal:
+\begin{align}
+\frac{\partial\rho}{\partial t} + \nabla\cdot(\rho\mathbf{v}) &= 0, \\
+\rho\frac{D\mathbf{v}}{Dt} &= -\nabla P - \rho\nabla\Phi
+  + \frac{(\nabla\times\mathbf{B})\times\mathbf{B}}{4\pi},\\
+\frac{\partial\mathbf{B}}{\partial t} &= \nabla\times(\mathbf{v}\times\mathbf{B}),
+\qquad \nabla\cdot\mathbf{B}=0 .
+\end{align}
+``Ideal'' significa resistividade nula: o campo é \emph{congelado} no fluido.
+
+\subsection{Escalas de tempo}
+
+Três tempos organizam a leitura de qualquer simulação nossa:
+\begin{align}
+t_{\rm din} &\sim 1/\sqrt{G\bar\rho} &&\text{(dinâmico, $\sim 0{,}1$--$1$\,s)}\\
+t_A &= R/v_A &&\text{(Alfvén, $\sim 2$\,s no nosso modelo)}\\
+t_{\rm rot} &= 2\pi/\Omega &&\text{(rotação, $\sim 4$\,s na superfície)}
+\end{align}
+
+\ex{Calcule $t_A$ para $B = 3{,}2\times10^{13}$\,G, $\rho = 10^9$\,g/cm$^3$ e
+$R = 4\times10^8$\,cm. Se a instabilidade de Tayler cresce em poucos $t_A$,
+quanto tempo de simulação você precisa para vê-la?}
+
+\subsection{Transporte restrito e $\nabla\cdot\mathbf{B}=0$}
+
+Numericamente, manter $\nabla\cdot\mathbf{B}=0$ não é automático: erros de
+truncamento geram monopolos magnéticos que produzem forças espúrias. A solução
+usada no Castro é o \emph{constrained transport}, que armazena $\mathbf{B}$ nas
+faces das células e atualiza via forças eletromotrizes nas arestas, preservando
+a divergência nula à precisão de máquina por construção.
+
+Por isso exportamos os modelos como \emph{potencial vetor} $\mathbf{A}$ e não
+como $\mathbf{B}$: assim $\mathbf{B} = \nabla\times\mathbf{A}$ tem divergência
+nula por identidade.
+
+\section{A MRI, e por que não a resolvemos}
+
+A \textbf{instabilidade magnetorrotacional} (MRI) aparece sempre que há rotação
+diferencial e campo magnético, e é o mecanismo que apaga rotação diferencial em
+discos e em remanescentes de fusão. O comprimento de onda mais instável é
+\begin{equation}
+\lambda_{\rm MRI} = \frac{2\pi v_{A,z}}{\Omega},
+\end{equation}
+construído com a componente \emph{vertical} do campo.
+
+\begin{alerta}
+\textbf{Esta é a maior limitação do projeto e você precisa sabê-la de cor.}
+No nosso modelo de produção $\lambda_{\rm MRI}$ vale cerca de $0{,}004$ de uma
+célula da malha. Ou seja: a MRI não é resolvida, e o grupo mostrou que ela não
+é resolvível a nenhum custo acessível --- as exigências de que o ambiente
+suporte o campo e de que $\lambda_{\rm MRI}$ cubra seis células se fecham em
+direções opostas.
+
+Consequência honesta: quando dizemos ``a rotação diferencial sobrevive'', isso
+é indistinguível de ``nossa simulação não tem como destruí-la''. Está escrito
+assim no artigo, na primeira página, e não nas ressalvas do fim.
+\end{alerta}
+
+\section{Resistividade numérica}
+
+Nas equações não há resistividade, mas no \emph{código} há: erros de truncamento
+dissipam campo em escalas próximas à da célula. O número de Reynolds magnético
+efetivo, $R_m = vL/\eta_{\rm num}$, é grande mas finito e não controlado.
+
+A separação que salva metade dos resultados:
+\begin{itemize}
+\item A instabilidade de Tayler é \textbf{ideal}. O crescimento, o caráter
+      $m=1$ e o transporte de momento angular enquanto o campo existe são
+      robustos.
+\item O \textbf{decaimento}, o resíduo final e qualquer recrescimento são
+      dissipativos e devem ser reportados como limitados por resolução.
+\end{itemize}
+
+\ex{Nos nossos runs o mínimo da energia magnética difere por um fator $25$
+entre malhas $192^3$ e $256^3$, enquanto a fase de destruição concorda. Explique
+por que isso é exatamente o que a separação acima prevê.}
+
+%============================================================
+\part*{Parte V --- Este projeto}
+\addcontentsline{toc}{part}{Parte V --- Este projeto}
+
+\section{O que medimos}
+
+Uma configuração só conta como resposta se passa \textbf{quatro critérios
+simultâneos}:
+
+\begin{center}
+\begin{tabular}{ll}
+\hline
+$M > \Mch = 1{,}44\,\Msun$ & é super-Chandrasekhar de fato \\
+$\beta_{\rm min} \ge 1$ & a estrela segura o próprio campo \\
+$0{,}1 < E_{\rm tor}/E_{\rm pol} < 10$ & geometria do ramo estável \\
+$T/|W| < 0{,}14$, sem perda de massa & rotação que ela consegue manter \\
+\hline
+\end{tabular}
+\end{center}
+
+O quarto é o que torna a resposta honesta: uma estrela sustentada por uma
+rotação que dispara o modo barra não é resultado.
+
+\section{Resultados principais, em uma página}
+
+\begin{enumerate}
+\item \textbf{Existe um teto.} Uma anã branca segura no máximo
+      $E_{\rm tor}/|W| \simeq 0{,}0101$ em campo toroidal confinado, quase
+      independente da densidade central. A literatura de equilíbrio precisa de
+      $0{,}203$ --- vinte vezes mais.
+\item \textbf{O campo compra pouca massa.} Cerca de $+0{,}017\,\Msun$. A
+      fronteira de massa converge para $\Mch$ por baixo sem cruzá-la.
+\item \textbf{Com rotação, a configuração existe.} Há configurações acima de
+      $\Mch$ com energias comparáveis, até $2{,}13\,\Msun$ --- mas a massa é
+      \emph{rotacional} e o campo continua em $\sim1\%$ do virial.
+\item \textbf{A configuração da literatura perde amplitude.} Uma evolução 3D
+      remove $98\%$ da energia magnética em poucos $t_A$, deixando o campo
+      ordenado e axissimétrico, porém seis vezes mais fraco.
+\end{enumerate}
+
+\section{As ferramentas, e por onde começar}
+
+\begin{center}
+\begin{tabular}{ll}
+\hline
+\code{scf/} & construção de equilíbrios, Python \\
+\code{investigations/} & varreduras e análise \\
+\code{castro\_problems/} & configuração das simulações 3D \\
+\code{tools/} & diagnósticos em C++ sobre plotfiles \\
+\code{cluster/} & scripts de submissão (PBS e SLURM) \\
+\code{docs/teoria.md} & a referência técnica completa \\
+\code{DIARIO.md} & o registro de tudo, com os erros \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{caixa}
+\textbf{Roteiro sugerido para as primeiras duas semanas.}
+\begin{enumerate}
+\item Resolva os exercícios dos Capítulos 1 e 2 no papel.
+\item Leia \code{scf/eos.py} inteiro e confira as fórmulas contra o
+      Capítulo 1.
+\item Rode o SCF sem campo, reproduza $M(\rho_c)$ e compare com $\Mch$.
+\item Ligue a rotação e reproduza $T/|W| = 0{,}099$ do modelo de produção.
+\item Leia as §7 e §8 do \code{DIARIO.md} --- são os erros cometidos, e
+      valem mais que os acertos.
+\end{enumerate}
+\end{caixa}
+
+\begin{alerta}
+\textbf{Uma regra do grupo, aprendida caro.} \emph{Verificar no destino, nunca
+na origem.} ``O arquivo existe aqui'' não é evidência de que existe lá, e numa
+cadeia estação $\to$ cluster $\to$ diretório de execução há vários lugares onde
+ele pode parar. Um portão custa segundos; uma janela de fila custa horas.
+\end{alerta}
+
+%============================================================
+\section*{Bibliografia comentada}
+\addcontentsline{toc}{section}{Bibliografia comentada}
+
+\paragraph{Fundamentos.}
+\begin{itemize}[leftmargin=1.2em]
+\item \textbf{Chandrasekhar (1935)}, MNRAS 95, 207 --- o artigo original do
+      limite. Curto e legível.
+\item \textbf{Shapiro \& Teukolsky}, \emph{Black Holes, White Dwarfs and
+      Neutron Stars} --- capítulos 2--4. O livro-texto padrão para tudo na
+      Parte I.
+\item \textbf{Hachisu (1986)}, ApJS 61, 479 --- o método SCF que usamos.
+\end{itemize}
+
+\paragraph{Campos magnéticos em estrelas.}
+\begin{itemize}[leftmargin=1.2em]
+\item \textbf{Prendergast (1956)}, ApJ 123, 498 --- a primeira configuração de
+      toro torcido.
+\item \textbf{Braithwaite \& Spruit (2006)}, A\&A (astro-ph/0510316) --- o
+      trabalho que estabelece que só a geometria mista é estável. Leitura
+      obrigatória.
+\item \textbf{Fujisawa, Yoshida \& Eriguchi (2012)}, MNRAS
+      (arXiv:1204.5830) --- a prescrição de confinamento de corrente.
+\item \textbf{Ciolfi \& Rezzolla (2013)}, arXiv:1306.2803 --- as duas funções
+      arbitrárias tratadas com cuidado.
+\end{itemize}
+
+\paragraph{Anãs brancas super-Chandrasekhar --- a literatura-alvo.}
+\begin{itemize}[leftmargin=1.2em]
+\item \textbf{Subramanian \& Mukhopadhyay (2015)}, MNRAS 454, 752 --- a
+      família de equilíbrios de onde vem a nossa configuração.
+\item \textbf{Gupta, Mukhopadhyay \& Tout (2020)}, MNRAS 496, 894.
+\item \textbf{Deb, Mukhopadhyay \& Weber (2022)}, ApJ 926, 1.
+\item \textbf{Zuraiq et al.\ (2026)}, ApJL, arXiv:2609.22437 --- o canal de
+      formação, via evolução estelar 1D.
+\end{itemize}
+
+\paragraph{O que o nosso trabalho acrescenta, e onde ele é frágil.}
+\begin{itemize}[leftmargin=1.2em]
+\item \code{docs/teoria.md} --- referência técnica completa, com ponteiros
+      linha a linha para o código.
+\item \code{DIARIO.md} --- o registro cronológico. Leia os erros.
+\item \code{paper/ms.tex} --- o artigo em preparação.
+\end{itemize}
+
+\vfill
+\noindent\rule{\textwidth}{0.4pt}\\
+{\small Dúvidas, correções e exercícios resolvidos: converse com o
+orientador. Esta apostila é um documento vivo --- se algo aqui estiver errado
+ou obscuro, isso é um \emph{bug} e deve ser reportado como tal.}
+
+\end{document}
