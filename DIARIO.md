@@ -3905,3 +3905,64 @@ extração antes de qualquer decisão.
 Para o reinício, `castro.fill_ambient_bc = 1` repõe material do ambiente na
 fronteira e existe no Castro justamente para isto. Custa comparabilidade com o
 `rot192`, que não o usa — mas o par novo seria internamente comparável.
+
+## 29. A resposta à Laura, aos 26 s: sem rotação o campo **encontra** o ramo misto
+
+Extraídos os diagnósticos dos 184 plotfiles do `dir_norot192`. O resultado é
+limpo e é o contrário do que eu teria apostado.
+
+### O contraste, em malha igual (192³ nos dois)
+
+E_tor/E_pol:
+
+| t (s) | sem rotação | com rotação |
+|---|---|---|
+| 0 | 1.6×10⁵ | 3.1×10⁵ |
+| 2 | 8.7 | 578 |
+| 5 | **0.59** | 13.0 |
+| 12 | **0.40** | 22.6 |
+| 26 | **0.23** | 28.3 |
+
+E a energia em t = 26 s: **fator 10.7** de perda sem rotação, contra **fator
+676** com.
+
+### O que isso diz
+
+**Sem rotação o campo relaxa para uma configuração mista e fica lá.** A razão
+cruza 1 por volta de t ≈ 3 s e assenta entre 0.2 e 0.6 — **dentro da faixa
+comparável** (0.1 < E_t/E_p < 10) que é o ramo de Braithwaite. E a energia para
+de cair: `d(ln E)/dt` oscila em torno de zero desde t ≈ 5 s, com o sinal
+trocando, em torno de E_mag/|W| ≈ 8×10⁻⁴.
+
+**Com rotação o campo não encontra esse ramo.** Fica toroidal-dominado entre 12
+e 28, e perde 99.85% da energia no mesmo intervalo.
+
+A leitura física plausível: a rotação diferencial **enrola poloidal em toroidal
+continuamente** (efeito Ω), então a configuração é reposta no ramo
+toroidal-puro, que é Tayler-instável, e o ciclo se repete drenando energia. Sem
+rotação não há enrolamento: uma vez convertida, a configuração mista pode
+sentar.
+
+### Consistência interna que reforça
+
+A estrela passa de **prolata (R_pol/R_eq = 1.005) a oblata (0.823)**. Campo
+toroidal faz estrela prolata; poloidal faz oblata. A mudança de forma segue a
+mudança de geometria do campo, sem eu ter imposto nada.
+
+### O que isto **não** autoriza a dizer
+
+- São **26 s**, cerca de 15 tempos de Alfvén. Sugestivo, não prova.
+- O run está morrendo pelo ambiente (§28), não pela estrela, mas a evacuação do
+  ambiente pode afetar o campo perto da superfície — que é justamente onde o
+  poloidal exterior vive.
+- β_min não foi medido durante a evolução, só na construção.
+- A comparação é contra o `rot192`, que difere em rotação **e** em estrela: sem
+  rotação a massa é 1.407 M⊙ contra 2.005. Não é um par de uma variável só.
+
+### Para a colaboração
+
+Isso responde a Laura afirmativamente na direção que ela levantou como
+interessante: **num barótropo, sem rotação, o campo parece sim evoluir para uma
+configuração do ramo estável.** Se sobreviver a um run mais longo e a um par
+melhor controlado, é resultado por si — e é contra a literatura que ela citou,
+que argumenta não existir equilíbrio magnético estável em barótropo.
