@@ -3843,3 +3843,65 @@ evoluível por nós. Preferível a deixar implícito que testamos.
 O Banibrata leu o draft assim. É consequência da minha redação de agosto, já
 corrigida na §24 e no texto. A resposta abre por aí, porque todo o resto
 depende de não confundir *perder amplitude* com *ser destruído*.
+
+## 28. O run sem rotação está morrendo, e não é a estrela
+
+Job 44987, 31 h de parede, t = 25.97 s de 60 pedidos. O `dt` ficou estável em
+4.5×10⁻³ até t ≈ 16 s e caiu por fator 11 desde então, acelerando. Pela série
+geométrica ele estagna perto de t ≈ 26.5 s.
+
+### O que os plotfiles dizem, e contradiz a leitura óbvia
+
+| t | ρ_max | **ρ_min** | Bx_max |
+|---|---|---|---|
+| 0 | 3.00×10⁹ | **2.0×10⁴** | 8.2×10¹² |
+| 16.2 | 2.61×10⁹ | 1.8×10⁴ | 3.9×10¹² |
+| 22.4 | 3.50×10⁹ | 1.0×10⁴ | 5.8×10¹² |
+| 26.0 | 4.08×10⁹ | **1.7×10²** | 4.1×10¹² |
+
+**A estrela está intacta e o campo também.** ρ_max oscila em torno do valor
+inicial — a estrela está pulsando, não colapsando nem explodindo — e B_x
+estabiliza perto de 4×10¹² depois de cair por fator dois.
+
+**Quem morre é o ambiente.** ρ_min cai por fator 117 e encosta no piso
+`small_dens = 1e2`. Com B ~ 10¹² G e ρ ~ 1.7×10², a velocidade de Alfvén ali é
+2.2×10¹⁰ cm/s — **0.7c** — e o CFL vai a 2×10⁻⁴ s, exatamente o dt observado.
+
+### E o controle mostra que não é o setup em si
+
+O run **rotante** usou o mesmo ambiente de 2×10⁴, o mesmo dipolo de 10⁹ G, e
+foi a 78 s conservando massa a 0.048% com R_vol estável. Então não é a caixa:
+é alguma coisa que a configuração sem rotação faz com ela.
+
+O suspeito é a pulsação. ρ_max oscila com amplitude crescente (±10% no início,
+±25% em t = 26 s) enquanto o run rotante evolui suave. Uma estrela quase
+esférica tocando sino empurra ondas para o ambiente a cada ciclo; a rotante, com
+R_eq duas vezes maior e superfície mais gradual, não faz isso. **Não tenho dado
+para afirmar o mecanismo**, só para descartar os dois candidatos óbvios.
+
+### Dois erros meus no caminho
+
+**Repeti o erro do log.** O `mpirun` do `job_tt_probe.sh` — de onde derivei este
+job — canaliza a saída por `tail -40`, então não há saída de passo enquanto o
+run vive: nem `dt`, nem taxa de retry, nem avisos de densidade. Tive de
+reconstruir a curva de `dt` pelos timestamps dos plotfiles. Corrigir antes do
+próximo run.
+
+**Replantei a mina dos `inf`.** O `inputs.norot192` herdou do `rot192` a lista
+de derives com `emag_density`/`etor_density`, que escrevem `inf` no `Cell_H` e
+fazem toda ferramenta do AMReX abortar no parse — §10.2, documentado em agosto.
+O `tools/patch_plotfile_inf.sh` resolveu, mas eu sabia disso e não previ.
+
+E 250 GB em 184 plotfiles, com `plot_int = 50` herdado do rot192, que é denso
+demais para um run de 60 s.
+
+### O que fazer
+
+O run não responde à pergunta da Laura como está: ela precisa de t ≳ 45 s, que
+é onde o mínimo de E_mag cai no caso rotante. Mas **26 s cobrem a fase de
+ruptura inteira** (0–12 s no rotante), então os plotfiles existentes valem
+extração antes de qualquer decisão.
+
+Para o reinício, `castro.fill_ambient_bc = 1` repõe material do ambiente na
+fronteira e existe no Castro justamente para isto. Custa comparabilidade com o
+`rot192`, que não o usa — mas o par novo seria internamente comparável.

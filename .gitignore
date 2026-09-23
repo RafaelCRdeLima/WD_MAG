@@ -80,3 +80,6 @@ shearing_box/runs/
 investigations/tt_sweep_[0-9][0-9][0-9].csv
 investigations/tt_sweep_hi_*.csv
 wd-mag-paper-overleaf.zip
+
+# monitor do run no scicom: estado local, nao versionar
+cluster/scicom/.monitor_estado
