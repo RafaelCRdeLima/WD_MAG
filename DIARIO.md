@@ -3966,3 +3966,71 @@ interessante: **num barótropo, sem rotação, o campo parece sim evoluir para u
 configuração do ramo estável.** Se sobreviver a um run mais longo e a um par
 melhor controlado, é resultado por si — e é contra a literatura que ela citou,
 que argumenta não existir equilíbrio magnético estável em barótropo.
+
+## 30. O epílogo do sci-com mata seus próprios jobs, e foi isso o tempo todo
+
+O Rafael recebeu um aviso de que jobs no mesmo nó se matam pelo epílogo. Eu não
+sabia. Fui verificar e é verdade — **por um motivo pior do que o aviso dizia**.
+
+### O bug, e o teste que o fecha
+
+`/etc/slurm/slurm.epilog.clean` é o script padrão do SLURM. Ele tenta não matar
+nada quando o usuário tem outro job no nó:
+
+```sh
+job_list=`squeue --noheader --format=%A --user=$SLURM_UID --node=localhost`
+for job_id in $job_list; do
+    if [ $job_id -ne $SLURM_JOB_ID ]; then exit 0; fi
+done
+if ! pgrep -x slurmctld > /dev/null; then
+    pkill -KILL -U $SLURM_UID
+fi
+```
+
+O teste decisivo, rodado no frontend:
+
+    squeue --node=localhost   ->   squeue: error: Invalid node name localhost
+
+**A lista sai vazia.** O laço nunca executa, o `exit 0` nunca acontece, e o
+script cai direto no `pkill -KILL -U` de todos os processos do usuário naquele
+nó. A proteção existe e está quebrada.
+
+Consequência: **quando qualquer job seu termina num nó, todos os seus outros
+jobs ali morrem com SIGKILL.** Vale para todos os seus jobs, não só os deste
+projeto — os do MAGNUS entram na mesma conta.
+
+### Isso fecha o mistério da §18
+
+As ondas de 12 tarefas do array 44307 morrendo no mesmo segundo, com
+`CANCELLED` e SIGKILL, que eu atribuí vagamente "ao mecanismo de array" sem
+conseguir fechar: **era o epílogo**. Cada tarefa que terminava matava todas as
+outras no mesmo nó. O padrão bate exatamente — algumas `COMPLETED`, as que
+alcançaram o fim, e o resto `FAILED` com 0:9 no mesmo instante.
+
+E explica os sobreviventes: a sonda ficou em `nodenv7` e `nodenv3`, nós
+diferentes; o 44987 estava sozinho no `node2` e rodou 31 h.
+
+### E eu acionei o bug tentando evitá-lo
+
+45150 e 45151 estavam ambos no `node1`. Cancelei o 45151 para separá-los — e o
+epílogo matou o 45150 no mesmo instante, com 3.5 h de run perdidas.
+
+Era inevitável: qualquer um dos dois terminando mataria o outro. Agir agora
+custou 3.5 h; não agir custaria as ~60 h do segundo quando o primeiro
+terminasse. Mas eu não previ que o próprio cancelamento dispararia, e devia ter
+previsto — é exatamente o mecanismo que eu acabara de descrever.
+
+### A regra
+
+**Nunca dois jobs seus no mesmo nó.** Submeter sempre com
+`--exclude=<nós onde você já tem job>`. Documentado no cabeçalho do
+`job_pair.sh`.
+
+Vale reportar aos administradores: o conserto é trocar `--node=localhost` por
+`--node=$(hostname -s)` ou `$SLURMD_NODENAME`. É um bug que atinge todo usuário
+do cluster que rode mais de um job por nó.
+
+### Estado
+
+45193 (rotante) no `node2`, 45194 (sem rotação) no `node1`, um por nó, cada um
+sozinho. Recomeçados do zero.
