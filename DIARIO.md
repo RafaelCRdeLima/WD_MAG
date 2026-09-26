@@ -4034,3 +4034,56 @@ do cluster que rode mais de um job por nó.
 
 45193 (rotante) no `node2`, 45194 (sem rotação) no `node1`, um por nó, cada um
 sozinho. Recomeçados do zero.
+
+## 31. A reposição de ambiente salva o run sem rotação e mata o rotante
+
+Dois dias de par. Resultado assimétrico e inconveniente.
+
+### Sem rotação: atravessou a crise
+
+O 45194 chegou a t = 30.1 s, além dos 26 s onde o 44987 morreu, e o log
+mostra por quê:
+
+| passo | t | dt |
+|---|---|---|
+| 2401 | 10.9 | 4.53×10⁻³ |
+| 4801 | 19.1 | 2.01×10⁻³ |
+| **8401** | **26.1** | **3.99×10⁻⁴** ← a crise |
+| 9601 | 27.2 | 1.26×10⁻³ ← recuperou |
+| 11382 | 30.1 | 1.29×10⁻³ |
+
+O `fill_ambient_bc` repôs o ambiente, a velocidade de Alfvén caiu de volta e o
+passo voltou. 972 rejeições no total, espalhadas e não escalando. A ~0.6 s por
+hora chega aos 60 s em mais dois dias.
+
+### Com rotação: morreu em t = 4 s
+
+O 45193 abortou com `requested 56 subcycled timesteps, larger than the maximum
+of 32`, com dt já em 1.1×10⁻⁵ — quatrocentas vezes abaixo do patamar. Não é
+transiente, é morte.
+
+**E o rot192 original, sem `fill_ambient_bc`, foi a 60 s sem dificuldade.**
+Então a mesma mudança que salvou um matou o outro. O suspeito é a fronteira
+forçada a um estado ambiente estático contra o material que a estrela rotante
+empurra para fora — descontinuidade onde antes havia outflow livre.
+
+### O que isso faz com o desenho do par
+
+O par internamente comparável **não é construível assim**. E há uma leitura que
+não é derrota: *o tratamento do ambiente não é parâmetro livre* — cada
+configuração precisa do que mantém o próprio ambiente sadio. A sem rotação
+evacua e precisa de reposição; a rotante não evacua e é prejudicada por ela.
+
+Isso é, em si, uma diferença física entre as duas e vale reportar como tal.
+
+### Recomendação
+
+Não refazer o rotante. Já existem `rot192` até 60 s e `rot256` até 78 s, ambos
+sem reposição, e são bons dados. O artigo declara a diferença de tratamento com
+a justificativa acima, em vez de inventar um par que o código não sustenta.
+
+### E o 45193 não morreu pelo epílogo
+
+Vale registrar, porque eu teria apostado nisso depois da §30: morreu por
+subciclos, código 6:0, sozinho no node2. O outro usuário que passou por lá
+(`wanderla`) não conta — o epílogo só mata processos do mesmo UID.

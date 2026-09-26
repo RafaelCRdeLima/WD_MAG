@@ -1,5 +1,5 @@
 #!/bin/bash
-# Monitor do run norot192b (job rafael-wdmag-pair) no scicom.
+# Monitor do run norot192 no scicom.
 #
 # Roda por cron a cada 30 min. Lê o amr_diag.out no destino, mede o dt, projeta
 # o término e avisa se algo mudar para pior. Não escreve nada no cluster.
@@ -14,8 +14,8 @@
 set -uo pipefail
 
 HOST=scicom
-JOBNAME=rafael-wdmag-pair      # job 45194, run norot192b (o norot192 morreu em 23/09 a t=26 s)
-RUNDIR='$HOME/wd-mag/runs/dir_norot192b'
+JOBNAME=rafael-wdmag-norot
+RUNDIR='$HOME/wd-mag/runs/dir_norot192'
 STOP_TIME=60.0            # stop_time do inputs.norot192
 NSTEPS=200                # janela de passos para a média do dt
 
@@ -139,16 +139,16 @@ printf '%s,%s,%s,%s,%s,%s,%s,%s,%s\n' \
 # 1. O job saiu da fila. Pode ser sucesso ou morte; quem decide é o t atingido.
 if [ -z "$ESTADO_FILA" ]; then
     if python3 -c "import sys; sys.exit(0 if float('$T') >= $STOP_TIME - 0.01 else 1)"; then
-        avisar normal "norot192b TERMINOU" "Chegou a t = ${T} s. Alvo era ${STOP_TIME} s."
+        avisar normal "norot192 TERMINOU" "Chegou a t = ${T} s. Alvo era ${STOP_TIME} s."
     else
-        avisar critical "norot192b SUMIU DA FILA" "Parou em t = ${T} s de ${STOP_TIME} s. Ver logs/."
+        avisar critical "norot192 SUMIU DA FILA" "Parou em t = ${T} s de ${STOP_TIME} s. Ver logs/."
     fi
     exit 0
 fi
 
 # 2. Escrita parada: mais de 40 min sem tocar o amr_diag (passo grosso ~9 s).
 if [ "${PARADO:-0}" -gt 2400 ]; then
-    avisar critical "norot192b travado" "amr_diag.out sem escrita há $((PARADO/60)) min, mas o job consta RUNNING."
+    avisar critical "norot192 travado" "amr_diag.out sem escrita há $((PARADO/60)) min, mas o job consta RUNNING."
 fi
 
 # 3. Novo colapso de dt: caiu a menos de 60% do check anterior.
@@ -162,7 +162,7 @@ fi
 
 # 4. A projeção passou do fim da janela de fila.
 if [ -n "$FOLGA" ] && python3 -c "import sys; sys.exit(0 if float('$FOLGA') < 12 else 1)"; then
-    avisar critical "norot192b não deve terminar" \
+    avisar critical "norot192 não deve terminar" \
         "ETA ${ETA}, folga de apenas ${FOLGA} h até o fim da janela. t = ${T} s de ${STOP_TIME} s."
 fi
 
