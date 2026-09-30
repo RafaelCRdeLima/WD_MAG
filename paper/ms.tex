@@ -122,7 +122,8 @@ the mass frontier it permits saturates at $\Mch$. Section~\ref{sec:rotation}
 adds differential rotation and shows that super-Chandrasekhar twisted-torus
 configurations do exist, but that their mass is rotational.
 Section~\ref{sec:3d} presents three-dimensional evolution of the literature's
-configuration and of the stable alternative, and Section~\ref{sec:norot}
+configuration, with and without rotation, and of the stable alternative, and
+Section~\ref{sec:norot}
 repeats the evolution without rotation. Section~\ref{sec:discussion}
 draws out what this implies for the programme, and
 Section~\ref{sec:limitations} states the limitations, several of which are
@@ -344,6 +345,7 @@ while the mass-shedding parameter stays near $0.48$ throughout.
 %% turnaround. Summary below is deliberately conservative.
 
 \subsection{The literature's field amplitude does not survive}
+\label{sec:amplitude}
 
 Evolving the specified configuration --- $2.005\,\Msun$, interior toroidal
 field of $3.2\times10^{13}$~G beside a $10^{9}$~G exterior dipole, so
@@ -384,6 +386,72 @@ not show that toroidal fields cannot exist in white dwarfs; it shows that the
 particular branch these equilibrium models are built on is the unstable one.
 Section~\ref{sec:limitations} lists the caveats that attach to the measured
 growth rate.
+
+\subsection{Without rotation, the field-supported star collapses}
+\label{sec:collapse}
+
+%% Numbers: investigations/phase1_revisit/data/ (grid_diag of sci-com jobs
+%% 46067-46072); figure from investigations/phase1_revisit/plot_collapse.py.
+%% Model models/phase1_scenario.txt; control models/phase1_control.txt.
+%% The 64^3 and 128^3 times are from the July runs (DIARIO 34, commit 8ce1786).
+
+The configuration above owes its mass to rotation. The object the equilibrium
+literature proposes is a different one: a non-rotating star whose excess mass
+is carried by the field. We built it with the same construction --- no
+rotation, $\rho_c = 10^{9}$~g~cm$^{-3}$, the self-consistent toroidal field
+raised until $M = 2.007\,\Msun$, which requires $\Etor/|W| = 0.203$ and a peak
+field of $4.3\times10^{13}$~G --- and evolved it. The field-free star at the
+same central density has $1.346\,\Msun$, so $0.66\,\Msun$ is held up by the
+field.
+
+It collapses (Figure~\ref{fig:collapse}). The star first expands, its central
+density falling to $30$--$40\%$ of the initial value, then rebounds and runs
+away: the central density passes the neutronization threshold and the kinetic
+energy grows five- to sixteenfold in the last half second, until the time
+step fails. At $96^3$ the run ends at $t = 2.56$~s and at $192^3$ at
+$t = 3.14$~s; earlier runs at $64^3$ and $128^3$, on a different machine and
+code version, ended at $2.18$ and $2.70$~s. Refinement delays the collapse and
+does not prevent it.
+
+\begin{figure}
+\includegraphics[width=\columnwidth]{figures/fig_collapse.pdf}
+\caption{Maximum density of the non-rotating $2.007\,\Msun$ star supported by
+its toroidal field, at $96^3$ and $192^3$ in the same domain, and at the
+$96^3$ spacing in a domain with $44\%$ of the ambient volume. Crosses mark the
+end of each run, in every case a runaway past the neutronization threshold
+(dotted). The field-free $1.346\,\Msun$ star at the same central density, in
+the same domain and spanning the same number of cells as the magnetized one,
+stays within $7\%$ of its initial value; its curve ends at $4.9$~s because the
+job was terminated externally, not because the run failed.
+\label{fig:collapse}}
+\end{figure}
+
+Three setup explanations are excluded. The ambient medium is not the cause:
+with $44\%$ of the ambient volume the star collapses $0.15$~s \emph{earlier}.
+The domain and the mesh are not the cause: the field-free star, in the same
+domain and resolved by the same number of cells, remains within $7\%$ of its
+initial central density to $t = 4.9$~s, nearly twice the collapse time.
+And under-resolution of the magnetic force is not the cause: the mesh
+reconstructs $71\%$, $83\%$ and $91\%$ of the local magnetic force at $64^3$,
+$96^3$ and $128^3$, a field-supported star is correspondingly under-supported,
+but halving the cell size from $96^3$ to $192^3$ moves the collapse by only
+$0.6$~s.
+
+The collapse is radial and precedes any $m=1$ growth, so it is not the Tayler
+instability of Section~\ref{sec:amplitude}; it happens first. The equilibrium itself
+suggests where. With $B_\phi \propto \rho\varpi$ the magnetic pressure is
+largest where both density and cylindrical radius are, so the star is a dense
+axial column inside an evacuated equatorial region: at matched spherical
+radius the density on the axis exceeds that on the equator by factors of
+$11.5$ at $0.2\,R_{\rm eq}$ and $23.4$ at $0.5\,R_{\rm eq}$. The centre, where
+the collapse starts, lies on the axis, where the toroidal field vanishes. We
+have not isolated the mechanism beyond this.
+
+The configuration that the magnetic super-Chandrasekhar programme describes
+therefore does not survive a few seconds of evolution, and it fails by
+collapse rather than by losing its field. With rotation carrying the mass,
+the star survives and only the field amplitude is lost
+(Section~\ref{sec:amplitude}); with the field carrying it, the star does not.
 
 \subsection{The stable configuration cannot be evolved in a filled box}
 
