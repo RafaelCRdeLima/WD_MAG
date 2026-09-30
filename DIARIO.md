@@ -4265,3 +4265,53 @@ primeira submissão (46071) morreu em 2 s: os `nodenv` de 32 CPUs têm **16
 núcleos físicos** (o resto é hyperthread) e o `mpirun` recusa 32 ranks. O
 `nodenv2` tem 64 CPUs e aceita 32 ranks. Vale para o próximo job em
 `ry-short`: pedir no máximo metade das CPUs que o `sinfo` mostra.
+
+### Resultado (30/09, tarde)
+
+| run | fim | ρ_max |
+|---|---|---|
+| `p1ref96` | colapso, t = 2.555 s | → 3.0×10¹⁰ |
+| `p1tight72` | colapso, t = 2.407 s | → 1.1×10¹⁰ |
+| `p1ref192` | **colapso, t = 3.139 s** | expande a 2.9×10⁸, rebate, → 1.2×10¹⁰ |
+| `p1ctl208` (sem campo) | **estável até t = 4.92 s**, morto de fora (abaixo) | 0.93–1.01 × inicial |
+
+**A resolução atrasa o colapso e não o impede.** Com dx pela metade a
+estrela morre 0.58 s depois. A série completa, 2.18 / 2.50 / 2.70 s (64³, 96³,
+128³, julho) e 2.56 / 3.14 s (96³, 192³, hoje), é a do crescimento a partir de
+uma semente que diminui com a malha, e bate com a extrapolação de ~3 s que
+julho fez. Se fosse só sub-sustentação, a 192³ a estrela deveria parar de
+cair, e não parou.
+
+**A sequência é a mesma em todas as malhas:** expansão (ρ_max cai a 30–40%),
+rebote, e disparo com E_kin crescendo exponencialmente, até passar da
+neutronização. A 192³ a expansão é mais funda e mais lenta, e o disparo vem
+depois.
+
+**Conclusão:** a anã branca de 2.007 M⊙ **sem rotação**, sustentada pelo
+próprio campo toroidal (E_tor/|W| = 0.203), colapsa em ~3 s, cerca de 3.5
+tempos dinâmicos. Não é o ambiente (menos ambiente, morte mais cedo), não é a
+caixa nem a malha (a estrela sem campo, na mesma caixa e com a mesma
+resolução, fica dentro de ±7%), e não é falta de resolução (192³ só atrasa).
+É o objeto que a literatura propõe como super-Chandrasekhar magnético, e é o
+resultado que o `ms.tex` ainda não tem: lá o run 3D é o de 2.005 M⊙ **com**
+rotação, em que a massa é rotacional.
+
+**O que ainda não está dito:** o mecanismo. O colapso é radial e vem antes de
+qualquer m = 1 (julho); a leitura de julho — suporte magnético sob contração
+homóloga escala como 1/R, igual a |W| e à energia interna com Γ = 4/3, então
+compra massa mas não estabilidade, e Γ central de 1.343 está a 0.7% do
+marginal — é plausível e não foi testada diretamente.
+
+### O controle foi morto pelo epílogo, e o erro é meu
+
+O `p1ctl208` morreu com SIGKILL (0:9) às 14:13:48, no meio de um passo
+saudável. No mesmo segundo terminou o 46080, `rafael-enrico-fine` (projeto
+ENRICO, submetido às 10:44), que tinha caído no **mesmo `nodenv2`**
+aproveitando as 32 CPUs que o controle deixou livres. O epílogo da §30 fez o
+resto.
+
+Eu escolhi o nó à mão (`-w nodenv2`) e conferi que não havia job seu lá **no
+momento da submissão**, mas não pedi `--exclusive`. A regra da §30 é sobre
+jobs futuros também: **em nó que sobra CPU, pedir `--exclusive`**, sempre.
+O controle já responde à pergunta (estável por 4.9 s, quase o dobro do tempo
+de morte das magnetizadas), então não refaço.
