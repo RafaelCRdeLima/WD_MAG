@@ -1,0 +1,108 @@
+# ---------------------------------------------------------------------------
+# FASE 1 REVISITADA (30/09/2026), trio de runs do mesmo binario do sci-com:
+#   p1ref96   = nodamp96 refeito: 2.007 Msun sem rotacao, caixa (1.8e9)^3
+#   p1tight72 = a mesma estrela, o mesmo dx, caixa com 44% do volume
+#   p1ctl208  = estrela SEM campo (1.346 Msun) na caixa do p1ref96, em 208^3
+# Pergunta: o colapso de julho (~2.5 s em 64/96/128^3, e as quatro massas de
+# 1.50 a 2.01 morrendo juntas) e' da estrela ou do setup? O tightbox foi
+# preparado em 31/07 e nunca rodou; o controle de julho estava numa caixa 5x
+# menor. O p1ref96 existe porque o nodamp96 de julho rodou com outro codigo
+# e noutra maquina: sem ele, o trio compararia caixa E versao.
+# Mudanca unica em relacao aos inputs de origem: sairam emag_density e
+# etor_density dos derivados (escrevem inf no Cell_H, DIARIO 10.2). Nao
+# afetam a evolucao. stop_time = 6.0 como no nodamp96.
+# ---------------------------------------------------------------------------
+# ESTE: p1ref192, o p1ref96 com dx pela metade (9.3750e+06 cm), mesma caixa.
+# Pergunta propria: a 96^3 a malha reconstroi ~83% da forca magnetica local, e
+# uma estrela SUSTENTADA pelo campo com 17% da forca faltando esta' fora de
+# equilibrio por construcao. Se a 192^3 ela ainda morre perto de 2.5-3 s, o
+# colapso e' da estrela; se sobreviver bem mais, era sub-sustentacao.
+# max_grid_size 24 (8^3 caixas, como o norot192) e plot_int 50 (~0.7 GB por
+# plotfile a 192^3).
+#
+# Phase 1, undamped at 96^3. Evolves the magnetized SCF equilibrium for ten
+# Alfven crossing times, looking for the m = 1 Tayler mode.
+#
+# Total = 1.68 s of damped relaxation + 10 t_A of undamped
+# measurement = 14.3 s.
+#
+# t_A = R/<v_A> = 1.68 s for this configuration (mass-weighted Alfven speed
+# 3.4e8 cm/s over R = 5.74e8 cm), so stop_time = 6.0 s is 10 t_A. The CFL
+# step at 64^3 is ~1.4e-2 s, hence a few thousand steps -- the Braithwaite
+# study's 0.23 t_A ceiling does not bind here, because this field is three
+# orders of magnitude stronger and its Alfven time correspondingly shorter.
+#
+# Domain: HALF-SHIFT geometry (docs/teoria.md Sec 6.6). prob_lo = -(N+1)/2*dx
+# and prob_hi = (N-1)/2*dx, so a cell CENTRE lands exactly on r = 0.
+max_step = 0, so nothing evolves.
+#
+# Domain: HALF-SHIFT geometry (docs/teoria.md Sec 6.6). prob_lo = -(N+1)/2*dx
+# and prob_hi = (N-1)/2*dx, so a cell CENTRE lands exactly on r = 0. The
+# symmetric domain misaligns the star's centre with the mesh and shows up as a
+# several-percent error in the central density; this removes it. With N = 64
+# and dx = 2.8125e7 cm the half-width is 9.0e8 cm, comfortably outside the
+# star's R_pol = 5.736e8 cm.
+max_step = 20000
+stop_time = 6.0
+
+geometry.is_periodic =  0    0    0
+geometry.coord_sys   =  0
+geometry.prob_lo     = -9.0468750000e+08 -9.0468750000e+08 -9.0468750000e+08
+geometry.prob_hi     = 8.9531250000e+08 8.9531250000e+08 8.9531250000e+08
+amr.n_cell           =  192  192  192
+
+castro.lo_bc       =  2   2   2
+castro.hi_bc       =  2   2   2
+
+castro.do_hydro = 1
+castro.do_react = 0
+castro.ppm_type = 0
+castro.use_flattening = 0
+
+castro.do_grav = 1
+gravity.gravity_type = MonopoleGrav
+gravity.drdxfac = 2
+
+castro.cfl            = 0.5
+castro.init_shrink    = 0.01
+castro.change_max     = 1.1
+castro.sum_interval   = 1
+castro.v              = 1
+amr.v                 = 1
+
+amr.max_level       = 0
+amr.blocking_factor = 8
+amr.max_grid_size   = 24
+amr.plot_file       = plt
+amr.check_file      = chk
+amr.check_int       = 200
+amr.plot_int        = 50
+amr.derive_plot_vars = density x_velocity y_velocity z_velocity eden Temp pressure B_x B_y B_z Div_B
+
+# Sec 6.5: small_dens is 1.0e4 g/cm^3, not 1e-4 -- the ambient has to be
+# heavy enough that the boundary Alfven speed stays finite.
+castro.small_dens = 1.0e4
+castro.small_temp = 1.0e3
+
+castro.do_sponge = 1
+castro.sponge_upper_density = 1.0e5
+castro.sponge_lower_density = 1.0e4
+castro.sponge_timescale     = 1.0e-4
+
+# NO damping, deliberately, after the damped run failed worse than the
+# undamped one.
+#
+# With damping to 1.68 s the star drifted DOWN to rho_c = 0.66 while damped --
+# away from the initial configuration, not onto it -- and then ran away the
+# instant damping stopped, reaching 4e10 and aborting at t = 2.35 s. Damping
+# removes kinetic energy, so an unbalanced star slides quasi-statically to
+# wherever the residual force points; here it slid somewhere worse.
+#
+# Undamped at 64^3 on a laptop the same configuration lasted 2.2 s. This run
+# is the apples-to-apples comparison at 96^3: does resolution extend that, in
+# which case the collapse is a representation error, or not, in which case the
+# configuration is dynamically unstable.
+castro.add_ext_src = 0
+
+problem.model_name = "phase1_scenario.txt"
+problem.surface_density_frac = 1.0e-6

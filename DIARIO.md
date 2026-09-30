@@ -4218,3 +4218,50 @@ dá 1.774 s. O 1.69 da §32 está errado; a origem não foi reconstruída.
 Eu ia escrever que "os dois runs sem rotação concordam onde se sobrepõem".
 Em E_tor/E_pol concordam (0.65–1.15 de razão depois de 5 s). Em E_mag diferem
 em até 1.6×. O artigo diz as duas coisas.
+
+## 34. Fase 1 revisitada: o colapso de 2 M⊙ sem rotação não é o ambiente
+
+O teste de caixa que a Fase 1 preparou em 31/07 (`inputs.tightbox`) e nunca
+reportou, rodado agora com uma referência e um controle, todos com o mesmo
+binário do sci-com (jobs 46067–46069, um por nó, `ry-short`).
+
+| run | o que é | fim |
+|---|---|---|
+| `p1ref96` | o `nodamp96` refeito: 2.007 M⊙, caixa (1.8×10⁹)³ | **t = 2.555 s** (julho, lovelace: 2.498) |
+| `p1tight72` | a mesma estrela e o mesmo dx, 44% do volume de ambiente | **t = 2.407 s** |
+| `p1ctl208` | sem campo (1.346 M⊙), mesma caixa física, 208³ (~57 células, como a magnetizada) | rodando |
+
+**Previsão registrada em 31/07:** "se o tempo de morte mudar, o ambiente é o
+relógio; se ficar em 2.5 s, é a estrela". Mudou 6%, e **para antes**: com
+menos ambiente a estrela morre mais cedo, não mais tarde. O ambiente não é o
+relógio.
+
+**A morte é colapso, não problema de passo.** ρ_max no `p1ref96`: 9.3×10⁸
+(t = 0, depois do mapeamento) → 3.8×10⁸ em 1.2 s (expansão) → 6.8×10⁸ em 2.0 s
+→ 2.2×10⁹ em 2.33 s → **3.0×10¹⁰ em 2.555 s**, acima do limiar de
+neutronização. E_kin sobe de 4×10⁴⁹ para mais de 6×10⁵⁰ nos últimos 0.5 s. O
+dt cai porque a estrela colapsa, e os subciclos esgotam como consequência. O
+`p1tight72` faz a mesma curva. A massa na caixa oscila 0.7% (o ambiente sai e
+volta pela fronteira mais próxima), e mesmo assim morre junto.
+
+**O código atual reproduz julho em 2%** (2.555 contra 2.498 s), em outra
+máquina e com outra versão. A Fase 1 não mediu um acidente de ambiente.
+
+**O que ainda falta, e é a alternativa principal:** a 96³ a malha reconstrói
+só ~83% da força magnética local. Uma estrela sustentada pelo campo com 17%
+da força faltando está fora de equilíbrio por construção. Julho argumentou
+que o tempo de sobrevivência cresce só logaritmicamente com a resolução
+(2.18, 2.50, 2.70 s a 71, 83, 91%) e extrapolou ~3 s. Os três pontos também
+são compatíveis com um limite finito, mas não separam "instável" de
+"sub-sustentado" com folga. O teste que separa é o mesmo run a 192³ (força
+reconstruída acima de 95%): se morrer perto de 3 s, é a estrela.
+
+O controle decide a outra metade: se a estrela **sem** campo, na mesma caixa e
+com a mesma resolução, sobreviver a 6 s, o colapso pertence ao campo.
+
+**Adicionado o `p1ref192`** (job 46072, nodenv9): o `p1ref96` com dx pela
+metade, na mesma caixa, para separar "instável" de "sub-sustentado". A
+primeira submissão (46071) morreu em 2 s: os `nodenv` de 32 CPUs têm **16
+núcleos físicos** (o resto é hyperthread) e o `mpirun` recusa 32 ranks. O
+`nodenv2` tem 64 CPUs e aceita 32 ranks. Vale para o próximo job em
+`ry-short`: pedir no máximo metade das CPUs que o `sinfo` mostra.
