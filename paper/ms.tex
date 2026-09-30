@@ -122,7 +122,8 @@ the mass frontier it permits saturates at $\Mch$. Section~\ref{sec:rotation}
 adds differential rotation and shows that super-Chandrasekhar twisted-torus
 configurations do exist, but that their mass is rotational.
 Section~\ref{sec:3d} presents three-dimensional evolution of the literature's
-configuration and of the stable alternative. Section~\ref{sec:discussion}
+configuration and of the stable alternative, and Section~\ref{sec:norot}
+repeats the evolution without rotation. Section~\ref{sec:discussion}
 draws out what this implies for the programme, and
 Section~\ref{sec:limitations} states the limitations, several of which are
 severe and are placed there deliberately rather than at the end.
@@ -423,6 +424,130 @@ domain-filling code without a vacuum or stratified exterior treatment}, and
 this is a plausible reason why the field has equilibrium models and no
 dynamics.
 
+\section{Evolution without rotation} \label{sec:norot}
+
+%% Numbers: investigations/norot/data/ (bt_bp_norot192b.csv from fbtbp over the
+%% 135 plotfiles; grid_diag_norot192b.csv from the run's own diagnostics).
+%% Figures: investigations/norot/plot_norot.py. Sci-Com jobs 44987 and 45194.
+%% The E_grav column of grid_diag is Castro's rho*phi integral, i.e. 2W: every
+%% E_mag/|W| below uses W = (1/2) int rho Phi dV, which reproduces the
+%% construction value 0.0101 at t = 0.
+
+The rotating runs leave open whether the ordered configuration they settle
+into owes its survival to rotation (Section~\ref{sec:limitations}). We
+therefore repeated the evolution on a non-rotating star.
+
+\subsection{Setup}
+
+The equilibrium is built as in Section~\ref{sec:methods} with
+$\Omega_c = 0$: $\rho_c = 3\times10^{9}$~g~cm$^{-3}$, $M = 1.407\,\Msun$, a
+self-consistent interior toroidal field of peak $2.96\times10^{13}$~G beside a
+$10^{9}$~G exterior dipole, and $E_{\rm mag}/|W| = 0.0101$ at construction,
+which the mesh reproduces. As in the rotating case the realized poloidal seed
+exceeds the intended one: $\Etor/\Epol = 1.6\times10^{5}$ on the mesh against
+$3\times10^{6}$ specified. The mesh ($192^3$), domain, solver, equation of
+state and ambient density ($2\times10^{4}$~g~cm$^{-3}$) are those of the
+$192^3$ rotating run.
+
+A first attempt reached $t = 26$~s and stalled. The star was intact; the
+ambient was not. Its minimum density fell by a factor of $117$ to the density
+floor, the Alfv\'en speed there reached $0.7c$, and the time step followed.
+The run reported here restarts from $t = 0$ with the ambient replenished at
+the domain boundary, and reaches $t = 60$~s in $26\,735$ steps. Where the two
+runs overlap they agree in $\Etor/\Epol$ and differ in magnetic energy by up
+to a factor of $1.6$ (Figure~\ref{fig:norot_field}).
+
+The comparison with the rotating run is therefore not a one-variable pair.
+The stars differ in mass ($1.41$ against $2.01\,\Msun$) as well as in
+rotation, and the ambient is treated differently: the rotating run with the
+same replenishment aborted at $t = 4$~s, while the rotating runs of
+Section~\ref{sec:3d}, without it, reach $60$ and $78$~s. Each configuration
+needs a different ambient treatment to remain evolvable, which is itself a
+difference between them.
+
+\subsection{The field moves to the mixed branch and keeps its geometry}
+
+\begin{figure}
+\includegraphics[width=\columnwidth]{figures/fig_norot_field.pdf}
+\caption{Field evolution with and without rotation, both at $192^3$.
+(a)~$\Etor/\Epol$; shading marks the comparable band of criterion~(iii).
+Without rotation the ratio falls below unity at $t \approx 4$~s and stays
+between $0.19$ and $0.64$ to $t = 60$~s; with rotation it stays between $12$
+and $61$ after $t = 12$~s. (b)~Magnetic energy relative to its initial value.
+Without rotation it falls to $6\%$ by $t = 5$~s, recovers to about $10\%$, and
+from $t = 26$~s decays with an $e$-folding time of $28$~s (dotted) to $3.4\%$
+at $t = 60$~s; the rotating run retains $0.09\%$. The grey curve is the first
+non-rotating run, without ambient replenishment, which stalls at $t = 26$~s.
+\label{fig:norot_field}}
+\end{figure}
+
+Without rotation the near-pure toroidal field converts to a mixed one within
+a few seconds: $\Etor/\Epol$ falls through unity between $t = 3.6$ and
+$4.5$~s and then remains between $0.19$ and $0.64$ for the rest of the run,
+inside the comparable band (Figure~\ref{fig:norot_field}a). The rotating run
+never enters it. The geometry is held for $55$~s after the conversion.
+
+The energy is not held. $E_{\rm mag}$ drops to $6\%$ of its initial value
+by $t = 5$~s, rises again to $13\%$ at $t = 15$~s, and from $t = 26$~s
+decays with an $e$-folding time of $28$~s, ending at $3.4\%$
+($E_{\rm mag}/|W| \simeq 4\times10^{-4}$) at $t = 60$~s
+(Figure~\ref{fig:norot_field}b). $\Etor/\Epol$ does not change during this
+decay: the configuration loses energy without changing shape. Numerical
+diffusion acting on a stable state would do this, and so would a slow
+instability that preserves the structure; one resolution cannot distinguish
+the two.
+
+The contrast with rotation remains large: at $t = 60$~s the non-rotating field
+retains $38$ times more of its initial energy. The peak field stays below the
+critical value throughout ($B/B_c \le 0.87$ after $t = 1$~s), so the caveat on
+the equation of state in Section~\ref{sec:limitations} does not apply to this
+run.
+
+\subsection{The star rings with growing amplitude}
+
+\begin{figure}
+\includegraphics[width=\columnwidth]{figures/fig_norot_star.pdf}
+\caption{The non-rotating star. (a)~Maximum density: a radial pulsation of
+period $1.77$~s whose relative amplitude grows from $0.15$ to $0.50$ between
+$t = 5$ and $60$~s. (b)~Ratio of polar to equatorial radius, which follows the
+phase of the pulsation rather than the field. (c)~Mass in the domain and in
+the star ($\rho > 10^{5}$~g~cm$^{-3}$) relative to $t = 0$; both rise by
+$0.18\%$ as ambient material enters through the replenished boundary.
+\label{fig:norot_star}}
+\end{figure}
+
+The star pulsates radially with period $1.77$~s, constant to within $1\%$ over
+the run, and the relative amplitude of the central density oscillation grows
+from $0.15$ at $t = 5$--$10$~s to $0.50$ at $t = 55$--$60$~s, an $e$-folding
+of about $40$~s (Figure~\ref{fig:norot_star}a). In the rotating run the
+amplitude does not grow over the interval sampled, to $t = 22$~s. The first
+non-rotating run, without replenishment, grows alike up to $t = 26$~s, from
+$0.15$ to $0.19$, so the replenished boundary alone does not explain it.
+
+The field does not supply this energy. The kinetic energy of the pulsation
+reaches $1.3\times10^{49}$~erg, while the field loses $2\times10^{48}$~erg
+between $t = 26$ and $60$~s. The internal energy rises by a factor of $12$,
+but under the zero-temperature equation of state the pressure depends on
+density alone and this energy does not act on the flow. What drives the growth
+is not identified. Candidates are the boundary, through which the mass in the
+domain rises by $0.18\%$; the coupling between the evolved internal energy and
+the flow; and a weakly unstable radial mode of the discretized star.
+
+The oblateness of the star is not evidence about the field. $R_{\rm
+pol}/R_{\rm eq}$ ranges between $0.74$ and $1.06$ and follows the phase of the
+pulsation (Figure~\ref{fig:norot_star}b).
+
+\subsection{What these data establish}
+
+Without rotation, in a barotropic star, the field leaves the toroidal branch
+within about four seconds, enters the comparable-energy band, and keeps that
+geometry for the remaining $55$~s of the run, whereas with rotation it stays
+toroidally dominated. The data do not establish that the mixed configuration
+is stable. Its energy decays with an $e$-folding of $28$~s, and while the star
+rings with growing amplitude the decay may be numerical dissipation fed by the
+compression rather than a property of the field. Separating the two requires
+the same run at $256^3$ and an identification of what drives the pulsation.
+
 \section{Discussion} \label{sec:discussion}
 
 %% TODO(RL): position against Pakmor & Pelisoli (2024) large-scale dynamo and
@@ -519,8 +644,10 @@ convenience of language, and criterion (iii) should be read as selecting the
 geometry that is stable \emph{where stability is known}, not as asserting
 stability here. The relevant control is whether the ordered configuration our
 rotating run settles into survives without rotation, since rotation can
-stabilize what a barotrope cannot; that run is in progress and will be
-reported separately.
+stabilize what a barotrope cannot. That run is reported in
+Section~\ref{sec:norot}: without rotation the field enters the comparable
+band and keeps the geometry for $55$~s, but its energy decays and the run does
+not establish stability.
 
 \textbf{$\bmin \ge 1$ is a consistency criterion.} It states that the
 equilibrium does not contradict the equation of state used to build it. It is

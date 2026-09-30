@@ -4178,3 +4178,43 @@ que a configuração é estável: ela perde energia com e-folding de 28 s, e a
 estrela está com uma pulsação crescente que eu não entendo. Antes de afirmar
 estabilidade: (1) 256³ sem rotação, para ver se o e-folding é de resolução;
 (2) descobrir o que bombeia a pulsação.
+
+## 33. A seção sem rotação no artigo, e duas correções que a checagem cobrou
+
+Escrita a §6 do `paper/ms.tex`, "Evolution without rotation" (`sec:norot`),
+com duas figuras novas (`fig_norot_field`, `fig_norot_star`, cópias de
+`investigations/norot/plots/`). Todos os números foram retirados de novo dos
+CSVs de `investigations/norot/data/` e do manifesto
+`models/nonrotating_mixed.txt.manifest.json`, e não da prosa da §32. As
+Limitações deixaram de dizer "in progress" e passaram a apontar para a seção;
+a introdução ganhou uma frase.
+
+### A coluna `E_grav` do `grid_diag` é 2W
+
+É o `rho_phi` do Castro, ∫ρΦ dV **sem o ½**
+(`castro/Source/driver/sum_integrated_quantities.cpp`, l. 92; o próprio Castro
+aplica o ½ só na energia total, l. 262). A conta fecha: 0.5 × (−6.853×10⁵¹) +
+3.589×10⁵¹ = 1.62×10⁵⁰, o `E_tot` registrado em t = 0.
+
+Como apareceu: na grade, E_mag/|W| em t = 0 dava 0.0050 contra 0.0101 do
+manifesto, com o B de pico batendo (2.92 contra 2.96×10¹³ G). O virial decidiu
+o lado: com a coluna crua, E_int/|W| = 0.52 (gás não relativístico); com o ½,
+1.04, que é o esperado para elétrons relativísticos a ρ_c = 3×10⁹.
+
+**O que muda:** a §32 diz "|E_grav| fica em 6–8×10⁵¹"; o |W| verdadeiro é
+2.9–4.4×10⁵¹. **O que não muda:** o SCF usa o ½ (`scf/diagnostics.py:26`),
+então o teto 0.0101 do artigo está certo, e a tabela E_mag/|W| do rotante na
+Discussão escala pelo valor do manifesto (0.01142), sem passar pela coluna.
+Qualquer script futuro que use `grid_diag` para |W| tem de dividir por 2.
+
+### O período da pulsação é 1.77 s, não 1.69
+
+Contagem de picos do ρ_max: 31 picos de 5 a 60 s, com período médio de
+1.773 s, e 1.784 / 1.766 / 1.779 s nas janelas 5–20, 20–40 e 40–60 s. A FFT
+dá 1.774 s. O 1.69 da §32 está errado; a origem não foi reconstruída.
+
+### Uma formulação que eu ia escrever e os dados não sustentam
+
+Eu ia escrever que "os dois runs sem rotação concordam onde se sobrepõem".
+Em E_tor/E_pol concordam (0.65–1.15 de razão depois de 5 s). Em E_mag diferem
+em até 1.6×. O artigo diz as duas coisas.
