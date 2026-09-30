@@ -4087,3 +4087,94 @@ a justificativa acima, em vez de inventar um par que o código não sustenta.
 Vale registrar, porque eu teria apostado nisso depois da §30: morreu por
 subciclos, código 6:0, sozinho no node2. O outro usuário que passou por lá
 (`wanderla`) não conta — o epílogo só mata processos do mesmo UID.
+
+## 32. Sem rotação até 60 s: a geometria fica no ramo misto, a energia não para, e a estrela toca cada vez mais alto
+
+O 45194 chegou a t = 60.0 s no passo 26735 (28/09, 4 d 19 h no node1); a
+retomada encadeada (45832) leu `chk26735`, viu t ≥ stop_time e saiu em 2 s.
+Extraídos os 135 plotfiles com o `fbtbp` (job 46024, 34 min). **Tudo do run
+sem rotação está agora em `investigations/norot/`**: dados, saídas brutas,
+configuração e as quatro figuras, com um README que diz de onde veio cada
+arquivo.
+
+### O que se manteve da §29
+
+| t (s) | E_tor/E_pol sem rotação | com rotação | E_mag/E_mag(0) sem | com |
+|---|---|---|---|---|
+| 5.5 | 0.59 | 13.0 | 0.062 | 0.37 |
+| 26 | 0.30 | 28.3 | 0.093 | 1.5×10⁻³ |
+| 40 | 0.24 | 19.8 | 0.060 | 4.2×10⁻⁴ |
+| 60 | 0.25 | 23.6 | **0.034** | **8.9×10⁻⁴** |
+
+**A geometria fica.** De 26 a 60 s a razão anda entre 0.19 e 0.48, sempre
+dentro do ramo misto. É o teste que a §29 pediu — "se sobreviver a um run mais
+longo" — e sobreviveu, em geometria.
+
+### O que a §29 disse e não vale
+
+**"A energia para de cair" era verdade só até 26 s.** Entre 5 e 26 s ela chegou
+a subir (de 6% a 9% da inicial). De 26 a 60 s cai de forma contínua, com
+**e-folding de 28 s**, e termina em 3.4%. A razão E_tor/E_pol não muda enquanto
+isso: a configuração perde energia **sem mudar de forma**. Isso é o que
+difusão numérica faz com um estado estável, e também o que faz uma instabilidade
+lenta que preserva a estrutura. Um run não separa as duas; 256³ sem rotação
+separa (se o e-folding crescer com a resolução, é numérico).
+
+O contraste com o rotante continua enorme — 38× mais energia retida aos 60 s —
+mas "fica lá" era a palavra errada.
+
+**O argumento da forma cai.** A §29 usou R_pol/R_eq = 0.823 aos 26 s como
+consistência interna (poloidal faz oblata). Com a série inteira, R_pol/R_eq
+oscila entre 0.74 e 1.06 e passa os últimos 20 s em 0.95–0.99. Não é um estado
+da estrela, é uma fase da oscilação; não serve de evidência da geometria do
+campo.
+
+### O que não estava em lugar nenhum: a pulsação cresce
+
+| janela (s) | ρ_max mín – máx (10⁹) | amplitude (máx−mín)/(máx+mín) |
+|---|---|---|
+| 5–10 | 2.62 – 3.52 | 0.15 |
+| 25–30 | 2.72 – 4.03 | 0.19 |
+| 40–45 | 2.28 – 4.47 | 0.32 |
+| 55–60 | 1.86 – 5.65 | **0.50** |
+
+Período 1.69 s, **crescimento com e-folding de 35–41 s**. O rotante faz o
+contrário: a pulsação dele trava em ±14% e o envelope decai com e-folding de
+~140 s (`plot_long_run.py`). A §28 já tinha visto "±25% em t = 26 s" e atribuído
+ao sino a evacuação do ambiente; a série inteira mostra que o sino não parou de
+subir depois que o ambiente foi reposto.
+
+**O campo não paga isso.** A energia cinética da pulsação chega a ~10⁴⁹ erg; o
+campo perdeu ~2×10⁴⁸ erg de 26 a 60 s. E o primeiro run, sem reposição, já
+crescia no mesmo ritmo até 26 s, então também não é só a `fill_ambient_bc`.
+Não sei o que bombeia. Candidatos: a fronteira (a massa da caixa sobe 0.18%
+linearmente — ambiente entrando), o acoplamento com a energia interna que a
+`ztwd` ignora na pressão mas o Castro evolui, ou um modo radial fracamente
+instável da configuração discreta. **É o risco principal para o resultado**: se
+a estrela estiver tocando cada vez mais forte, a queda de E_mag pode ser
+dissipação numérica alimentada pela compressão, e não propriedade do campo.
+
+### A energia interna, para registro
+
+E_int sobe 12× (3.6×10⁵¹ → 4.2×10⁵² erg), E_tot sobe de 1.6×10⁵⁰ para
+3.9×10⁵². Sob `ztwd` a pressão só depende de ρ: é contabilidade inerte, não
+calor que empurra a estrela — |E_grav| fica em 6–8×10⁵¹ o tempo todo. O
+primeiro run cresce no mesmo ritmo (~7×10⁵⁰ erg/s). Precisa de uma linha no
+artigo, não de conserto.
+
+### Uma correção de contagem
+
+A §31 fala em "972 rejeições" até 30 s. O log escreve duas linhas por rejeição
+("unsuccessful" e "Performing a retry"); contando os avanços, são **454 no run
+inteiro**, em 419 passos, todos entre 16 e 44 s. Depois de 43 s o dt voltou ao
+patamar de 4.5×10⁻³ e não houve mais nenhuma.
+
+### Para a Laura, atualizado
+
+Sem rotação, num barótropo, o campo vai para o ramo misto em ~3 s e **mantém a
+geometria por 60 s** (~35 tempos de Alfvén), enquanto com rotação fica
+toroidal-dominado e perde 99.9% da energia. O que **não** dá para dizer ainda é
+que a configuração é estável: ela perde energia com e-folding de 28 s, e a
+estrela está com uma pulsação crescente que eu não entendo. Antes de afirmar
+estabilidade: (1) 256³ sem rotação, para ver se o e-folding é de resolução;
+(2) descobrir o que bombeia a pulsação.
